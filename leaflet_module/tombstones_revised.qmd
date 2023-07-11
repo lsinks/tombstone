@@ -15,7 +15,7 @@ library(ggrepel) # to help position labels in ggplot graphs
 library(openxlsx) # importing excel files from a URL
 library(fuzzyjoin) # for joining on inexact matches
 library(sf) # for handling geo data
-library(mapview) # quick interactive mapping
+
 library(leaflet) # more mapping
 library(here)
 library(magick)
@@ -26,7 +26,7 @@ library(skimr)
 Reading in his spreadsheet
 
 ```{r}
-blog_folder <- "posts/2023-06-30-leaflet2"
+blog_folder <- "leaflet_module"
 photo_folder <- "Photos"
 archive_folder <- "Archive"
 problem_folder <- "Problem"
@@ -154,6 +154,13 @@ Now, I'm going to split this into two dataframe.
 PEOPLE WHO HAD MIDDLE NAMES removed are not nas!!!!! FIXED ABOVE
 
 ```{r}
+tombstones2 <- tombstones2 %>%
+  na_if(Middle.Name, "")
+```
+
+Now split this into two dataframes
+
+```{r}
 
 tombstones_middle <- tombstones2 %>%
   filter(is.na(Middle.Name) == FALSE)
@@ -163,6 +170,8 @@ tombstones_n_omiddle <- tombstones2 %>%
 ```
 
 # Matching to Photos
+
+## Matching the folks with Middle Names
 
 Now, I'm generating a list of all the photo names and converting it to a dataframe. I'm going to match against this list. The folder he gave me contains non-photos too, but I think they will be filtered out by the join.
 
@@ -203,7 +212,7 @@ tombstones_merged <- fuzzy_right_join(photo_df, tombstones_unique_names,
 
 ```
 
-Seeing what photos weren't matched. I'm actually going to move them somewhere else for the second round of matching
+Seeing what photos weren't matched. I'm actually going to move them somewhere else for the second round of matching. (I don't know that I need to move them. I may just be able to make a new photo list.)
 
 #At a quick glance, this looks to be correct.
 
@@ -290,6 +299,10 @@ tombstones_middle <- fuzzy_right_join(photo_df_MI_final, tombstones_middle,
                              by = c("photo_names2" = "full_name_MI"),
                              match_fun = str_detect)
 ```
+
+sometimes it is sinks le and sometimes it is sinks l e .
+
+# Converting to Geo Data
 
 Dropping any NAs in lat/long. Converting it to a SF geo object. I'm adding some jitter to the coordinates; tombstones that are very close to each other have the same coordinates and show up as overlapping on the map.
 
