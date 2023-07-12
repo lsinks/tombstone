@@ -33,7 +33,7 @@ problem_folder <- "Problem"
 #data_file <- "Tombstone_Data_small.xlsx"
 data_file <- "Tombstone Data.xlsx"
 # read in excel sheet
-tombstones <-
+tombstones_raw <-
   read.xlsx(here(blog_folder, data_file),
     sheet = 1
   )
@@ -48,7 +48,7 @@ Latitude and longitude data contains some stray degree and minute symbols. The d
 
 ```{r}
 
-tombstones <- tombstones %>%
+tombstones <- tombstones_raw %>%
 mutate(N = str_replace_all(N, pattern = "’", " ")) %>%
 mutate(N = str_replace_all(N, pattern = "O", " "))  %>%
 mutate(N = str_replace_all(N, pattern = "o", " "))  %>%
@@ -101,20 +101,16 @@ tombstones <- tombstones %>%
 
 ```
 
+## Code for looking at the cemetery data
+
 ```{r}
-cems <- tombstones %>% group_by(Cemetery) %>% count(sort = TRUE)
+#cems <- tombstones %>% group_by(Cemetery) %>% count(sort = TRUE)
 ```
 
 Let's look at how many unique cemetery names there are. This will help with typos.
 
 ```{r}
-cems_unique <- tombstones %>% distinct(Cemetery)
-```
-
-Actually just look at the sorted tombstone list. This would be easier to do in excel, but there are weird formatting things that make it difficult to sort.
-
-```{r}
-temp <- tombstones %>% arrange(Cemetery)
+#cems_unique <- tombstones %>% distinct(Cemetery)
 ```
 
 # Cleaning Up Names
@@ -126,7 +122,7 @@ My father's photo naming convention is "last name first name middle initial". I'
 This is actually the cleanup code from Middle Name modified
 
 ```{r}
-tombstones2 <- tombstones %>%
+tombstones <- tombstones %>%
   mutate(Extra_First_Name = str_extract(First.Name, "\\[.+\\]")) %>%
   mutate(First.Name = str_replace(First.Name, "\\[.+\\]", "")) %>%
   mutate(First.Name = str_replace(First.Name, "\\.", "")) %>%
@@ -141,7 +137,7 @@ The middle name column is problematic. Sometimes it is the middle name. Sometime
 Easy stuff first- stripping out extra spaces and periods and the abreviation ux (latin for wife) and us (a typo for ux). REMEMBER TO ESCAPE PERIODS and brackets
 
 ```{r}
-tombstones2 <- tombstones2 %>%
+tombstones <- tombstones %>%
   mutate(Middle.Name = str_replace(Middle.Name, "ux ", "")) %>%
   mutate(Middle.Name = str_replace(Middle.Name, "us ", "")) %>%
   mutate(Extra_Middle_Name = str_extract(Middle.Name, "\\[.+\\]")) %>%
@@ -156,7 +152,7 @@ tombstones2 <- tombstones2 %>%
 This fixes most of the issues, but not all. I'm going to see how the rest of this going and then come back and fix problem cases. It is possible that the entire middle name should be thrown out if ux is there, but I did see that some photos seem to have spouse names.
 
 ```{r}
-tombstones2 <- tombstones2 %>%
+tombstones <- tombstones %>%
   mutate(full_name_MI = ifelse(
     is.na(Middle.Name) == TRUE,
     Middle.Name,
@@ -168,7 +164,7 @@ tombstones2 <- tombstones2 %>%
 After running through the full matching code, I see that for first and middle names that are only letters, sometimes the photo name is sinks le and sometimes it is sinks l e . So I need a second middle name column for these cases. (There are also cases with initials in the middle name itself. I don't know if I need to clean that up. See Hess Ulysses S G)
 
 ```{r}
-tombstones2 <- tombstones2 %>%
+tombstones <- tombstones %>%
   mutate(full_name_MI_no_space = ifelse(
     is.na(Middle.Name) == TRUE,
     Middle.Name,
@@ -179,7 +175,7 @@ tombstones2 <- tombstones2 %>%
 Removing the names that aren't initials and making nas
 
 ```{r}
-tombstones2 <- tombstones2 %>%
+tombstones <- tombstones %>%
   mutate(full_name_MI_no_space = ifelse(
     nchar(paste0(First.Name, Middle.Name)) > 3,
     " ",
@@ -192,16 +188,11 @@ Now, I'm going to split this into two dataframe.
 
 PEOPLE WHO HAD MIDDLE NAMES removed are not nas!!!!! FIXED ABOVE
 
-```{r}
-#tombstones2 <- tombstones2 %>%
-#  na_if(Middle.Name, "") 
-```
-
 Now split this into two dataframes
 
 ```{r}
 
-tombstones_middle <- tombstones2 %>%
+tombstones_middle <- tombstones %>%
   filter(is.na(Middle.Name) == FALSE)
 
 
@@ -333,7 +324,7 @@ Now I need to redo everything so it will only match on the panel figures and not
 ```{r}
 photo_names2 = list.files(here(blog_folder, photo_folder))
 photo_df_MI_final = as.data.frame(photo_names2)
-tombstones_matched <- fuzzy_right_join(photo_df_MI_final, tombstones2, 
+tombstones_matched <- fuzzy_right_join(photo_df_MI_final, tombstones, 
                              by = c("photo_names2" = "full_name_MI"),
                              match_fun = str_detect)
 ```
@@ -435,7 +426,7 @@ Now do the revised list for matched 2. Be careful when I copy and paste this bec
 ```{r}
 photo_names4 = list.files(here(blog_folder, photo_folder))
 photo_df_4 = as.data.frame(photo_names4)
-tombstones_matched <- fuzzy_right_join(photo_df_4, tombstones2, 
+tombstones_matched <- fuzzy_right_join(photo_df_4, tombstones, 
                              by = c("photo_names4" = "full_name_MI_no_space"),
                              match_fun = str_detect)
 ```
