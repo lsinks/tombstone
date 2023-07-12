@@ -121,19 +121,35 @@ temp <- tombstones %>% arrange(Cemetery)
 
 My father's photo naming convention is "last name first name middle initial". I'm going to construct a variable full_name from the spreadsheet data and use that to match.
 
+## Cleaning up First Names
+
+This is actually the cleanup code from Middle Name modified
+
+```{r}
+tombstones2 <- tombstones %>%
+  mutate(Extra_First_Name = str_extract(First.Name, "\\[.+\\]")) %>%
+  mutate(First.Name = str_replace(First.Name, "\\[.+\\]", "")) %>%
+  mutate(First.Name = str_replace(First.Name, "\\.", "")) %>%
+  mutate(First.Name = str_trim(First.Name, side = c("both"))) %>%
+  mutate(First.Name = na_if(First.Name, "")) 
+```
+
+## Cleaning up Middle Names
+
 The middle name column is problematic. Sometimes it is the middle name. Sometimes it is a notes like "shared family tombstone". Sometimes it is the middle initial from the gravestone, but with the full name filled in with brackets like A\[lvis\]. Sometimes it is a maiden name or the name of the spouse.
 
 Easy stuff first- stripping out extra spaces and periods and the abreviation ux (latin for wife) and us (a typo for ux). REMEMBER TO ESCAPE PERIODS and brackets
 
 ```{r}
-tombstones2 <- tombstones %>%
+tombstones2 <- tombstones2 %>%
   mutate(Middle.Name = str_replace(Middle.Name, "ux ", "")) %>%
   mutate(Middle.Name = str_replace(Middle.Name, "us ", "")) %>%
   mutate(Extra_Middle_Name = str_extract(Middle.Name, "\\[.+\\]")) %>%
   mutate(Middle.Name = str_replace(Middle.Name, "\\[.+\\]", "")) %>%
   mutate(Middle.Name = str_replace(Middle.Name, "\\.", "")) %>%
   mutate(Middle.Name = str_trim(Middle.Name, side = c("both"))) %>%
-  mutate(Middle.Name = na_if(Middle.Name, ""))
+  mutate(Middle.Name = na_if(Middle.Name, "")) 
+  
   
 ```
 
@@ -149,13 +165,36 @@ tombstones2 <- tombstones2 %>%
   mutate(full_name = paste(Surname, First.Name, sep = " "))
 ```
 
+After running through the full matching code, I see that for first and middle names that are only letters, sometimes the photo name is sinks le and sometimes it is sinks l e . So I need a second middle name column for these cases. (There are also cases with initials in the middle name itself. I don't know if I need to clean that up. See Hess Ulysses S G)
+
+```{r}
+tombstones2 <- tombstones2 %>%
+  mutate(full_name_MI_no_space = ifelse(
+    is.na(Middle.Name) == TRUE,
+    Middle.Name,
+    paste(Surname, paste0(First.Name, Middle.Name), sep = " ")
+  )) 
+```
+
+Removing the names that aren't initials and making nas
+
+```{r}
+tombstones2 <- tombstones2 %>%
+  mutate(full_name_MI_no_space = ifelse(
+    nchar(paste0(First.Name, Middle.Name)) > 3,
+    " ",
+    full_name_MI_no_space
+  )) %>%
+  mutate(full_name_MI_no_space = na_if(full_name_MI_no_space, " "))
+```
+
 Now, I'm going to split this into two dataframe.
 
 PEOPLE WHO HAD MIDDLE NAMES removed are not nas!!!!! FIXED ABOVE
 
 ```{r}
-tombstones2 <- tombstones2 %>%
-  na_if(Middle.Name, "")
+#tombstones2 <- tombstones2 %>%
+#  na_if(Middle.Name, "") 
 ```
 
 Now split this into two dataframes
@@ -164,14 +203,13 @@ Now split this into two dataframes
 
 tombstones_middle <- tombstones2 %>%
   filter(is.na(Middle.Name) == FALSE)
-tombstones_n_omiddle <- tombstones2 %>%
-  filter(is.na(Middle.Name) == TRUE)
+
 
 ```
 
 # Matching to Photos
 
-## Matching the folks with Middle Names
+## Matching the folks with Middle Names and Spaces
 
 Now, I'm generating a list of all the photo names and converting it to a dataframe. I'm going to match against this list. The folder he gave me contains non-photos too, but I think they will be filtered out by the join.
 
@@ -241,7 +279,7 @@ tombstones_merged <- tombstones_merged %>%
 How many people have multiple photos?
 
 ```{r}
-multiples <- tombstones_merged %>% group_by(full_name) %>% count(sort = TRUE) %>% filter(n > 1)
+multiples <- tombstones_merged %>% group_by(full_name_MI) %>% count(sort = TRUE) %>% filter(n > 1)
 ```
 
 Look at these high multiples more closely.
@@ -249,7 +287,7 @@ Look at these high multiples more closely.
 ```{r}
 
 df_temp <- tombstones_merged %>%
-  filter(full_name == multiples$full_name[1]) 
+  filter(full_name_MI == multiples$full_name_MI[1]) 
 df_temp
 
 ```
@@ -264,7 +302,7 @@ index <- 1
 
 for (index in seq(1:nrow(multiples))) {
   df_temp <- tombstones_merged %>%
-    filter(full_name == multiples$full_name[index])
+    filter(full_name_MI == multiples$full_name_MI[index])
   df_temp
   these <-
     as.list(here(blog_folder, photo_folder, df_temp$photo_names))
@@ -275,7 +313,7 @@ for (index in seq(1:nrow(multiples))) {
     path =  here(
       blog_folder,
       photo_folder,
-      paste0(df_temp$full_name[1], "_panel.png")
+      paste0(df_temp$full_name_MI[1], "_panel.png")
     ),
     format = "png"
   )
@@ -295,12 +333,118 @@ Now I need to redo everything so it will only match on the panel figures and not
 ```{r}
 photo_names2 = list.files(here(blog_folder, photo_folder))
 photo_df_MI_final = as.data.frame(photo_names2)
-tombstones_middle <- fuzzy_right_join(photo_df_MI_final, tombstones_middle, 
+tombstones_matched <- fuzzy_right_join(photo_df_MI_final, tombstones2, 
                              by = c("photo_names2" = "full_name_MI"),
                              match_fun = str_detect)
 ```
 
-sometimes it is sinks le and sometimes it is sinks l e .
+I think this produces one more than it should in photo names. 75 instead of 74 via code below vs looking at \# files in the folders.
+
+```         
+sum(!is.na(tombstones_matched$photo_names2))
+```
+
+## Matching Middle Names with no space.
+
+(need to convert this column to nas above.)
+
+Converting to NAs, (match on space vs. no space
+
+```{r}
+unmatched_middle <- tombstones_matched %>%
+  mutate(full_name_MI_no_space = na_if(full_name_MI_no_space, " ")) %>%
+  filter(is.na(full_name_MI_no_space) == FALSE) %>%
+  filter(is.na(photo_names2) == TRUE)
+   
+```
+
+Okay, 17 didn't match.
+
+Make the photo list from the Problems folder. Should rename to unmatched.
+
+```{r}
+photo_names3 = list.files(here(blog_folder, problem_folder))
+match_round2 = as.data.frame(photo_names3)
+```
+
+Now
+
+```{r}
+tombstones_matched2 <- fuzzy_right_join(match_round2, unmatched_middle, 
+                             by = c("photo_names3" = "full_name_MI_no_space"),
+                             match_fun = str_detect)
+```
+
+looks like we got all but three!
+
+```{r}
+multiples2 <- tombstones_matched2 %>% group_by(full_name_MI_no_space) %>% count(sort = TRUE) %>% filter(n > 1)
+```
+
+Now make panel pcis and move. Right now we need to be reading from problems.
+
+```{r}
+#testing
+if (nrow(multiples2) > 0 ) {
+index <- 1
+
+for (index in seq(1:nrow(multiples2))) {
+  df_temp <- tombstones_matched2 %>%
+    filter(full_name_MI_no_space == multiples2$full_name_MI_no_space[index])
+  df_temp
+  these <-
+    as.list(here(blog_folder, problem_folder, df_temp$photo_names3))
+  photo_panel <-
+    image_append(do.call("c", lapply(these, image_read)))
+  image_write(
+    photo_panel,
+    path =  here(
+      blog_folder,
+      photo_folder,
+      paste0(df_temp$full_name_MI_no_space[1], "_panel.png")
+    ),
+    format = "png"
+  )
+  index2 <- 1
+  for (index2 in seq(1:nrow(df_temp))) {
+    file.rename(
+      from = here(blog_folder, problem_folder, df_temp$photo_names[index2]),
+      to = here(blog_folder, archive_folder, df_temp$photo_names[index2])
+    )
+  }
+}
+}
+```
+
+I need to move the non-panel pictures I matched.
+
+```{r}
+ index2 <- 1
+  for (index2 in seq(1:nrow(tombstones_matched2))) {
+    if (is.na(tombstones_matched2$photo_names3[index2] ) == FALSE) {
+    file.rename(
+      from = here(blog_folder, problem_folder, tombstones_matched2$photo_names3[index2]),
+      to = here(blog_folder, photo_folder, tombstones_matched2$photo_names3[index2])
+    )
+    }
+  }
+```
+
+Now do the revised list for matched 2. Be careful when I copy and paste this because It is reading the whole folder and not just this round of matching so will catch the single letter names when I do later rounds, I think.
+
+```{r}
+photo_names4 = list.files(here(blog_folder, photo_folder))
+photo_df_4 = as.data.frame(photo_names4)
+tombstones_matched <- fuzzy_right_join(photo_df_4, tombstones2, 
+                             by = c("photo_names4" = "full_name_MI_no_space"),
+                             match_fun = str_detect)
+```
+
+empty block
+
+```{r}
+
+```
 
 # Converting to Geo Data
 
