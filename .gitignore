@@ -2,4 +2,4 @@
 .Rhistory
 .RData
 .Ruserdata
-Photos/*
+leaflet_modules\Photos\*
