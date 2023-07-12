@@ -28,8 +28,12 @@ Reading in his spreadsheet
 ```{r}
 blog_folder <- "leaflet_module"
 photo_folder <- "Photos"
-archive_folder <- "Archive"
-problem_folder <- "Problem"
+archive_folder <- "Archived Photos"
+unmatched_folder <- "Unmatched Photos"
+match1 <- "Matched_Round1"
+match2 <- "Matched_Round2"
+match3 <- "Matched_Round3"
+match4 <- "Matched_Round4"
 #data_file <- "Tombstone_Data_small.xlsx"
 data_file <- "Tombstone Data.xlsx"
 # read in excel sheet
@@ -200,12 +204,27 @@ tombstones_middle <- tombstones %>%
 
 # Matching to Photos
 
+resetting all the photo folders
+
+This moves all the files into the main folder.
+
+**Need to delete files in the folders sfirs**t
+
+```{r}
+my_file_list = list.files(here(blog_folder, photo_folder, "Original Photos"))
+
+file.copy(
+      from = here(blog_folder, photo_folder, "Original Photos", my_file_list),
+      to = here(blog_folder, photo_folder, unmatched_folder, my_file_list)
+      )
+```
+
 ## Matching the folks with Middle Names and Spaces
 
 Now, I'm generating a list of all the photo names and converting it to a dataframe. I'm going to match against this list. The folder he gave me contains non-photos too, but I think they will be filtered out by the join.
 
 ```{r}
-photo_names = list.files(here(blog_folder, photo_folder))
+photo_names = list.files(here(blog_folder, photo_folder, unmatched_folder))
 photo_df = as.data.frame(photo_names)
 ```
 
@@ -245,17 +264,32 @@ Seeing what photos weren't matched. I'm actually going to move them somewhere el
 
 #At a quick glance, this looks to be correct.
 
+Now I don't want to move the unmatched files. I want to move the matched files.
+
 ```{r}
-not_matched_first_round <- anti_join(photo_df, tombstones_merged)
-
-index <- 1
-for (index in seq(1:nrow(not_matched_first_round))) {
-  file.rename(from = here(blog_folder, photo_folder, not_matched_first_round$photo_names[index]),
-                         to = here(blog_folder, problem_folder, not_matched_first_round$photo_names[index] ))
-}
-
+# not_matched_first_round <- anti_join(photo_df, tombstones_merged)
+# 
+# index <- 1
+# for (index in seq(1:nrow(not_matched_first_round))) {
+#   file.rename(from = here(blog_folder, photo_folder,  not_matched_first_round$photo_names[index]),
+#                          to = here(blog_folder, problem_folder, not_matched_first_round$photo_names[index] ))
+# }
+# 
 
 ```
+
+```{r}
+matched_first_round <- inner_join(photo_df, tombstones_merged)
+
+index <- 1
+for (index in seq(1:nrow(matched_first_round))) {
+  file.rename(from = here(blog_folder, photo_folder, unmatched_folder, matched_first_round$photo_names[index]),
+                         to = here(blog_folder, photo_folder, match1, matched_first_round$photo_names[index] ))
+}
+
+```
+
+Get an error even though it looks like it moved some files.
 
 I'm dropping all the NAs in the photo_names column.
 
@@ -296,7 +330,7 @@ for (index in seq(1:nrow(multiples))) {
     filter(full_name_MI == multiples$full_name_MI[index])
   df_temp
   these <-
-    as.list(here(blog_folder, photo_folder, df_temp$photo_names))
+    as.list(here(blog_folder, photo_folder, match1, df_temp$photo_names))
   photo_panel <-
     image_append(do.call("c", lapply(these, image_read)))
   image_write(
@@ -304,6 +338,7 @@ for (index in seq(1:nrow(multiples))) {
     path =  here(
       blog_folder,
       photo_folder,
+      match1,
       paste0(df_temp$full_name_MI[1], "_panel.png")
     ),
     format = "png"
@@ -311,18 +346,22 @@ for (index in seq(1:nrow(multiples))) {
   index2 <- 1
   for (index2 in seq(1:nrow(df_temp))) {
     file.rename(
-      from = here(blog_folder, photo_folder, df_temp$photo_names[index2]),
-      to = here(blog_folder, archive_folder, df_temp$photo_names[index2])
+      from = here(blog_folder, photo_folder, match1, df_temp$photo_names[index2]),
+      to = here(blog_folder, photo_folder, archive_folder, df_temp$photo_names[index2])
     )
   }
 }
 }
 ```
 
+Tons of errors
+
 Now I need to redo everything so it will only match on the panel figures and not the ones I moved.
 
+FILE STRUCTYRE BELOW HERE UNTESTED
+
 ```{r}
-photo_names2 = list.files(here(blog_folder, photo_folder))
+photo_names2 = list.files(here(blog_folder, photo_folder, match1))
 photo_df_MI_final = as.data.frame(photo_names2)
 tombstones_matched <- fuzzy_right_join(photo_df_MI_final, tombstones, 
                              by = c("photo_names2" = "full_name_MI"),
