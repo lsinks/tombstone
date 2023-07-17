@@ -202,16 +202,94 @@ tombstones_middle <- tombstones %>%
 
 ```
 
+# Cleaning up dates
+
+```{r}
+# library(lubridate)
+# tombstones2 <- tombstones %>%
+#   mutate(DOB_date = ifelse(is.na(DOB) == FALSE, as.Date(DOB, format = "%d %b %Y"), NA))
+```
+
+just apply to everything
+
+```{r}
+tombstones <- tombstones %>%
+  mutate(DOB_date = as.Date(DOB, format = "%d %b %Y")) %>%
+  mutate(DOD_date = as.Date(DOD, format = "%d %b %Y"))
+
+
+```
+
+Saving for use in rvest
+
+```{r}
+saveRDS(tombstones, "tombstones_cleaned.RDS")
+```
+
 # Matching to Photos
 
-resetting all the photo folders
+## Reset Photo Folders
 
 This moves all the files into the main folder.
 
-**Need to delete files in the folders sfirs**t
+**Need to delete files in the folders firs**t
+
+For safety's sake, I'm going to move them instead.
 
 ```{r}
-my_file_list = list.files(here(blog_folder, photo_folder, "Original Photos"))
+my_file_list <- list.files(here(blog_folder, photo_folder, "Unmatched Photos"))
+ file.rename(
+      from = here(blog_folder, photo_folder,"Unmatched Photos", my_file_list),
+      to = here(blog_folder, photo_folder, "Trash", my_file_list))
+```
+
+Next folder
+
+```{r}
+my_file_list <- list.files(here(blog_folder, photo_folder, "Archived Photos"))
+ file.rename(
+      from = here(blog_folder, photo_folder,"Archived Photos", my_file_list),
+      to = here(blog_folder, photo_folder, "Trash", my_file_list))
+```
+
+Next folder
+
+```{r}
+my_file_list <- list.files(here(blog_folder, photo_folder, "Matched_Round1"))
+ file.rename(
+      from = here(blog_folder, photo_folder,"Matched_Round1", my_file_list),
+      to = here(blog_folder, photo_folder, "Trash", my_file_list))
+```
+
+Next folder
+
+```{r}
+my_file_list <- list.files(here(blog_folder, photo_folder, "Matched_Round2"))
+ file.rename(
+      from = here(blog_folder, photo_folder,"Matched_Round2", my_file_list),
+      to = here(blog_folder, photo_folder, "Trash", my_file_list))
+```
+
+next folder
+
+```{r}
+my_file_list <- list.files(here(blog_folder, photo_folder, "Matched_Round3"))
+ file.rename(
+      from = here(blog_folder, photo_folder,"Matched_Round3", my_file_list),
+      to = here(blog_folder, photo_folder, "Trash", my_file_list))
+```
+
+```{r}
+my_file_list <- list.files(here(blog_folder, photo_folder, "Matched_Round4"))
+ file.rename(
+      from = here(blog_folder, photo_folder,"Matched_Round4", my_file_list),
+      to = here(blog_folder, photo_folder, "Trash", my_file_list))
+```
+
+moving new files in
+
+```{r}
+my_file_list <- list.files(here(blog_folder, photo_folder, "Original Photos"))
 
 file.copy(
       from = here(blog_folder, photo_folder, "Original Photos", my_file_list),
@@ -289,7 +367,13 @@ for (index in seq(1:nrow(matched_first_round))) {
 
 ```
 
-Get an error even though it looks like it moved some files.
+Get an error even though it looks like it moved some files. The error is
+
+```         
+Jones Levi A Jones Hester J.JPG
+```
+
+which is one tombstone for both. This will kick up errors everywhere.
 
 I'm dropping all the NAs in the photo_names column.
 
@@ -354,21 +438,19 @@ for (index in seq(1:nrow(multiples))) {
 }
 ```
 
-Tons of errors
-
 Now I need to redo everything so it will only match on the panel figures and not the ones I moved.
 
 FILE STRUCTYRE BELOW HERE UNTESTED
 
 ```{r}
-photo_names2 = list.files(here(blog_folder, photo_folder, match1))
-photo_df_MI_final = as.data.frame(photo_names2)
+photo_names_r1 = list.files(here(blog_folder, photo_folder, match1))
+photo_df_MI_final = as.data.frame(photo_names_r1)
 tombstones_matched <- fuzzy_right_join(photo_df_MI_final, tombstones, 
-                             by = c("photo_names2" = "full_name_MI"),
+                             by = c("photo_names_r1" = "full_name_MI"),
                              match_fun = str_detect)
 ```
 
-I think this produces one more than it should in photo names. 75 instead of 74 via code below vs looking at \# files in the folders.
+I think this produces one more than it should in photo names. 75 instead of 74 via code below vs looking at \# files in the folders. probably still this shared name hester & levi jones
 
 ```         
 sum(!is.na(tombstones_matched$photo_names2))
@@ -384,7 +466,7 @@ Converting to NAs, (match on space vs. no space
 unmatched_middle <- tombstones_matched %>%
   mutate(full_name_MI_no_space = na_if(full_name_MI_no_space, " ")) %>%
   filter(is.na(full_name_MI_no_space) == FALSE) %>%
-  filter(is.na(photo_names2) == TRUE)
+  filter(is.na(photo_names_r1) == TRUE)
    
 ```
 
@@ -393,15 +475,15 @@ Okay, 17 didn't match.
 Make the photo list from the Problems folder. Should rename to unmatched.
 
 ```{r}
-photo_names3 = list.files(here(blog_folder, problem_folder))
-match_round2 = as.data.frame(photo_names3)
+photo_names_r2 = list.files(here(blog_folder, photo_folder, unmatched_folder))
+match_round2 = as.data.frame(photo_names_r2)
 ```
 
 Now
 
 ```{r}
 tombstones_matched2 <- fuzzy_right_join(match_round2, unmatched_middle, 
-                             by = c("photo_names3" = "full_name_MI_no_space"),
+                             by = c("photo_names_r2" = "full_name_MI_no_space"),
                              match_fun = str_detect)
 ```
 
@@ -423,7 +505,7 @@ for (index in seq(1:nrow(multiples2))) {
     filter(full_name_MI_no_space == multiples2$full_name_MI_no_space[index])
   df_temp
   these <-
-    as.list(here(blog_folder, problem_folder, df_temp$photo_names3))
+    as.list(here(blog_folder, photo_folder, unmatched_folder, df_temp$photo_names_r2))
   photo_panel <-
     image_append(do.call("c", lapply(these, image_read)))
   image_write(
@@ -438,26 +520,29 @@ for (index in seq(1:nrow(multiples2))) {
   index2 <- 1
   for (index2 in seq(1:nrow(df_temp))) {
     file.rename(
-      from = here(blog_folder, problem_folder, df_temp$photo_names[index2]),
-      to = here(blog_folder, archive_folder, df_temp$photo_names[index2])
+      from = here(blog_folder,photo_folder, unmatched_folder, df_temp$photo_names_r2[index2]),
+      to = here(blog_folder, photo_folder, archive_folder, df_temp$photo_names_r2[index2])
     )
   }
 }
 }
 ```
 
-I need to move the non-panel pictures I matched.
+I need to move the non-panel pictures I matched. **Where am I moving them?**
 
 ```{r}
  index2 <- 1
   for (index2 in seq(1:nrow(tombstones_matched2))) {
-    if (is.na(tombstones_matched2$photo_names3[index2] ) == FALSE) {
+    if (is.na(tombstones_matched2$photo_names_r2[index2] ) == FALSE) {
     file.rename(
-      from = here(blog_folder, problem_folder, tombstones_matched2$photo_names3[index2]),
-      to = here(blog_folder, photo_folder, tombstones_matched2$photo_names3[index2])
+      from = here(blog_folder, photo_folder, tombstones_matched2$photo_names3[index2]),
+      to = here(blog_folder, photo_folder, tombstones_matched2$photo_names_r2[index2])
     )
     }
   }
+ 
+ 
+
 ```
 
 Now do the revised list for matched 2. Be careful when I copy and paste this because It is reading the whole folder and not just this round of matching so will catch the single letter names when I do later rounds, I think.

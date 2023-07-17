@@ -16,7 +16,7 @@ draft: false # setting this to `true` will prevent your post from appearing on y
 
 I really enjoyed making leaflet maps for TidyTuesday and wanted to play around with them some more. My father is interested in family history and has been documenting the gravesites of our ancestors. He takes nice photos with a camera and records the gps with a garmin device. I thought it would be nice to combine the data into a leaflet map for him. I wanted to add some other information as well. He is a member of the Sons of the American Revolution, a society of men who can trace their lineage back to someone who served in the American Revolutionary War. Some of the application material is available on their website. So, I wanted to add those links as well.
 
-This blog post deals with scraping the data from the website, wrangling it into a format where it could be matched against my father's spreadsheet and then looking for matches. I'll show you a bunch of things that didn't work as well, including some code from Google Bard. This project deals with a fairly small set of data, about 400 photos, 500 entries in the spreadsheet, and 74 entries from the website. It is likely easier to clean things up by hand, but that isn't scalable. So, whenever possible, I am doing things programatically. (Not that this project needs to scale, but it is good practice for larger datasets.
+This blog post deals with scraping the data from the website, wrangling it into a format where it could be matched against my father's spreadsheet and then looking for matches. I'll show you a bunch of things that didn't work as well, including some code from Google Bard. This project deals with a fairly small set of data, about 400 photos, 500 entries in the spreadsheet, and 74 entries from the website. It is likely easier to clean things up by hand, but that isn't scalable. So, whenever possible, I am doing things programatically. (Not that this project needs to scale, but it is good practice for larger datasets.)
 
 # Loading Libraries and Data
 
@@ -25,6 +25,8 @@ This blog post deals with scraping the data from the website, wrangling it into 
 library(tidyverse) 
 library(here)
 library(rvest)
+library(gt)
+library(openxlsx)
 ```
 
 This is my father's spreadsheet after some clean-up.
@@ -32,17 +34,23 @@ This is my father's spreadsheet after some clean-up.
 ```{r}
 #| label: loading-spreadsheet
 
+data_file <- "Tombstone Data.xlsx"
+ tombstones_raw <-
+   read.xlsx(here("leaflet_module", data_file),
+     sheet = 1
+   )
+
 ```
 
-# Webscraping
+# Webscraping with rvest
 
-I decided to use the rvest package for webscraping. I was introduced to it through TidyTuesday. For politenesses sake, I am working on a downloaded copy of the webpage.
+I decided to use the rvest package for webscraping. I was introduced to it through TidyTuesday. For politeness sake, I am working on a downloaded copy of the webpage.
 
 There is an overview of [webscraping using rvest](https://rvest.tidyverse.org/articles/rvest.html) on the package website. Basically, you want to right click on the webpage in your browser and chose "inspect" to find out what elements you want to use. In my case, the information was formatted as a table, so I pull out the children of the table element. There is an html_table() function, but it only extracts the text elements from the table, not the links. If you are only interested in the text, then this is a great option. To get the links that I wanted, I found an [example on Stack Overflow](https://stackoverflow.com/questions/63093926/retrieve-link-from-html-table-with-rvest).
 
 ```{r}
 #| label: loading-webpage
-sar <- read_html(here("posts/2023-06-30-leaflet2", "Display Member - 121743 - John Douglas Sinks Ph.D..html"))
+sar <- read_html( "Display Member - 121743 - John Douglas Sinks Ph.D..html")
 
 link_nodes <- sar %>% html_nodes(xpath = "//table//a")  
 link_text  <- link_nodes %>% html_text()
@@ -62,7 +70,7 @@ head(raw_data)
 
 ```
 
-# Cleaning Text Data
+# Reformat the Data
 
 Now to wrangle the text data into a usable form. The link_text contains the name and an ID number, like John PHELPS (P-335209). This can be split into two components using `(` as a separator. Remember that special characters like `(` need to be escaped (more on that later). So the actual separator is `" \\("` I took the space also. Then I removed the other parenthesis with `str_replace()`. I used transmute do the final mutation and select the columns I wanted moving forward.
 
@@ -79,7 +87,9 @@ rev_war <- rev_war %>%
 
 ```
 
-R keeps the indexing of the raw_data, so the row numbers are by 3s. However, indexing is as normal, by position. So rev_war\$name_unclean\[3\] returns the name associated with the row number 7. This is annoying and makes it difficult to pull out test cases. So, this should be fixed. This issue will pop up when you use data frames, but not when you use tibbles. The tidyverse doesn't approve of row names or numbers, so they aren't used. If you look at the data in RStudio viewer, you will get row numbers and the tibble will have them correctly numbered. Tibbles and data frames are usually completely interchangeable, but sometimes you do run into the differences.
+# Dataframes aren't Tibbles!
+
+R keeps the indexing of the raw_data, so the row numbers are by 3s. However, indexing is as normal, by position. So rev_war\$name_unclean\[3\] returns the name associated with the row number 7. This is annoying and makes it difficult to pull out test cases. So, this should be fixed. This issue will pop up when you use data frames, but not when you use tibbles. The tidyverse doesn't approve of row names or numbers, so they aren't used. If you look at a tibble in RStudio viewer, you will get row numbers and the tibble will have them correctly numbered. Tibbles and data frames are usually completely interchangeable, but sometimes you do run into the differences.
 
 So, two ways to fix this:
 
@@ -102,6 +112,8 @@ head(rev_war)
 ```
 
 I'm going to continue with the data frame.
+
+# Cleaning Text Data
 
 Now the names are a mess. Women have "Mrs" prepended. The last names are in all caps and sometimes have multiple variations separated by a /. There are also Jr and Sr at the end of some. There are different numbers of leading and trailing spaces on the names.
 
@@ -157,7 +169,7 @@ rev_war$name[27]
 
 I admit, I spent a fair bit of trial and error to figure this out. First note- using `str_split()` from stringr is not the way to go. I got a bit hyperfocused on stringr functions since I was using the package so heavily. It creates a matrix of results in your data frame, and not new columns of data. Use `separate()` from tidyr instead.
 
-I decided to do this stepwise. So the `remove = FALSE` flag needs to be set in `separate()`. First, I got the first names by splitting on the pattern of space and then two or more capital letters. The two or more is necessary because of names like Friderick William. This gives the complete first name(s) and an incomplete last name, because the separator is discarded. So you end up with AGEL/NAGLE, which I dumped in a column named trash. Here, I immediately deleted it, but it was very useful for troubleshooting. There is also a first name with two variations separated with a /, which I'm deferring handling for now.
+I decided to do this stepwise. So the `remove = FALSE` flag needs to be set in `separate()`. First, I got the first names by splitting on the pattern of space and then two or more capital letters. The two or more is necessary because of names like Friderick William. This gives the complete first name(s) and an incomplete last name, because the separator is discarded. So you end up with AGEL/NAGLE, which I dumped in a column named trash. Here, I immediately deleted it, but it was very useful for troubleshooting.
 
 ```{r}
 #so now I separate out the last name per. My pattern is a space followed by a 
@@ -222,9 +234,89 @@ My plan was match on the first variation, then for those that failed to match, m
 rev_war_test <- rev_war_test %>%
   mutate(match_1 = paste0(V1, " ", first_name))
 
-matched_records <- rev_war_test %>% inner_join(tombstones, by = c("match_1" = "full_name"))
+matched_records <- rev_war_test %>% inner_join(tombstones2, by = c("match_1" = "full_name"))
 
-matched_records %>% select(name_unclean, Surname, First.Name, Middle.Name, DOB, DOD )
+dob_filter <- matched_records %>% select(name_unclean, Surname, First.Name, Middle.Name, DOB_date, DOD_date ) %>% filter(is.na(DOB_date) == FALSE) %>% filter(year(DOB_date) < 1784)
+```
+
+Filter on DOB
+
+```{r}
+dob_filter <-
+  matched_records %>%
+  # select(name_unclean,
+  #        Surname,
+  #        First.Name,
+  #        Middle.Name,
+  #        DOB_date,
+  #        DOD_date) %>%
+  filter(is.na(DOB_date) == FALSE) %>%
+  filter(year(DOB_date) < 1784)
+```
+
+Now DOD
+
+```{r}
+dod_filter <-
+  matched_records %>%
+  # select(name_unclean,
+  #        Surname,
+  #        First.Name,
+  #        Middle.Name,
+  #        DOB_date,
+  #        DOD_date) %>%
+  filter(is.na(DOD_date) == FALSE) %>%
+  filter(year(DOD_date) < 1866)
+```
+
+Now full join the two sets
+
+```{r}
+all_matches <- dob_filter %>% full_join(dod_filter)
+```
+
+Final results
+
+```{r}
+all_matches %>% select(name_unclean) %>% gt()
+```
+
+Let's see who didn't match because there were not DOB or DOD
+
+```{r}
+na_filter1 <-
+  matched_records %>%
+  # select(name_unclean,
+  #        Surname,
+  #        First.Name,
+  #        Middle.Name,
+  #        DOB_date,
+  #        DOD_date) %>%
+  filter(is.na(DOD_date) == TRUE) %>%
+  filter(is.na(DOB_date) == TRUE) 
+na_filter1 %>% select(name_unclean)
+```
+
+Now DOB
+
+```{r}
+na_filter2 <-
+  matched_records %>%
+  # select(name_unclean,
+  #        Surname,
+  #        First.Name,
+  #        Middle.Name,
+  #        DOB_date,
+  #        DOD_date) %>%
+  filter(is.na(DOD_date) == TRUE) 
+na_filter2 
+```
+
+And join them
+
+```{r}
+na_matches <- na_filter1 %>% full_join(na_filter2)
+na_matches %>% select(name_unclean) %>% gt()
 ```
 
 What we see is that many names are reused in the family and so the name from the SAR records match people who were born well after the end of the Revolutionary war. I could try to clean up by date of birth or death, though that information isn't available for all matches. The SAR records don't have the middle names in the title probably easier just to ask. Jr/Sr is not consistently encoded in my father's spreadsheet (which is why I didn't use that when generating match_1). At this point, subject matter expertise is needed to solve the problem.
