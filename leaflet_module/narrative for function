@@ -72,3 +72,16 @@ Look at these high multiples more closely.
 
 
 https://stackoverflow.com/questions/61196196/image-append-on-dynamic-number-of-variables
+
+Now I need to redo everything so it will only match on the panel figures and not the ones I moved.
+
+
+
+```{r}
+
+```
+
+I think this produces one more than it should in photo names. 75 instead of 74 via code below vs looking at \# files in the folders. probably still this shared name hester & levi jones
+
+```         
+sum(!is.na(tombstones_matched$photo_names2))
