@@ -363,11 +363,12 @@ Matching_Photos <-
       index <- 1
       
       for (index in seq(1:nrow(multiple_photos))) {
+        name1 <- multiple_photos[index, 1]
+        name2 <- "Follis A O"
+        name3 <- multiple_photos[[name_to_match]][index]
         df_temp <- tombstones_merged %>%
-          filter(get(name_to_match) == multiple_photos[index, 1])
-        return(df_temp)
-        
-        these <-
+          filter(get(name_to_match) == multiple_photos[[name_to_match]][index])
+               these <-
           as.list(here(blog_folder, photo_folder, match1, df_temp$photo_names))
         photo_panel <-
           image_append(do.call("c", lapply(these, image_read)))
