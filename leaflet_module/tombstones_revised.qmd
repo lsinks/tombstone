@@ -92,6 +92,31 @@ tombstones <- tombstones %>%
 
 
 ```
+# Cleaning up dates
+
+```{r}
+# library(lubridate)
+# tombstones2 <- tombstones %>%
+#   mutate(DOB_date = ifelse(is.na(DOB) == FALSE, as.Date(DOB, format = "%d %b %Y"), NA))
+```
+
+just apply to everything
+
+```{r}
+tombstones <- tombstones %>%
+  mutate(DOB_date = as.Date(DOB, format = "%d %b %Y")) %>%
+  mutate(DOD_date = as.Date(DOD, format = "%d %b %Y"))
+
+
+```
+
+Saving for use in rvest
+
+```{r}
+saveRDS(tombstones, "tombstones_cleaned.RDS")
+```
+
+
 
 # Cleaning Up Cemetery data
 
@@ -192,39 +217,7 @@ Now, I'm going to split this into two dataframe.
 
 PEOPLE WHO HAD MIDDLE NAMES removed are not nas!!!!! FIXED ABOVE
 
-Now split this into two dataframes
 
-```{r}
-
-tombstones_middle <- tombstones %>%
-  filter(is.na(Middle.Name) == FALSE)
-
-
-```
-
-# Cleaning up dates
-
-```{r}
-# library(lubridate)
-# tombstones2 <- tombstones %>%
-#   mutate(DOB_date = ifelse(is.na(DOB) == FALSE, as.Date(DOB, format = "%d %b %Y"), NA))
-```
-
-just apply to everything
-
-```{r}
-tombstones <- tombstones %>%
-  mutate(DOB_date = as.Date(DOB, format = "%d %b %Y")) %>%
-  mutate(DOD_date = as.Date(DOD, format = "%d %b %Y"))
-
-
-```
-
-Saving for use in rvest
-
-```{r}
-saveRDS(tombstones, "tombstones_cleaned.RDS")
-```
 
 # Matching to Photos
 
@@ -299,6 +292,18 @@ file.copy(
 
 ## Matching the folks with Middle Names and Spaces
 
+Create the dataframe of files to match.
+
+```{r}
+
+tombstones_middle <- tombstones %>%
+  filter(is.na(Middle.Name) == FALSE)
+
+```
+
+
+
+
 Now, I'm generating a list of all the photo names and converting it to a dataframe. I'm going to match against this list. The folder he gave me contains non-photos too, but I think they will be filtered out by the join.
 
 ```{r}
@@ -309,14 +314,14 @@ photo_df = as.data.frame(photo_names)
 I'm going to remove all duplicate names for now.
 
 ```{r}
-multiples <- tombstones_middle %>% group_by(full_name) %>% count(sort = TRUE) %>% filter(n > 1)
+duplicate_names <- tombstones_middle %>% group_by(full_name_MI) %>% count(sort = TRUE) %>% filter(n > 1)
 ```
 
 Use an antijoin to filter out everything that doesn't match.
 
 ```{r}
 tombstones_unique_names <- tombstones_middle %>%
-  anti_join(multiples)
+  anti_join(duplicate_names)
 ```
 
 Okay, this seems to be fully unique names.
@@ -388,7 +393,7 @@ tombstones_merged <- tombstones_merged %>%
 How many people have multiple photos?
 
 ```{r}
-multiples <- tombstones_merged %>% group_by(full_name_MI) %>% count(sort = TRUE) %>% filter(n > 1)
+multiple_photos <- tombstones_merged %>% group_by(full_name_MI) %>% count(sort = TRUE) %>% filter(n > 1)
 ```
 
 Look at these high multiples more closely.
@@ -396,7 +401,7 @@ Look at these high multiples more closely.
 ```{r}
 
 df_temp <- tombstones_merged %>%
-  filter(full_name_MI == multiples$full_name_MI[1]) 
+  filter(full_name_MI == multiple_photos$full_name_MI[1]) 
 df_temp
 
 ```
@@ -406,12 +411,12 @@ https://stackoverflow.com/questions/61196196/image-append-on-dynamic-number-of-v
 ```{r}
 
 #testing
-if (nrow(multiples) > 0 ) {
+if (nrow(multiple_photos) > 0 ) {
 index <- 1
 
-for (index in seq(1:nrow(multiples))) {
+for (index in seq(1:nrow(multiple_photos))) {
   df_temp <- tombstones_merged %>%
-    filter(full_name_MI == multiples$full_name_MI[index])
+    filter(full_name_MI == multiple_photos$full_name_MI[index])
   df_temp
   these <-
     as.list(here(blog_folder, photo_folder, match1, df_temp$photo_names))
@@ -440,7 +445,7 @@ for (index in seq(1:nrow(multiples))) {
 
 Now I need to redo everything so it will only match on the panel figures and not the ones I moved.
 
-FILE STRUCTYRE BELOW HERE UNTESTED
+
 
 ```{r}
 photo_names_r1 = list.files(here(blog_folder, photo_folder, match1))
