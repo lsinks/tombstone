@@ -292,7 +292,7 @@ file.copy(
 
 ## Matching the folks with Middle Names and Spaces
 
-Create the dataframe of files to match.
+Create the dataframe of files to match. This goes outside the function
 
 ```{r}
 
@@ -302,121 +302,86 @@ tombstones_middle <- tombstones %>%
 ```
 
 
-
-
-Now, I'm generating a list of all the photo names and converting it to a dataframe. I'm going to match against this list. The folder he gave me contains non-photos too, but I think they will be filtered out by the join.
+https://stackoverflow.com/questions/52437463/function-calling-variable-names-for-group-by-in-dplyr-how-do-i-vectorise-this
 
 ```{r}
-photo_names = list.files(here(blog_folder, photo_folder, unmatched_folder))
-photo_df = as.data.frame(photo_names)
+Matching_Photos <-
+  function(df_to_match, name_to_match, match_folder) {
+    #Step 1: list of unmatched photos
+    photo_names = list.files(here(blog_folder, photo_folder, unmatched_folder))
+    photo_df = as.data.frame(photo_names)
+    #Step 2: generate duplicate names
+    duplicate_names <- df_to_match %>%
+      group_by_at(name_to_match) %>% count(sort = TRUE) %>% filter(n > 1)
+    
+   # return(duplicate_names)
+    
+     #Step 3: remove duplicate names
+    tombstones_unique_names <- df_to_match %>%
+      anti_join(duplicate_names)
+    #step 4: do the matching
+    tombstones_merged <-
+      fuzzy_right_join(
+        photo_df,
+        tombstones_unique_names,
+        by = c("photo_names" = name_to_match),
+        match_fun = str_detect
+      )
+    #step 5: Moving all the photos that match to the correct match folder
+    matched_this_round <- inner_join(photo_df, tombstones_merged)
+
+    index <- 1
+    for (index in seq(1:nrow(matched_this_round))) {
+      file.rename(
+        from = here(
+          blog_folder,
+          photo_folder,
+          unmatched_folder,
+          matched_this_round$photo_names[index]
+        ),
+        to = here(
+          blog_folder,
+          photo_folder,
+          match_folder,
+          matched_this_round$photo_names[index]
+        )
+      )
+    }
+    #step 6: Remove any unmatched names
+    tombstones_merged <- tombstones_merged %>%
+    drop_na(photo_names)
+ #step 7: generate the list of folks with multiple photos
+     multiple_photos <- tombstones_merged %>% group_by_at(name_to_match) %>% count(sort = TRUE) %>% filter(n > 1) 
+    #step 8: make the panel photos and move the originals to archive. (function?)
+ 
+    return(multiple_photos)
+
+ }
 ```
 
-I'm going to remove all duplicate names for now.
-
+does this part of the function work?
 ```{r}
-duplicate_names <- tombstones_middle %>% group_by(full_name_MI) %>% count(sort = TRUE) %>% filter(n > 1)
+tester <- Matching_Photos(tombstones_middle, "full_name_MI", match1)
 ```
 
-Use an antijoin to filter out everything that doesn't match.
 
-```{r}
-tombstones_unique_names <- tombstones_middle %>%
-  anti_join(duplicate_names)
-```
 
-Okay, this seems to be fully unique names.
-
-The photo name format contains the fullname, but then might include additional description, such as:
-
-```{r}
-photo_df$photo_names[12]
-```
-
-So I'm going to have to a fuzzy/ partial match. So using "Appleton Richard" will correctly match with that photo. The problem is that the fuzzy match might also incorrect match people with similar names.
-
-So, I need to match to the most complete name first, and then the least complete name.
-
-```{r}
-tombstones_merged <- fuzzy_right_join(photo_df, tombstones_unique_names, 
-                             by = c("photo_names" = "full_name_MI"),
-                             match_fun = str_detect)
-
-```
-
-Seeing what photos weren't matched. I'm actually going to move them somewhere else for the second round of matching. (I don't know that I need to move them. I may just be able to make a new photo list.)
-
-#At a quick glance, this looks to be correct.
-
-Now I don't want to move the unmatched files. I want to move the matched files.
-
-```{r}
-# not_matched_first_round <- anti_join(photo_df, tombstones_merged)
-# 
-# index <- 1
-# for (index in seq(1:nrow(not_matched_first_round))) {
-#   file.rename(from = here(blog_folder, photo_folder,  not_matched_first_round$photo_names[index]),
-#                          to = here(blog_folder, problem_folder, not_matched_first_round$photo_names[index] ))
-# }
-# 
-
-```
-
-```{r}
-matched_first_round <- inner_join(photo_df, tombstones_merged)
-
-index <- 1
-for (index in seq(1:nrow(matched_first_round))) {
-  file.rename(from = here(blog_folder, photo_folder, unmatched_folder, matched_first_round$photo_names[index]),
-                         to = here(blog_folder, photo_folder, match1, matched_first_round$photo_names[index] ))
-}
-
-```
-
-Get an error even though it looks like it moved some files. The error is
-
-```         
-Jones Levi A Jones Hester J.JPG
-```
-
-which is one tombstone for both. This will kick up errors everywhere.
-
-I'm dropping all the NAs in the photo_names column.
-
-```{r}
-
-#deleting NAs
-tombstones_merged <- tombstones_merged %>%
-  drop_na(photo_names)
-
-```
 
 How many people have multiple photos?
 
 ```{r}
-multiple_photos <- tombstones_merged %>% group_by(full_name_MI) %>% count(sort = TRUE) %>% filter(n > 1)
-```
 
-Look at these high multiples more closely.
-
-```{r}
-
-df_temp <- tombstones_merged %>%
-  filter(full_name_MI == multiple_photos$full_name_MI[1]) 
-df_temp
-
-```
-
-https://stackoverflow.com/questions/61196196/image-append-on-dynamic-number-of-variables
-
-```{r}
-
+ #step 7: generate the list of folks with multiple photos
+     multiple_photos <- tombstones_merged %>% group_by_at(name_to_match) %>% count(sort = TRUE) %>% filter(n > 1) 
+    #step 8: make the panel photos and move the originals to archive. (function?)
+     
 #testing
 if (nrow(multiple_photos) > 0 ) {
 index <- 1
 
 for (index in seq(1:nrow(multiple_photos))) {
   df_temp <- tombstones_merged %>%
-    filter(full_name_MI == multiple_photos$full_name_MI[index])
+    filter(full_name_MI == multiple_photos[index, 1])
   df_temp
   these <-
     as.list(here(blog_folder, photo_folder, match1, df_temp$photo_names))
@@ -427,7 +392,7 @@ for (index in seq(1:nrow(multiple_photos))) {
     path =  here(
       blog_folder,
       photo_folder,
-      match1,
+      match_folder,
       paste0(df_temp$full_name_MI[1], "_panel.png")
     ),
     format = "png"
@@ -441,6 +406,17 @@ for (index in seq(1:nrow(multiple_photos))) {
   }
 }
 }
+
+```
+
+Look at these high multiples more closely.
+
+
+
+https://stackoverflow.com/questions/61196196/image-append-on-dynamic-number-of-variables
+
+```{r}
+
 ```
 
 Now I need to redo everything so it will only match on the panel figures and not the ones I moved.
