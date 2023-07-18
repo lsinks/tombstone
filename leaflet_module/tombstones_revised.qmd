@@ -92,6 +92,7 @@ tombstones <- tombstones %>%
 
 
 ```
+
 # Cleaning up dates
 
 ```{r}
@@ -115,8 +116,6 @@ Saving for use in rvest
 ```{r}
 saveRDS(tombstones, "tombstones_cleaned.RDS")
 ```
-
-
 
 # Cleaning Up Cemetery data
 
@@ -217,8 +216,6 @@ Now, I'm going to split this into two dataframe.
 
 PEOPLE WHO HAD MIDDLE NAMES removed are not nas!!!!! FIXED ABOVE
 
-
-
 # Matching to Photos
 
 ## Reset Photo Folders
@@ -301,7 +298,6 @@ tombstones_middle <- tombstones %>%
 
 ```
 
-
 https://stackoverflow.com/questions/52437463/function-calling-variable-names-for-group-by-in-dplyr-how-do-i-vectorise-this
 
 ```{r}
@@ -369,7 +365,7 @@ Matching_Photos <-
         df_temp <- tombstones_merged %>%
           filter(get(name_to_match) == multiple_photos[[name_to_match]][index])
                these <-
-          as.list(here(blog_folder, photo_folder, match1, df_temp$photo_names))
+          as.list(here(blog_folder, photo_folder, match_folder, df_temp$photo_names))
         photo_panel <-
           image_append(do.call("c", lapply(these, image_read)))
         image_write(
@@ -388,7 +384,7 @@ Matching_Photos <-
             from = here(
               blog_folder,
               photo_folder,
-              match1,
+              match_folder,
               df_temp$photo_names[index2]
             ),
             to = here(
@@ -400,74 +396,24 @@ Matching_Photos <-
           )
         }
       }
-    } 
+    }
+    
+
+    
       return(tombstones_merged)
       
     }
 ```
 
 does this part of the function work?
+
 ```{r}
 tester <- Matching_Photos(tombstones_middle, "full_name_MI", match1)
 ```
 
+now getting the updated names
 
-
-
-How many people have multiple photos?
-
-```{r}
-
-
-#step 8: make the panel photos and move the originals to archive. (function?)
-     
-#testing
-if (nrow(multiple_photos) > 0 ) {
-index <- 1
-
-for (index in seq(1:nrow(multiple_photos))) {
-  df_temp <- tombstones_merged %>%
-    filter(full_name_MI == multiple_photos[index, 1])
-  df_temp
-  these <-
-    as.list(here(blog_folder, photo_folder, match1, df_temp$photo_names))
-  photo_panel <-
-    image_append(do.call("c", lapply(these, image_read)))
-  image_write(
-    photo_panel,
-    path =  here(
-      blog_folder,
-      photo_folder,
-      match_folder,
-      paste0(df_temp$full_name_MI[1], "_panel.png")
-    ),
-    format = "png"
-  )
-  index2 <- 1
-  for (index2 in seq(1:nrow(df_temp))) {
-    file.rename(
-      from = here(blog_folder, photo_folder, match1, df_temp$photo_names[index2]),
-      to = here(blog_folder, photo_folder, archive_folder, df_temp$photo_names[index2])
-    )
-  }
-}
-}
-
-```
-
-Look at these high multiples more closely.
-
-
-
-https://stackoverflow.com/questions/61196196/image-append-on-dynamic-number-of-variables
-
-```{r}
-
-```
-
-Now I need to redo everything so it will only match on the panel figures and not the ones I moved.
-
-
+MAKE THIS A FUNCTION CALLED UPDATE PHOTO NAMES
 
 ```{r}
 photo_names_r1 = list.files(here(blog_folder, photo_folder, match1))
@@ -475,12 +421,6 @@ photo_df_MI_final = as.data.frame(photo_names_r1)
 tombstones_matched <- fuzzy_right_join(photo_df_MI_final, tombstones, 
                              by = c("photo_names_r1" = "full_name_MI"),
                              match_fun = str_detect)
-```
-
-I think this produces one more than it should in photo names. 75 instead of 74 via code below vs looking at \# files in the folders. probably still this shared name hester & levi jones
-
-```         
-sum(!is.na(tombstones_matched$photo_names2))
 ```
 
 ## Matching Middle Names with no space.
@@ -499,93 +439,64 @@ unmatched_middle <- tombstones_matched %>%
 
 Okay, 17 didn't match.
 
-Make the photo list from the Problems folder. Should rename to unmatched.
-
 ```{r}
-photo_names_r2 = list.files(here(blog_folder, photo_folder, unmatched_folder))
-match_round2 = as.data.frame(photo_names_r2)
+tester2 <- Matching_Photos(unmatched_middle, "full_name_MI_no_space", match2)
 ```
 
-Now
-
 ```{r}
-tombstones_matched2 <- fuzzy_right_join(match_round2, unmatched_middle, 
+photo_names_r2 = list.files(here(blog_folder, photo_folder, match2))
+photo_df_MI_final2 = as.data.frame(photo_names_r2)
+tombstones_matched <- fuzzy_right_join(photo_df_MI_final2, tombstones_matched, 
                              by = c("photo_names_r2" = "full_name_MI_no_space"),
                              match_fun = str_detect)
-```
-
-looks like we got all but three!
-
-```{r}
-multiples2 <- tombstones_matched2 %>% group_by(full_name_MI_no_space) %>% count(sort = TRUE) %>% filter(n > 1)
-```
-
-Now make panel pcis and move. Right now we need to be reading from problems.
-
-```{r}
-#testing
-if (nrow(multiples2) > 0 ) {
-index <- 1
-
-for (index in seq(1:nrow(multiples2))) {
-  df_temp <- tombstones_matched2 %>%
-    filter(full_name_MI_no_space == multiples2$full_name_MI_no_space[index])
-  df_temp
-  these <-
-    as.list(here(blog_folder, photo_folder, unmatched_folder, df_temp$photo_names_r2))
-  photo_panel <-
-    image_append(do.call("c", lapply(these, image_read)))
-  image_write(
-    photo_panel,
-    path =  here(
-      blog_folder,
-      photo_folder,
-      paste0(df_temp$full_name_MI_no_space[1], "_panel.png")
-    ),
-    format = "png"
-  )
-  index2 <- 1
-  for (index2 in seq(1:nrow(df_temp))) {
-    file.rename(
-      from = here(blog_folder,photo_folder, unmatched_folder, df_temp$photo_names_r2[index2]),
-      to = here(blog_folder, photo_folder, archive_folder, df_temp$photo_names_r2[index2])
-    )
-  }
-}
-}
-```
-
-I need to move the non-panel pictures I matched. **Where am I moving them?**
-
-```{r}
- index2 <- 1
-  for (index2 in seq(1:nrow(tombstones_matched2))) {
-    if (is.na(tombstones_matched2$photo_names_r2[index2] ) == FALSE) {
-    file.rename(
-      from = here(blog_folder, photo_folder, tombstones_matched2$photo_names3[index2]),
-      to = here(blog_folder, photo_folder, tombstones_matched2$photo_names_r2[index2])
-    )
-    }
-  }
- 
- 
 
 ```
 
-Now do the revised list for matched 2. Be careful when I copy and paste this because It is reading the whole folder and not just this round of matching so will catch the single letter names when I do later rounds, I think.
+## Matching on Full Names
+
+Find those names that haven't matched so far
 
 ```{r}
-photo_names4 = list.files(here(blog_folder, photo_folder))
-photo_df_4 = as.data.frame(photo_names4)
-tombstones_matched <- fuzzy_right_join(photo_df_4, tombstones, 
-                             by = c("photo_names4" = "full_name_MI_no_space"),
+unmatched_full <- tombstones_matched %>%
+  filter(is.na(photo_names_r1) == TRUE) %>%
+  filter(is.na(photo_names_r2) == TRUE)
+  
+  
+```
+
+Matching. I know this is going to be buggy because I haven't dealt with the initial only problem.
+
+```{r}
+tester3 <- Matching_Photos(unmatched_full, "full_name", match3)
+```
+
+That actually doesn't seem too bad.
+
+```{r}
+photo_names_r3 = list.files(here(blog_folder, photo_folder, match3))
+photo_df_MI_final3 = as.data.frame(photo_names_r3)
+tombstones_matched <- fuzzy_right_join(photo_df_MI_final3, tombstones_matched, 
+                             by = c("photo_names_r3" = "full_name"),
                              match_fun = str_detect)
 ```
 
-empty block
+Sinks Arlie and kin seem to be the main matching problem
 
 ```{r}
+tombstones_matched_final <- tombstones_matched %>%
+  mutate(photo_list = ifelse(
+    is.na(photo_names_r1) == TRUE, 
+    ifelse(is.na(photo_names_r2) == TRUE, photo_names_r3, photo_names_r2)
+                                          
+                                          , photo_names_r1
+  ))
+```
 
+looko at just the photos
+
+```{r}
+tombstones_matched_final2 <- tombstones_matched_final %>%
+  select(photo_list, photo_names_r1, photo_names_r2, photo_names_r3)
 ```
 
 # Converting to Geo Data

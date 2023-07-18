@@ -1,0 +1,74 @@
+
+
+
+
+Now, I'm generating a list of all the photo names and converting it to a dataframe. I'm going to match against this list. The folder he gave me contains non-photos too, but I think they will be filtered out by the join.
+
+
+I'm going to remove all duplicate names for now.
+
+
+Use an antijoin to filter out everything that doesn't match.
+
+
+Okay, this seems to be fully unique names.
+
+The photo name format contains the fullname, but then might include additional description, such as:
+
+```{r}
+photo_df$photo_names[12]
+```
+
+So I'm going to have to a fuzzy/ partial match. So using "Appleton Richard" will correctly match with that photo. The problem is that the fuzzy match might also incorrect match people with similar names.
+
+So, I need to match to the most complete name first, and then the least complete name.
+
+```{r}
+
+
+```
+
+Seeing what photos weren't matched. I'm actually going to move them somewhere else for the second round of matching. (I don't know that I need to move them. I may just be able to make a new photo list.)
+
+At a quick glance, this looks to be correct.
+
+Now I don't want to move the unmatched files. I want to move the matched files.
+
+```{r}
+# not_matched_first_round <- anti_join(photo_df, tombstones_merged)
+# 
+# index <- 1
+# for (index in seq(1:nrow(not_matched_first_round))) {
+#   file.rename(from = here(blog_folder, photo_folder,  not_matched_first_round$photo_names[index]),
+#                          to = here(blog_folder, problem_folder, not_matched_first_round$photo_names[index] ))
+# }
+# 
+
+```
+
+```{r}
+
+
+```
+
+Get an error even though it looks like it moved some files. The error is
+
+```         
+Jones Levi A Jones Hester J.JPG
+```
+
+which is one tombstone for both. This will kick up errors everywhere.
+
+I'm dropping all the NAs in the photo_names column.
+
+```{r}
+
+#deleting NAs
+
+
+```
+Look at these high multiples more closely.
+
+
+
+https://stackoverflow.com/questions/61196196/image-append-on-dynamic-number-of-variables
