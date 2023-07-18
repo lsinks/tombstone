@@ -307,6 +307,7 @@ https://stackoverflow.com/questions/52437463/function-calling-variable-names-for
 ```{r}
 Matching_Photos <-
   function(df_to_match, name_to_match, match_folder) {
+    browser()
     #Step 1: list of unmatched photos
     photo_names = list.files(here(blog_folder, photo_folder, unmatched_folder))
     photo_df = as.data.frame(photo_names)
@@ -314,9 +315,9 @@ Matching_Photos <-
     duplicate_names <- df_to_match %>%
       group_by_at(name_to_match) %>% count(sort = TRUE) %>% filter(n > 1)
     
-   # return(duplicate_names)
+    # return(duplicate_names)
     
-     #Step 3: remove duplicate names
+    #Step 3: remove duplicate names
     tombstones_unique_names <- df_to_match %>%
       anti_join(duplicate_names)
     #step 4: do the matching
@@ -329,7 +330,7 @@ Matching_Photos <-
       )
     #step 5: Moving all the photos that match to the correct match folder
     matched_this_round <- inner_join(photo_df, tombstones_merged)
-
+    
     index <- 1
     for (index in seq(1:nrow(matched_this_round))) {
       file.rename(
@@ -349,14 +350,59 @@ Matching_Photos <-
     }
     #step 6: Remove any unmatched names
     tombstones_merged <- tombstones_merged %>%
-    drop_na(photo_names)
- #step 7: generate the list of folks with multiple photos
-     multiple_photos <- tombstones_merged %>% group_by_at(name_to_match) %>% count(sort = TRUE) %>% filter(n > 1) 
+      drop_na(photo_names)
+    #step 7: generate the list of folks with multiple photos
+    multiple_photos <-
+      tombstones_merged %>% group_by_at(name_to_match) %>% count(sort = TRUE) %>% filter(n > 1)
     #step 8: make the panel photos and move the originals to archive. (function?)
- 
-    return(multiple_photos)
-
- }
+    
+    #works until here
+    
+    #testing
+    if (nrow(multiple_photos) > 0) {
+      index <- 1
+      
+      for (index in seq(1:nrow(multiple_photos))) {
+        df_temp <- tombstones_merged %>%
+          filter(get(name_to_match) == multiple_photos[index, 1])
+        return(df_temp)
+        
+        these <-
+          as.list(here(blog_folder, photo_folder, match1, df_temp$photo_names))
+        photo_panel <-
+          image_append(do.call("c", lapply(these, image_read)))
+        image_write(
+          photo_panel,
+          path =  here(
+            blog_folder,
+            photo_folder,
+            match_folder,
+            paste0(df_temp$full_name_MI[1], "_panel.png")
+          ),
+          format = "png"
+        )
+        index2 <- 1
+        for (index2 in seq(1:nrow(df_temp))) {
+          file.rename(
+            from = here(
+              blog_folder,
+              photo_folder,
+              match1,
+              df_temp$photo_names[index2]
+            ),
+            to = here(
+              blog_folder,
+              photo_folder,
+              archive_folder,
+              df_temp$photo_names[index2]
+            )
+          )
+        }
+      }
+    } 
+      return(tombstones_merged)
+      
+    }
 ```
 
 does this part of the function work?
@@ -371,9 +417,8 @@ How many people have multiple photos?
 
 ```{r}
 
- #step 7: generate the list of folks with multiple photos
-     multiple_photos <- tombstones_merged %>% group_by_at(name_to_match) %>% count(sort = TRUE) %>% filter(n > 1) 
-    #step 8: make the panel photos and move the originals to archive. (function?)
+
+#step 8: make the panel photos and move the originals to archive. (function?)
      
 #testing
 if (nrow(multiple_photos) > 0 ) {
