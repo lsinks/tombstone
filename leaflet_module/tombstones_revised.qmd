@@ -69,7 +69,7 @@ Latitude and longitude data contains some stray degree and minute symbols. The d
 I put all my cleaned data in a new dataframe. If something unexpected happens, I can check against the original data without having to reload it.
 
 ```{r}
-# | label: cleaning-typos-gps
+#| label: cleaning-typos-gps
 tombstones <- tombstones_raw %>%
 mutate(N = str_replace_all(N, pattern = "’", " ")) %>%
 mutate(N = str_replace_all(N, pattern = "O", " "))  %>%
@@ -99,7 +99,7 @@ It is important to note that stringr defaults to considering that patterns are w
 I named all the original output from the string splits such that they contained the word "part" and I can easily remove them using a helper from dplyr, in this case, `contains`. I highly recommend using some sort of naming scheme for intermediate variables so they can be easily removed in one go without lots of typing. I retain the original and the numeric parts so I can double check the results.
 
 ```{r}
-# | label: converting-to-decimal-latitude
+#| label: converting-to-decimal-latitude
 
 tombstones <- tombstones %>%
   mutate(part1N = str_split_fixed(N, pattern = " ", n = 2) ) %>%
@@ -127,7 +127,7 @@ tombstones <- tombstones %>%
 Taking a quick look at the results
 
 ```{r}
-# | label: viewing-decimal-latitude
+#| label: viewing-decimal-latitude
 tombstones %>% select(Surname, First.Name, N, N_degree, N_minute, N_second, lat) %>% gt()
 ```
 
@@ -138,7 +138,7 @@ Our weird coordinates like William Dorris had (524) were turned into NAs by this
 Next, I'm going to clean up the dates. They imported as strings. I don't think I'm going to use the dates in the map, but I might use them when I'm working with the webscraping data.
 
 ```{r}
-# | label: viewing-dates
+#| label: viewing-dates
 class(tombstones$DOB)
 tombstones %>% select(Surname, First.Name,DOB, DOD) %>% gt()
 ```
@@ -150,7 +150,7 @@ The date type must have a day, month, and year, so the years only records will b
 I'm using base R [`as.Date()`](https://www.rdocumentation.org/packages/base/versions/3.6.2/topics/as.Date) for the conversion. This let's you specify the format. A detailed explanation of specifying dates and the code can be found at the [Epidemiologist R Handbook](https://epirhandbook.com/en/working-with-dates.html). Various functions from [tidyverse package lubridate](https://lubridate.tidyverse.org/) could also be used to parse the dates. If I were planning on doing more with the dates I'd probably use lubridate functions exclusively.
 
 ```{r}
-# | label: changing-to-dates
+#| label: changing-to-dates
 tombstones <- tombstones %>%
   mutate(DOB = str_replace_all(DOB, "Spt", "Sep")) %>%
   mutate(DOD = str_replace_all(DOD, "Spt", "Sep")) %>%
@@ -163,7 +163,7 @@ tombstones <- tombstones %>%
 Checking that everything worked.
 
 ```{r}
-# | label: looking-at-dates
+#| label: looking-at-dates
 tombstones %>% select(Surname, First.Name,DOB, DOD, DOB_date, DOD_date) %>% gt()
 ```
 
@@ -174,7 +174,7 @@ The string/ character data is more difficult to clean, since the possibilities a
 Here, I expect that there is a limited set of cemeteries, so I can group the data to look for typos.
 
 ```{r}
-# | label: unique-cem-names
+#| label: unique-cem-names
 
 cems_unique <- tombstones %>% distinct(Cemetery) %>% arrange(Cemetery)
 cems_unique %>% gt()
@@ -190,7 +190,7 @@ Order of operation matters here, I think. I want to replace Ch and Ch. with Chur
 (The fact that I'm putting this in a new dataframe is a hint that I'm not as clever as I thought. Can you spot what I did wrong?)
 
 ```{r}
-# | label: cleaning-typos-cemetery
+#| label: cleaning-typos-cemetery
 
 tombstones2 <- tombstones %>%
   mutate(Cemetery = str_replace_all(Cemetery, "Ch ", "Church")) %>%
@@ -453,7 +453,7 @@ Testing the matching is an iterative process. I also ended up going back and add
 How this works is I generate a list of files in each folder using `list.files()` and then I pass that list to the `file.rename()` or `file.copy()` functions. I am using here to generate the paths. Quarto documents start the file path in the folder where the document resides, while r files start in the project folder. here always starts in the project folder, so it allows for easy recycling of code between r files and Quarto files and generally prevents you from getting lost in your file structure. The file functions report TRUE for each file they correct find an act on and FALSE otherwise. The output should be all TRUEs.
 
 ```{r}
-# | label: resetting-photos
+#| label: resetting-photos
 
 
 # first moving all the photos to the trash folder, folder by folder
@@ -494,6 +494,14 @@ file.rename(
   to = here(blog_folder, photo_folder, "Trash", my_file_list)
 )
 
+my_file_list <-
+  list.files(here(blog_folder, photo_folder, "Map"))
+file.rename(
+  from = here(blog_folder, photo_folder, "Map", my_file_list),
+  to = here(blog_folder, photo_folder, "Trash", my_file_list)
+)
+
+
 # now I move a copy of all the photos into the starting folder.
 my_file_list <-
   list.files(here(blog_folder, photo_folder, "Original Photos"))
@@ -509,13 +517,17 @@ file.copy(
 
 Okay, now I am creating the two main datasets- with and without middlenames
 
-```{r}
-#| making-datasets
+ADDED SURNAME NA FILTER BUT NOT TESTED
 
-tombstones_middle <- tombstones %>%
+```{r}
+#| label: making-datasets
+
+unmatched_middle <- tombstones %>%
+  filter(is.na(Surname) == FALSE) %>%
   filter(is.na(Middle.Name) == FALSE)
 
-tombstones_no_middle <-  tombstones %>%
+unmatched_no_middle <-  tombstones %>%
+  filter(is.na(Surname) == FALSE) %>%
   filter(is.na(Middle.Name) == TRUE)
 
 ```
@@ -525,6 +537,7 @@ Now a function to do the matching.
 https://stackoverflow.com/questions/52437463/function-calling-variable-names-for-group-by-in-dplyr-how-do-i-vectorise-this
 
 ```{r}
+#| label: matching-function
 Matching_Photos <-
   function(df_to_match, name_to_match, match_folder) {
     # browser()
@@ -631,19 +644,38 @@ Matching_Photos <-
 does this part of the function work?
 
 ```{r}
-tester <- Matching_Photos(tombstones_middle, "full_name_MI", match1)
+#| label: matching-middle
+tester <- Matching_Photos(unmatched_middle, "full_name_MI", match1)
 ```
 
 now getting the updated names
 
-MAKE THIS A FUNCTION CALLED UPDATE PHOTO NAMES
+https://stackoverflow.com/questions/43487773/how-to-rename-selected-columns-using-dplyr-with-new-column-names-as-strings
 
 ```{r}
-photo_names_r1 = list.files(here(blog_folder, photo_folder, match1))
-photo_df_MI_final = as.data.frame(photo_names_r1)
-tombstones_matched <- fuzzy_right_join(photo_df_MI_final, tombstones, 
-                             by = c("photo_names_r1" = "full_name_MI"),
+#| label: rename-photo-function
+Update_Photo_Names <- function(df, name_to_match, match_folder) {
+  photo_names <- list.files(here(blog_folder, photo_folder, match_folder))
+  photo_df = as.data.frame(photo_names)
+  df_updated <- fuzzy_right_join(photo_df, df, 
+                             by = c("photo_names" = name_to_match),
                              match_fun = str_detect)
+  new_name <- paste("photos", match_folder, sep = "_")
+  
+  df_updated <- df_updated %>%
+    rename_with(.fn = ~paste("photos", match_folder, sep = "_"), .cols = photo_names)
+  return(df_updated)
+
+ }
+
+
+```
+
+testing function
+
+```{r}
+#| label: rename-middle
+partial_matched_middle <- Update_Photo_Names(unmatched_middle, "full_name_MI", match1)
 ```
 
 ## Matching Middle Names with no space.
@@ -653,26 +685,24 @@ tombstones_matched <- fuzzy_right_join(photo_df_MI_final, tombstones,
 Converting to NAs, (match on space vs. no space
 
 ```{r}
-unmatched_middle <- tombstones_matched %>%
+#| label: pulling-out-unmatched-middle
+unmatched_middle <- partial_matched_middle %>%
   mutate(full_name_MI_no_space = na_if(full_name_MI_no_space, " ")) %>%
   filter(is.na(full_name_MI_no_space) == FALSE) %>%
-  filter(is.na(photo_names_r1) == TRUE)
+  filter(is.na(photos_Matched_Round1) == TRUE)
    
 ```
 
 Okay, 17 didn't match.
 
 ```{r}
-tester2 <- Matching_Photos(unmatched_middle, "full_name_MI_no_space", match2)
+#| label: match-middle-no-space
+tester <- Matching_Photos(unmatched_middle, "full_name_MI_no_space", match2)
 ```
 
 ```{r}
-photo_names_r2 = list.files(here(blog_folder, photo_folder, match2))
-photo_df_MI_final2 = as.data.frame(photo_names_r2)
-tombstones_matched <- fuzzy_right_join(photo_df_MI_final2, tombstones_matched, 
-                             by = c("photo_names_r2" = "full_name_MI_no_space"),
-                             match_fun = str_detect)
-
+#| label: rename-middle-no-space
+matched_middle_final <- Update_Photo_Names(partial_matched_middle, "full_name_MI_no_space", match2)
 ```
 
 ## Matching on Full Names
@@ -690,45 +720,83 @@ Find those names that haven't matched so far
 Matching. I know this is going to be buggy because I haven't dealt with the initial only problem.
 
 ```{r}
-tester3 <- Matching_Photos(tombstones_no_middle, "full_name", match3)
+#| label: match-no-middle
+tester3 <- Matching_Photos(unmatched_no_middle, "full_name", match3)
 ```
 
 That actually doesn't seem too bad.
 
 ```{r}
-photo_names_r3 = list.files(here(blog_folder, photo_folder, match3))
-photo_df_MI_final3 = as.data.frame(photo_names_r3)
-tombstones_matched <- fuzzy_right_join(photo_df_MI_final3, tombstones_matched, 
-                             by = c("photo_names_r3" = "full_name"),
-                             match_fun = str_detect)
+#| label: rename-nomiddle
+matched_no_middle_final <- Update_Photo_Names(unmatched_no_middle, "full_name", match3)
 ```
 
-Sinks Arlie and kin seem to be the main matching problem
+Put the two datsets together.
 
 ```{r}
+#| label: merging-matched-df
+tombstones_matched <- matched_middle_final %>%
+  full_join(matched_no_middle_final)
+```
+
+Now generate the final photo list
+
+```{r}
+#| label: merging-matches-to-photolist
 tombstones_matched_final <- tombstones_matched %>%
   mutate(photo_list = ifelse(
-    is.na(photo_names_r1) == TRUE, 
-    ifelse(is.na(photo_names_r2) == TRUE, photo_names_r3, photo_names_r2)
+    is.na(photos_Matched_Round1) == TRUE, 
+    ifelse(is.na(photos_Matched_Round2) == TRUE, photos_Matched_Round3, photos_Matched_Round2)
                                           
-                                          , photo_names_r1
+                                          , photos_Matched_Round1
   ))
 ```
 
 looko at just the photos
 
 ```{r}
+#| label: checking-matches
 tombstones_matched_final2 <- tombstones_matched_final %>%
-  select(photo_list, photo_names_r1, photo_names_r2, photo_names_r3)
+  select(photo_list, contains("photos_Matched"))
 ```
 
 Move all the matched photos to a single folder.
+
+```{r}
+#| label: moving-to-map-folder
+my_file_list <-
+  list.files(here(blog_folder, photo_folder, match1))
+
+file.copy(
+  from = here(blog_folder, photo_folder, match1, my_file_list),
+  to = here(blog_folder, photo_folder, "Map", my_file_list)
+)
+
+my_file_list <-
+  list.files(here(blog_folder, photo_folder, match2))
+
+file.copy(
+  from = here(blog_folder, photo_folder, match2, my_file_list),
+  to = here(blog_folder, photo_folder, "Map", my_file_list)
+)
+
+my_file_list <-
+  list.files(here(blog_folder, photo_folder, match3))
+
+file.copy(
+  from = here(blog_folder, photo_folder, match3, my_file_list),
+  to = here(blog_folder, photo_folder, "Map", my_file_list)
+)
+```
+
+getting a bunch of falses. Need to trouble shoot.
 
 # Converting to Geo Data
 
 Dropping any NAs in lat/long. Converting it to a SF geo object. I'm adding some jitter to the coordinates; tombstones that are very close to each other have the same coordinates and show up as overlapping on the map.
 
 ```{r}
+# | label: converting-to-geo
 tombstones_matched_final <- tombstones_matched_final %>% drop_na(lat) %>% drop_na(long)
 
 
@@ -745,7 +813,7 @@ Final map.
 
 ```{r}
 #| column: page
-#| 
+#| label: making_map
 image_list <- tombstones_geo$photo_list
 
 labels <- sprintf(
