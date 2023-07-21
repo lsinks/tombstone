@@ -7,7 +7,7 @@ draft: true # setting this to `true` will prevent your post from appearing on yo
 
 # Project Overview
 
-This is a draft of a project for my father. I want to make sure the photo files structure renders properly online. This will be revised and reposted later as a tutorial. It will also be deleted once I get his input.
+This is a draft of a project for my father. I want to make sure the photo file structure renders properly online. This will be revised and reposted later as a tutorial. It will also be deleted once I get his input.
 
 ```{r}
 library(tidyverse) # who doesn't want to be tidy?
@@ -50,7 +50,7 @@ tombstones_raw <-
 
 Cleaning the data is an iterative process. A quick scan of the data reveals a bunch of really obvious issues, but as the analysis proceeds, other errors pop up that can be traced back to improperly cleaned data. Continually checking the results against expected results is critical to find the mistakes.
 
-Deciding on ground rules for what you will and will not correct is important. For this project, I decided I would not change any photo file names. I'm working with a copy of his photo archive; he has his own filing and naming scheme and he also corresponds with other genealogists and shares information. Changing photo names on my copy would lead to a set of photos that no longer matched those out there in various places. This decision will lead to missed matches since some photos do appear to have typos in the names such as Octava instead of Octavia. Other photos seem to not follow his normal naming convention of last name first name middle name. Some use first name last name. This again is something that could be corrected programatically, but I won't because of my ground rules. For another project, a different decision might make more sense. (I'd definately do it if it were my own data!)
+Deciding on ground rules for what you will and will not correct is important. For this project, I decided I would not change any photo file names. I'm working with a copy of his photo archive; he has his own filing and naming scheme, and he also corresponds with other genealogists and shares information. Changing photo names on my copy would lead to a set of photos that no longer matched those out there in various places. This decision will lead to missed matches since some photos do appear to have typos in the names such as Octava instead of Octavia. Other photos seem to not follow his normal naming convention of last name first name middle name. Some use first name last name. This again is something that could be corrected programatically, but I won't because of my ground rules. For another project, a different decision might make more sense. (I'd definitely do it if it were my own data!)
 
 I also decided that any inferred data (usually denoted in \[\] here) would not be used. Everything going into the map is data directly from the photos.
 
