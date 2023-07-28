@@ -48,9 +48,9 @@ tombstones_raw <-
 
 # Reformat and Clean the Data
 
-Cleaning the data is an iterative process. A quick scan of the data reveals a bunch of really obvious issues, but as the analysis proceeds, other errors pop up that can be traced back to improperly cleaned data. Continually checking the results against expected results is critical to find the mistakes.
+Cleaning the data is an iterative process. A quick scan of the data reveals a bunch of really obvious issues, but as the analysis proceeds, other errors pop up that can be traced back to improperly cleaned data. Continually checking the results against expected results is critical to find the mistakes. This is part of the reason I have a lot of temporary variables (tomstone_1, tombstone_2, etc.). If I'm not sure about something, I'll store the results in the temporary variable, so I don't have to rerun everything from data import to get a clean copy to work with. I can just go back one or two code blocks and regenerate from a working partially cleaned version. In some cases, I'll illustrate the process in detail, including my mistakes. For others, I just summarize the errors and the process and present cleaned and final code. Oth
 
-Deciding on ground rules for what you will and will not correct is important. For this project, I decided I would not change any photo file names. I'm working with a copy of his photo archive; he has his own filing and naming scheme, and he also corresponds with other genealogists and shares information. Changing photo names on my copy would lead to a set of photos that no longer matched those out there in various places. This decision will lead to missed matches since some photos do appear to have typos in the names such as Octava instead of Octavia. Other photos seem to not follow his normal naming convention of last name first name middle name. Some use first name last name. This again is something that could be corrected programatically, but I won't because of my ground rules. For another project, a different decision might make more sense. (I'd definitely do it if it were my own data!)
+Deciding on ground rules for what you will and will not correct is important. For this project, I decided I would not change any photo file names. I'm working with a copy of his photo archive; he has his own filing and naming scheme, and he also corresponds with other genealogists and shares information. Changing photo names on my copy would lead to a set of photos that no longer matched those out there in various places. This decision will lead to missed matches since some photos do appear to have typos in the names such as Octava instead of Octavia. Other photos seem to not follow his normal naming convention of last name first name middle name. Some use first name last name. This again is something that could be corrected programatically, but I won't because of my ground rules. For another project, a different decision might make more sense. (I'd definitely correct file names if it were my own data!)
 
 I also decided that any inferred data (usually denoted in \[\] here) would not be used. Everything going into the map is data directly from the photos.
 
@@ -442,7 +442,9 @@ saveRDS(tombstones, "tombstones_cleaned.RDS")
 
 # Matching to Photos
 
-As I mentioned above, I decided that it was more important to have completely correct matching, rather than more complete matching. The order of the matching matters too. I'm starting with the most complete names, matching them, and then moving them out of the unmatched photo folder. Since I'm doing partial matching, Sinks A will match to both Sinks A (correct) and Sinks A T (incorrect). So I need to match Sinks A T first, so it is not availble for matching by the time I get to matching with Sinks A.
+As I mentioned above, I decided that it was more important to have completely correct matching, rather than more complete matching. The order of the matching matters too. I'm starting with the most complete names, matching them, and then moving them out of the unmatched photo folder. Since I'm doing partial matching, Sinks A will match to both Sinks A (correct) and Sinks A T (incorrect). So I need to match Sinks A T first, so it is not available for matching by the time I get to matching with Sinks A. This took a lot of iterations to get the correct logic and resulting flow. I also prototyped by just matching full names and not using any functions. I'm not showing that here, but I think it is often easier to do that, and then go back and convert certain chunks to functions.
+
+I'm not showing all the iterations and mistakes in full here like I did with the cleaning section, because this section is pretty time consuming. But don't think I am super clever and came up with the logic/scheme first go. I did also try the methods that I said I wouldn't do, just to see how many false matches I got and how many more (probably) correct matches I got.
 
 I have folder structure that reflected the sequential nature of the matching, so photos get moved into different folders depending on what round they were matched in.
 
@@ -535,6 +537,8 @@ unmatched_no_middle <-  tombstones %>%
 Now a function to do the matching.
 
 https://stackoverflow.com/questions/52437463/function-calling-variable-names-for-group-by-in-dplyr-how-do-i-vectorise-this
+
+Technically, I don't need to return anything?
 
 ```{r}
 #| label: matching-function
@@ -648,6 +652,90 @@ does this part of the function work?
 tester <- Matching_Photos(unmatched_middle, "full_name_MI", match1)
 ```
 
+There are a couple of warnings kicked up. The warnings are generated when the file to be moved doesn't exist. This means that it has matched to another name and has already been moved. The first one is about "Jones Levi A Jones Hester J.JPG". The tombstone is for both the husband and wife and it should match to two names- Levi A Jones and Hester J Jones. So this is okay and not an error. The second one error arises from "Pickard William Epps.jpg". This is a problem. There is apparently both a William E Pickard and a William Epps Pickard. The strings that are being matched against the photos are Pickard William E and Pickard William Epps. The first will match to the second when doing a partial match. Notice that if the naming convention were First Middle Last and not Last First Middle there would not be a problem. William E Pickard and William Epps Pickard will not match with each other in my method. This also means I don't need to worry about a similar scenario for the first name, only the middle name/initial because it is at the end of the string.
+
+So to fix this, I can split this into two new middle name dataframes. One with middle names longer than one character (or maybe 2) and those with initials for middle names. Again, the more complete version needs to be matched first.
+
+```{r}
+middle_names_long <- unmatched_middle %>%
+  filter(nchar(Middle.Name) > 2)
+  
+middle_names_short <- unmatched_middle %>%
+  filter(nchar(Middle.Name) <= 2)
+
+```
+
+Ulysses HESS footstone.
+
+Reset the photos
+
+```{r}
+# first moving all the photos to the trash folder, folder by folder
+my_file_list <-
+  list.files(here(blog_folder, photo_folder, "Unmatched Photos"))
+file.rename(
+  from = here(blog_folder, photo_folder, "Unmatched Photos", my_file_list),
+  to = here(blog_folder, photo_folder, "Trash", my_file_list)
+)
+my_file_list <-
+  list.files(here(blog_folder, photo_folder, "Archived Photos"))
+file.rename(
+  from = here(blog_folder, photo_folder, "Archived Photos", my_file_list),
+  to = here(blog_folder, photo_folder, "Trash", my_file_list)
+)
+my_file_list <-
+  list.files(here(blog_folder, photo_folder, "Matched_Round1"))
+file.rename(
+  from = here(blog_folder, photo_folder, "Matched_Round1", my_file_list),
+  to = here(blog_folder, photo_folder, "Trash", my_file_list)
+)
+my_file_list <-
+  list.files(here(blog_folder, photo_folder, "Matched_Round2"))
+file.rename(
+  from = here(blog_folder, photo_folder, "Matched_Round2", my_file_list),
+  to = here(blog_folder, photo_folder, "Trash", my_file_list)
+)
+my_file_list <-
+  list.files(here(blog_folder, photo_folder, "Matched_Round3"))
+file.rename(
+  from = here(blog_folder, photo_folder, "Matched_Round3", my_file_list),
+  to = here(blog_folder, photo_folder, "Trash", my_file_list)
+)
+my_file_list <-
+  list.files(here(blog_folder, photo_folder, "Matched_Round4"))
+file.rename(
+  from = here(blog_folder, photo_folder, "Matched_Round4", my_file_list),
+  to = here(blog_folder, photo_folder, "Trash", my_file_list)
+)
+
+my_file_list <-
+  list.files(here(blog_folder, photo_folder, "Map"))
+file.rename(
+  from = here(blog_folder, photo_folder, "Map", my_file_list),
+  to = here(blog_folder, photo_folder, "Trash", my_file_list)
+)
+
+
+# now I move a copy of all the photos into the starting folder.
+my_file_list <-
+  list.files(here(blog_folder, photo_folder, "Original Photos"))
+
+file.copy(
+  from = here(blog_folder, photo_folder, "Original Photos", my_file_list),
+  to = here(blog_folder, photo_folder, unmatched_folder, my_file_list)
+)
+ 
+```
+
+Matching first round.
+
+```{r}
+#| label: matching-middle-2
+tester <- Matching_Photos(middle_names_long, "full_name_MI", match1)
+```
+
+No errors or warnings.
+
 now getting the updated names
 
 https://stackoverflow.com/questions/43487773/how-to-rename-selected-columns-using-dplyr-with-new-column-names-as-strings
@@ -660,7 +748,7 @@ Update_Photo_Names <- function(df, name_to_match, match_folder) {
   df_updated <- fuzzy_right_join(photo_df, df, 
                              by = c("photo_names" = name_to_match),
                              match_fun = str_detect)
-  new_name <- paste("photos", match_folder, sep = "_")
+  #new_name <- paste("photos", match_folder, sep = "_") this was for debugging
   
   df_updated <- df_updated %>%
     rename_with(.fn = ~paste("photos", match_folder, sep = "_"), .cols = photo_names)
@@ -671,25 +759,36 @@ Update_Photo_Names <- function(df, name_to_match, match_folder) {
 
 ```
 
-testing function
+```{r}
+#| label: rename-middle-1
+partial_matched_middle <- Update_Photo_Names(middle_names_long, "full_name_MI", match1)
+```
+
+Match round 2
 
 ```{r}
-#| label: rename-middle
-partial_matched_middle <- Update_Photo_Names(unmatched_middle, "full_name_MI", match1)
+#| label: matching-middle-2
+tester2 <- Matching_Photos(middle_names_short, "full_name_MI", match2)
 ```
+
+Only get the Hester and Levi Jones error.
+
+```{r}
+partial_matched_middle2 <- Update_Photo_Names(middle_names_short, "full_name_MI", match2)
+```
+
+Now I need to pull out the names that are only initials and match the no space version. These should only be contained in the partial_matched_middle2 dataframe (since the other dataframe only has long middle names anyway.)
 
 ## Matching Middle Names with no space.
 
-(need to convert this column to nas above.)
-
-Converting to NAs, (match on space vs. no space
+Have to keep track of where you are with filter(is.na(photos_Matched_Round2) == TRUE)
 
 ```{r}
 #| label: pulling-out-unmatched-middle
-unmatched_middle <- partial_matched_middle %>%
+unmatched_middle_initials <- partial_matched_middle2 %>%
   mutate(full_name_MI_no_space = na_if(full_name_MI_no_space, " ")) %>%
   filter(is.na(full_name_MI_no_space) == FALSE) %>%
-  filter(is.na(photos_Matched_Round1) == TRUE)
+  filter(is.na(photos_Matched_Round2) == TRUE)
    
 ```
 
@@ -697,12 +796,14 @@ Okay, 17 didn't match.
 
 ```{r}
 #| label: match-middle-no-space
-tester <- Matching_Photos(unmatched_middle, "full_name_MI_no_space", match2)
+tester <- Matching_Photos(unmatched_middle_initials, "full_name_MI_no_space", match3)
 ```
+
+No warnings or errors.
 
 ```{r}
 #| label: rename-middle-no-space
-matched_middle_final <- Update_Photo_Names(partial_matched_middle, "full_name_MI_no_space", match2)
+matched_middle_final <- Update_Photo_Names(unmatched_middle_initials, "full_name_MI_no_space", match3)
 ```
 
 ## Matching on Full Names
@@ -717,40 +818,59 @@ Find those names that haven't matched so far
   
 ```
 
-Matching. I know this is going to be buggy because I haven't dealt with the initial only problem.
+Matching.
 
 ```{r}
 #| label: match-no-middle
-tester3 <- Matching_Photos(unmatched_no_middle, "full_name", match3)
+tester3 <- Matching_Photos(unmatched_no_middle, "full_name", match4)
 ```
 
 That actually doesn't seem too bad.
 
 ```{r}
 #| label: rename-nomiddle
-matched_no_middle_final <- Update_Photo_Names(unmatched_no_middle, "full_name", match3)
+matched_no_middle_final <- Update_Photo_Names(unmatched_no_middle, "full_name", match4)
 ```
 
-Put the two datsets together.
+Put the four datsets together.
 
 ```{r}
 #| label: merging-matched-df
 tombstones_matched <- matched_middle_final %>%
-  full_join(matched_no_middle_final)
+  full_join(matched_no_middle_final) %>%
+  full_join(partial_matched_middle) %>%
+  full_join(partial_matched_middle2)
 ```
 
-Now generate the final photo list
+Now generate the final photo list. Because of the way I segmented the data and how careful I was about order of matching, there should be only one match per name. And this is true. WHY DO WE ONLY HAVE 388 OBSERVATIONS
+
+```{r}
+temp <- tombstones_matched %>% select(starts_with("photos_Matched_"))
+head(temp)
+```
+
+However, by also being careful about what order I create the final photolist, I can put in a safeguard against inccorrect matching for future work. The file name should always be taking from the earliest match round if for some reason it matches in multiple rounds. This might be cleaner written as a case statment, but I wrote this section when I only had two rounds of matching and the nest ifelse was very clear.
 
 ```{r}
 #| label: merging-matches-to-photolist
 tombstones_matched_final <- tombstones_matched %>%
   mutate(photo_list = ifelse(
-    is.na(photos_Matched_Round1) == TRUE, 
-    ifelse(is.na(photos_Matched_Round2) == TRUE, photos_Matched_Round3, photos_Matched_Round2)
-                                          
-                                          , photos_Matched_Round1
+    is.na(photos_Matched_Round1) == TRUE,
+    ifelse(
+      is.na(photos_Matched_Round2) == TRUE,
+      ifelse(
+        is.na(photos_Matched_Round3) == TRUE,
+        photos_Matched_Round4,
+        photos_Matched_Round3
+      ),
+      photos_Matched_Round2
+    )
+    ,
+    photos_Matched_Round1
   ))
 ```
+
+Double check this
 
 looko at just the photos
 
@@ -760,7 +880,7 @@ tombstones_matched_final2 <- tombstones_matched_final %>%
   select(photo_list, contains("photos_Matched"))
 ```
 
-Move all the matched photos to a single folder.
+Move all the matched photos to a single folder. This should probably be a function that takes in the number of match rounds.
 
 ```{r}
 #| label: moving-to-map-folder
@@ -787,9 +907,26 @@ file.copy(
   from = here(blog_folder, photo_folder, match3, my_file_list),
   to = here(blog_folder, photo_folder, "Map", my_file_list)
 )
+
+my_file_list <-
+  list.files(here(blog_folder, photo_folder, match4))
+
+file.copy(
+  from = here(blog_folder, photo_folder, match4, my_file_list),
+  to = here(blog_folder, photo_folder, "Map", my_file_list)
+)
 ```
 
-getting a bunch of falses. Need to trouble shoot.
+Now all trues and life is good.
+
+Now I need to make a column of the most complete name. This will be used as the label in the map.
+
+```{r}
+tombstones_matched_final <- tombstones_matched_final %>%
+  mutate(complete_name = ifelse(
+    is.na(full_name_MI) == FALSE, full_name_MI, full_name)
+    )
+```
 
 # Converting to Geo Data
 
@@ -809,8 +946,6 @@ tombstones_geo <- st_jitter(tombstones_geo, factor = 0.001)
 
 ```
 
-Final map.
-
 ```{r}
 #| column: page
 #| label: making_map
@@ -825,7 +960,7 @@ leaflet() %>%
   #addProviderTiles(providers$CartoDB.Positron) %>%
   addCircleMarkers(
     data = tombstones_geo,
-    label = ~ (paste(full_name_MI, "-", Cemetery, "Cemetery", sep = " ")), 
+    label = ~ (paste(complete_name, "-", Cemetery, "Cemetery", sep = " ")), 
    # label = ~labels,
    # popup = leafpop::popupImage(paste0(here(blog_folder, photo_folder),"/", image_list)),
     clusterOptions = markerClusterOptions(),
@@ -847,3 +982,5 @@ leaflet() %>%
    )
 
 ```
+
+Why is blockhouse cemetery in the ocean, and why is the name NA?
