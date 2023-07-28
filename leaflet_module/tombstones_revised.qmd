@@ -7,7 +7,7 @@ draft: true # setting this to `true` will prevent your post from appearing on yo
 
 # Project Overview
 
-This is a draft of a project for my father. I want to make sure the photo file structure renders properly online. This will be revised and reposted later as a tutorial. It will also be deleted once I get his input.
+I'm working on a project for my father that will culminate in a website for his genealogy research. There are a couple of different parts that I'm working on independently. This part involves linking photos of family gravestones to an Excel sheet that records the GPS location of the tombstones. This combined dataset is used to generate a leaflet map. This portion focused on data cleaning and the photo matching. I do generate a leaflet map at the end, but it is not the final map. I'll do the styling of the map in a separate post.
 
 ```{r}
 library(tidyverse) # who doesn't want to be tidy?
@@ -48,7 +48,7 @@ tombstones_raw <-
 
 # Reformat and Clean the Data
 
-Cleaning the data is an iterative process. A quick scan of the data reveals a bunch of really obvious issues, but as the analysis proceeds, other errors pop up that can be traced back to improperly cleaned data. Continually checking the results against expected results is critical to find the mistakes. This is part of the reason I have a lot of temporary variables (tomstone_1, tombstone_2, etc.). If I'm not sure about something, I'll store the results in the temporary variable, so I don't have to rerun everything from data import to get a clean copy to work with. I can just go back one or two code blocks and regenerate from a working partially cleaned version. In some cases, I'll illustrate the process in detail, including my mistakes. For others, I just summarize the errors and the process and present cleaned and final code. Oth
+Cleaning the data is an iterative process. A quick scan of the data reveals a bunch of really obvious issues, but as the analysis proceeds, other errors pop up that can be traced back to improperly cleaned data. Continually checking the results against expected results is critical to find the mistakes. This is part of the reason I have a lot of temporary variables (tombstone_1, tombstone_2, etc.). If I'm not sure about something, I'll store the results in the temporary variable, so I don't have to rerun everything from data import to get a clean copy to work with. I can just go back one or two code blocks and regenerate from a working partially cleaned version. In some cases, I'll illustrate the process in detail, including my mistakes. For others, I just summarize the errors and the process and present cleaned and final code.
 
 Deciding on ground rules for what you will and will not correct is important. For this project, I decided I would not change any photo file names. I'm working with a copy of his photo archive; he has his own filing and naming scheme, and he also corresponds with other genealogists and shares information. Changing photo names on my copy would lead to a set of photos that no longer matched those out there in various places. This decision will lead to missed matches since some photos do appear to have typos in the names such as Octava instead of Octavia. Other photos seem to not follow his normal naming convention of last name first name middle name. Some use first name last name. This again is something that could be corrected programatically, but I won't because of my ground rules. For another project, a different decision might make more sense. (I'd definitely correct file names if it were my own data!)
 
@@ -94,7 +94,7 @@ Next, I'm converting the N and W data to decimal latitude and longitude. S/W sho
 
 I want to break a coordinate into 3 parts. So 37 25.687 becomes 37 25 and 687. First I break the coordinate into two parts, using the space as the separator. So 37 and 25.687. I then coerce the first part (which is the degree part of the coordinate) into a numeric. I then split the second part ( 25.687) using the . as the separator and again coerce the results into numbers. The coercion does lead to warning about the generation of NAs during the process, but that is fine. I know not all the data is numeric- there were blanks and NAs to start with. Lastly, I convert my degree, minute, second coordinates to decimal coordinates using the formula degree + minute/60 + second/3600. This format is widely accepted by different mapping packages.
 
-It is important to note that stringr defaults to considering that patterns are written in regular expressions (regex). This means some characters are special and require escaping in the pattern. The period is one and the correct pattern is "\\\\." Otherwise, using "." will match to every character. The [stringr cheatsheet](https://rstudio.github.io/cheatsheets/html/strings.html) has a high level overview of regular expressions on the second page.
+It is important to note that stringr defaults to considering that patterns are written in regular expressions (regex). This means some characters are special and require escaping in the pattern. The period is one and the correct pattern is "\\\\." Otherwise, using "." will match to every character. The [stringr cheat sheet](https://rstudio.github.io/cheatsheets/html/strings.html) has a high level overview of regular expressions on the second page.
 
 I named all the original output from the string splits such that they contained the word "part" and I can easily remove them using a helper from dplyr, in this case, `contains`. I highly recommend using some sort of naming scheme for intermediate variables so they can be easily removed in one go without lots of typing. I retain the original and the numeric parts so I can double check the results.
 
@@ -133,9 +133,9 @@ tombstones %>% select(Surname, First.Name, N, N_degree, N_minute, N_second, lat)
 
 Our weird coordinates like William Dorris had (524) were turned into NAs by this process, so we don't need to worry about fixing them. The leading zeros were removed from the seconds data. For this application, it doesn't matter. For others it might, and you could pad then back using `str_pad()`. So that's it for cleaning this variable.
 
-## Cleaning up dates
+## Cleaning up Dates
 
-Next, I'm going to clean up the dates. They imported as strings. I don't think I'm going to use the dates in the map, but I might use them when I'm working with the webscraping data.
+Next, I'm going to clean up the dates. They imported as strings. I don't think I'm going to use the dates in the map, but I might use them when I'm working with the web scraping data.
 
 ```{r}
 #| label: viewing-dates
@@ -143,7 +143,7 @@ class(tombstones$DOB)
 tombstones %>% select(Surname, First.Name,DOB, DOD) %>% gt()
 ```
 
-A few things to note on first glance. The majority of the dates use day month(abreviated) year. Some entries only have the year. There are NAs. A few abbreviations have a period (Nov. in the Follis Fawn entry). September is abbreviated as both Spt and Sep. There are some dates that are guesses (\[1949?\] in the Doley John record.) I will replace Spt with Sep and the period with "" using str_replace_all() as above. I'm making the corrections in the original columns (DOB, DOD) but putting the date version in new variables. That way it is easy to check that the conversions were done correctly.
+A few things to note on first glance. The majority of the dates use day month(abbreviated) year. Some entries only have the year. There are NAs. A few abbreviations have a period (Nov. in the Follis Fawn entry). September is abbreviated as both Spt and Sep. There are some dates that are guesses (\[1949?\] in the Doley John record.) I will replace Spt with Sep and the period with "" using str_replace_all() as above. I'm making the corrections in the original columns (DOB, DOD) but putting the date version in new variables. That way it is easy to check that the conversions were done correctly.
 
 The date type must have a day, month, and year, so the years only records will become NAs. I don't think this matters for my application, but if it did, I'd probably make an integer column for the year data. The dates would need to be split into numeric month, day, and year field or possibly date and numeric year fields.
 
@@ -167,7 +167,7 @@ Checking that everything worked.
 tombstones %>% select(Surname, First.Name,DOB, DOD, DOB_date, DOD_date) %>% gt()
 ```
 
-## Cleaning up cemetery data
+## Cleaning up Cemetery Names
 
 The string/ character data is more difficult to clean, since the possibilities are endless. Almost anything could be correct. Correcting this data requires some subject matter expertise. I think I would like to group tombstones by cemetery in my map, so I do want to clean this up. However, I'm generally going to take a light touch with this.
 
@@ -268,7 +268,7 @@ Now, I do have both geographic data and a subject matter expert (my father) to f
 tombstones3 %>% filter(Cemetery == "Bethlehem" | Cemetery == "Bethlehem Baptist Church") %>% select(Cemetery, City, State, lat, long) %>% gt()
 ```
 
-It turns out that Roberston County's county seat is Springfield, so these are all the same. You could also check by calculating the distance between the two sets of coordinates. There is a calculator [here](https://www.calculator.net/distance-calculator.html), which gives a distance as \<0.2 mi for one comparision between Bethlehem and Bethlehem Baptist Church. You could also calculate the distance programmatically, see code block 14 in [this blog post](https://lsinks.github.io/posts/2023-04-11-credit-card-fraud/fraud_tutorial.html#looking-at-the-geographic-data).
+It turns out that Roberston County's county seat is Springfield, so these are all the same. You could also check by calculating the distance between the two sets of coordinates. There is a calculator [here](https://www.calculator.net/distance-calculator.html), which gives a distance as \<0.2 mi for one comparison between Bethlehem and Bethlehem Baptist Church. You could also calculate the distance programmatically, see code block 14 in [this blog post](https://lsinks.github.io/posts/2023-04-11-credit-card-fraud/fraud_tutorial.html#looking-at-the-geographic-data).
 
 ```{r}
 tombstones3 <- tombstones3 %>% 
@@ -291,7 +291,7 @@ There aren't that many possible duplicates.
 | Webber Campground                      |
 | Weber-Campground                       |
 
-It is probably easier to check these by hand rather than writing code. It turns out that Webber (correct spelling) Campground Cemetery, Weber Campground and Campground are all the same. I would't have caught Campground as being a match, but my father mentioned it. These entries also switch between city and county in the location part of the table, making it even trickier. It turns out all of these pairs are the same, so I'm going to correct them. I'm also writing this back to the main tombstones dataframe, rather than continuing with intermediate variables. My father also told me that Johnston City Cemetery is actually Shakerag Masonic Cemetery. He also stated that Oddfellows was Oddfellow and Masonic and Oddfellows was Masonic and Odd Fellows. So I'll correct these too.
+It is probably easier to check these by hand rather than writing code. It turns out that Webber (correct spelling) Campground Cemetery, Weber Campground and Campground are all the same. I wouldn't have caught Campground as being a match, but my father mentioned it. These entries also switch between city and county in the location part of the table, making it even trickier. It turns out all of these pairs are the same, so I'm going to correct them. I'm also writing this back to the main tombstones dataframe, rather than continuing with intermediate variables. My father also told me that Johnston City Cemetery is actually Shakerag Masonic Cemetery. He also stated that Oddfellows was Oddfellow and Masonic and Oddfellows was Masonic and Odd Fellows. So I'll correct these too.
 
 ```{r}
 tombstones <- tombstones3 %>%
@@ -333,7 +333,7 @@ I will create the following patterns for matching:
 
 1.  Full Name with Middle Name or Initial (e.g. Louise Elaine Sinks)
 2.  If First and Middle name are just initials, I will create a version with and without spaces, since I see it done both ways in the photo names (e.g. LE Sinks and L E Sinks)
-3.  If no middle name is availble, I will use First and Last Name (e.g. Louise Sinks)
+3.  If no middle name is available, I will use First and Last Name (e.g. Louise Sinks)
 
 I will not:
 
@@ -354,11 +354,14 @@ tombstones_raw %>% select(First.Name) %>% gt()
 
 Sometimes the tombstone only has the initial, but my father knows the full name through other means. This would be rendered as L\[ouise\]. The photos will usually use L not Louise, so I'm just removing this extra data and storing it elsewhere. I do this with str_extract() and then I replace it with a blank using str_replace_all(). There are also extra spaces that I will trim off as before with str_trim().
 
-The regex for getting rid of the bracketed information is a bit more complixated than what I've used before. I was something that looks for \[ followed by any number of other characters followed by \]. The brackets are special characters, so they need to be escaped. So that would be "\\\\\[ \\\\\]" for the front and back of the pattern. The middle can be anything. This is where regex is so powerful. As I mentioned before, an unescaped period will match to any character. There are also quantity codes- a plus sign will match one or more. So I use "\\\\\[.+\\\\\]" which will match one or more characters inside brackets. (I could use the quantity symbol \* which matches 0 or more, but there will never be empty brackets in this dataset.)
+The regex for getting rid of the bracketed information is a bit more complicated than what I've used before. I was something that looks for \[ followed by any number of other characters followed by \]. The brackets are special characters, so they need to be escaped. So that would be "\\\\\[ \\\\\]" for the front and back of the pattern. The middle can be anything. This is where regex is so powerful. As I mentioned before, an un-escaped period will match to any character. There are also quantity codes- a plus sign will match one or more. So I use "\\\\\[.+\\\\\]" which will match one or more characters inside brackets. (I could use the quantity symbol \* which matches 0 or more, but there will never be empty brackets in this dataset.)
 
-And I'm dropping NAs.
+And I'm dropping NAs. I'm also starting a counter to track how many records I drop. When I run through the whole project, I end up with 288 records from the 403 I started with.
 
 ```{r}
+
+drop_counter <- sum(is.na(tombstones$First.Name) == TRUE)
+
 tombstones <- tombstones %>%
   mutate(Extra_First_Name = str_extract(First.Name, "\\[.+\\]")) %>%
   mutate(First.Name = str_replace(First.Name, "\\[.+\\]", "")) %>%
@@ -379,9 +382,9 @@ There is an unnamed child (infant son) and maybe a typo'd name (Jno). I'll keep 
 
 The middle name column is very problematic. Sometimes it is the middle name. Sometimes it is a notes like "shared family tombstone". Sometimes it is the middle initial from the gravestone, but with the full name filled in with brackets like A\[lvis\]. Sometimes it is a maiden name or the name of the spouse.
 
-Most of this stuff is similar to what I've done with other fields. I'll strip out extra spaces, deal with the bracketed info, periods and the abreviation ux (latin for wife). I'm taking out everything after ux, since that should be the name of the wife.
+Most of this stuff is similar to what I've done with other fields. I'll strip out extra spaces, deal with the bracketed info, periods and the abbreviation ux (Latin for wife). I'm taking out everything after ux, since that should be the name of the wife.
 
-I'm also changing all blanks to NAs and I will use this to partition my dataset when I am doing the photomatching. `na_if()` from dplyr will let you replace any specific value with NA.
+I'm also changing all blanks to NAs and I will use this to partition my dataset when I am doing the photo matching. `na_if()` from dplyr will let you replace any specific value with NA.
 
 ```{r}
 tombstones <- tombstones %>%
@@ -454,9 +457,10 @@ Testing the matching is an iterative process. I also ended up going back and add
 
 How this works is I generate a list of files in each folder using `list.files()` and then I pass that list to the `file.rename()` or `file.copy()` functions. I am using here to generate the paths. Quarto documents start the file path in the folder where the document resides, while r files start in the project folder. here always starts in the project folder, so it allows for easy recycling of code between r files and Quarto files and generally prevents you from getting lost in your file structure. The file functions report TRUE for each file they correct find an act on and FALSE otherwise. The output should be all TRUEs.
 
+(I thought I could make this a function, since I end up using it again below, but it doesn't work. I didn't return anything, which crashed R Studio. Then I returned TRUE, but that seems to not work either. I ended up terminating R. It seems to hang when copying the files back in.
+
 ```{r}
 #| label: resetting-photos
-
 
 # first moving all the photos to the trash folder, folder by folder
 my_file_list <-
@@ -512,12 +516,18 @@ file.copy(
   from = here(blog_folder, photo_folder, "Original Photos", my_file_list),
   to = here(blog_folder, photo_folder, unmatched_folder, my_file_list)
 )
- 
+
 ```
 
-## Matching the folks with Middle Names and Spaces
+Now run it.
 
-Okay, now I am creating the two main datasets- with and without middlenames
+```{r}
+
+```
+
+## Split out Middle Names and No Middle Names
+
+Okay, now I am creating the two main data sets- with and without middle names
 
 ADDED SURNAME NA FILTER BUT NOT TESTED
 
@@ -536,9 +546,25 @@ unmatched_no_middle <-  tombstones %>%
 
 Now a function to do the matching.
 
-https://stackoverflow.com/questions/52437463/function-calling-variable-names-for-group-by-in-dplyr-how-do-i-vectorise-this
+# Matching Function
 
-Technically, I don't need to return anything?
+This function is a beast and should probably be broken into smaller functions. When you have to comment all the different steps in a function, then it is likely doing too many things. As I mentioned, I originally just tested this in non-function form, and I just took the whole chunk and put it in a function. I might clean this up later, but since this is a one off project, it may not be worth the time. There are a few things to note about this function. First, for debugging inside a quarto file, use `browser()` inside the function to allow you to step through and observe the variables in the function. Not all of the regular debugging tools work in quarto (compared to a regular R file). Secondly, accessing the value of the parameters inside the function required using functions like `get()`. Filter on name_to_match and nothing matches, because nothing has that name. Using `get(name_to_match)` actual returns the column name to match on.
+
+So what does this function do?
+
+It takes in a dataframe (df_to_match) and what column of names it should be matching against (name_to_match). It also takes in which match round this is.
+
+1.  Generates the list of unmatched photos.
+2.  Finds duplicated names.
+3.  and filters them out so that matching only occurs on the unique names in the set.
+4.  Does the matching with a fuzzyjoin. More about fuzzyjoin [here](https://lsinks.github.io/posts/2023-06-27-tidytuesday-US-populated-places/arlington-neighborhoods.html) and [here](https://stackoverflow.com/questions/32914357/dplyr-inner-join-with-a-partial-string-match).
+5.  Move all the photos that matched to the appropriate folder for the round.
+6.  Remove all the unmatched names from the dataframe.
+7.  Generate a list of people who have multiple photos associated with their name.
+8.  Make a panel/composite photo from the individual photos for each person with multiples and move the original to the folder archive.
+9.  Return the dataframe with the matches. This is useful for troubleshooting, but it is not the final results dataframe because it has the original (multiple) photos listed and not the new panel photos. Functions in R must return something, and I did use this returned dataframe extensively when troubleshooting, but in other cases, I'd probably silence the output or just return TRUE/FALSE (with some error checking) to reflect if the function executed properly.
+
+The panel photo is a png. The original photos are all jpg. I actually like that, because it is another flag/marker that those photos are not original files. (The date is also a clue right now, but this project is on-going for my father, so I expect photos with later dates than today to be generated.)
 
 ```{r}
 #| label: matching-function
@@ -551,9 +577,7 @@ Matching_Photos <-
     #Step 2: generate duplicate names
     duplicate_names <- df_to_match %>%
       group_by_at(name_to_match) %>% count(sort = TRUE) %>% filter(n > 1)
-    
-    # return(duplicate_names)
-    
+    # return(duplicate_names) #this was for troubleshooting
     #Step 3: remove duplicate names
     tombstones_unique_names <- df_to_match %>%
       anti_join(duplicate_names)
@@ -567,7 +591,6 @@ Matching_Photos <-
       )
     #step 5: Moving all the photos that match to the correct match folder
     matched_this_round <- inner_join(photo_df, tombstones_merged)
-    
     index <- 1
     for (index in seq(1:nrow(matched_this_round))) {
       file.rename(
@@ -592,19 +615,18 @@ Matching_Photos <-
     multiple_photos <-
       tombstones_merged %>% group_by_at(name_to_match) %>% count(sort = TRUE) %>% filter(n > 1)
     #step 8: make the panel photos and move the originals to archive. (function?)
-    
-    #works until here
-    
-    #testing
     if (nrow(multiple_photos) > 0) {
       index <- 1
-      
       for (index in seq(1:nrow(multiple_photos))) {
-        
         df_temp <- tombstones_merged %>%
           filter(get(name_to_match) == multiple_photos[[name_to_match]][index])
-               these <-
-          as.list(here(blog_folder, photo_folder, match_folder, df_temp$photo_names))
+        these <-
+          as.list(here(
+            blog_folder,
+            photo_folder,
+            match_folder,
+            df_temp$photo_names
+          ))
         photo_panel <-
           image_append(do.call("c", lapply(these, image_read)))
         image_write(
@@ -637,39 +659,31 @@ Matching_Photos <-
         }
       }
     }
-    
-
-    
-      return(tombstones_merged)
-      
-    }
+    #Step 9: return
+    return(tombstones_merged)
+  }
 ```
 
-does this part of the function work?
+## A False Start
+
+Does the function work?
 
 ```{r}
 #| label: matching-middle
 tester <- Matching_Photos(unmatched_middle, "full_name_MI", match1)
 ```
 
-There are a couple of warnings kicked up. The warnings are generated when the file to be moved doesn't exist. This means that it has matched to another name and has already been moved. The first one is about "Jones Levi A Jones Hester J.JPG". The tombstone is for both the husband and wife and it should match to two names- Levi A Jones and Hester J Jones. So this is okay and not an error. The second one error arises from "Pickard William Epps.jpg". This is a problem. There is apparently both a William E Pickard and a William Epps Pickard. The strings that are being matched against the photos are Pickard William E and Pickard William Epps. The first will match to the second when doing a partial match. Notice that if the naming convention were First Middle Last and not Last First Middle there would not be a problem. William E Pickard and William Epps Pickard will not match with each other in my method. This also means I don't need to worry about a similar scenario for the first name, only the middle name/initial because it is at the end of the string.
+Yes, it works! However, there are a couple of warnings kicked up. The warnings are generated when the file to be moved doesn't exist. This means that it has matched to another name and has already been moved. So these aren't a problem with the function, but rather a problem with my logic/ partitioning of data into the different rounds.
 
-So to fix this, I can split this into two new middle name dataframes. One with middle names longer than one character (or maybe 2) and those with initials for middle names. Again, the more complete version needs to be matched first.
+The first message is about "Jones Levi A Jones Hester J.JPG". The tombstone is for both the husband and wife and it should match to two names- Levi A Jones and Hester J Jones. So this is okay and not an error. The second one error arises from "Pickard William Epps.jpg". This is a problem. There is apparently both a William E Pickard and a William Epps Pickard. The strings that are being matched against the photos are Pickard William E and Pickard William Epps. The first will match to the second when doing a partial match. Notice that if the naming convention were First Middle Last and not Last First Middle there would not be a problem. William E Pickard and William Epps Pickard will not match with each other in my method. This also means I don't need to worry about a similar scenario for the first name, only the middle name/initial because it is at the end of the string.
 
-```{r}
-middle_names_long <- unmatched_middle %>%
-  filter(nchar(Middle.Name) > 2)
-  
-middle_names_short <- unmatched_middle %>%
-  filter(nchar(Middle.Name) <= 2)
+## Reset Photos Again
 
-```
-
-Ulysses HESS footstone.
-
-Reset the photos
+I'm suppressing the output, so you won't see pages of TRUES.
 
 ```{r}
+#| output: false
+
 # first moving all the photos to the trash folder, folder by folder
 my_file_list <-
   list.files(here(blog_folder, photo_folder, "Unmatched Photos"))
@@ -724,68 +738,86 @@ file.copy(
   from = here(blog_folder, photo_folder, "Original Photos", my_file_list),
   to = here(blog_folder, photo_folder, unmatched_folder, my_file_list)
 )
- 
+
 ```
 
-Matching first round.
+## The Full Scheme
+
+So to fix this, I can split this into two new middle name dataframes. One with middle names longer than one character (or maybe 2) and those with initials for middle names. Again, the more complete version needs to be matched first.
+
+I made a nice flowchart to explain. (I worked off of handwritten charts while I was coding. This was too complex not to have a reference.) Dark blue squares are the various dataframes as they are filtered and split before matching. Light blue squares are the results of the various rounds of matching. The magenta boxes are the matching protocols for each round. At the end, all the results_r# dataframes will be merged.
+
+![](Matching_flowchart.png){fig-align="center"}
+
+## Round 1: Long Middle Names
+
+### Splitting : Long and Initials Middle Names
+
+```{r}
+middle_names_long <- unmatched_middle %>%
+  filter(nchar(Middle.Name) > 2)
+  
+middle_names_short <- unmatched_middle %>%
+  filter(nchar(Middle.Name) <= 2)
+
+```
+
+### Matching Round 1: Full Middle Names
 
 ```{r}
 #| label: matching-middle-2
 tester <- Matching_Photos(middle_names_long, "full_name_MI", match1)
 ```
 
-No errors or warnings.
+No errors or warnings. Now I'm generating the new list of photos. This will have the panel photos instead of the individual photos. I'm matching back to the original input dataframe to the match function, not the output (tester). The output of the renaming function is our results dataframe for this round.
 
-now getting the updated names
-
-https://stackoverflow.com/questions/43487773/how-to-rename-selected-columns-using-dplyr-with-new-column-names-as-strings
+### Rename and Move Photos Function
 
 ```{r}
 #| label: rename-photo-function
 Update_Photo_Names <- function(df, name_to_match, match_folder) {
   photo_names <- list.files(here(blog_folder, photo_folder, match_folder))
   photo_df = as.data.frame(photo_names)
-  df_updated <- fuzzy_right_join(photo_df, df, 
+  df_updated <- fuzzy_right_join(photo_df, df,
                              by = c("photo_names" = name_to_match),
                              match_fun = str_detect)
   #new_name <- paste("photos", match_folder, sep = "_") this was for debugging
-  
+
   df_updated <- df_updated %>%
     rename_with(.fn = ~paste("photos", match_folder, sep = "_"), .cols = photo_names)
   return(df_updated)
-
  }
-
-
 ```
+
+### Rename Round 1: Generate first results DF
 
 ```{r}
 #| label: rename-middle-1
-partial_matched_middle <- Update_Photo_Names(middle_names_long, "full_name_MI", match1)
+results_r1 <- Update_Photo_Names(middle_names_long, "full_name_MI", match1)
 ```
 
-Match round 2
+And now we just go through this again for each round.
+
+## Round 2: Short Middle Names
 
 ```{r}
-#| label: matching-middle-2
+#| label: matching-middle-3
 tester2 <- Matching_Photos(middle_names_short, "full_name_MI", match2)
 ```
 
-Only get the Hester and Levi Jones error.
+Only get the Hester and Levi Jones warning, which is fine.
 
 ```{r}
-partial_matched_middle2 <- Update_Photo_Names(middle_names_short, "full_name_MI", match2)
+results_r2 <- Update_Photo_Names(middle_names_short, "full_name_MI", match2)
 ```
 
-Now I need to pull out the names that are only initials and match the no space version. These should only be contained in the partial_matched_middle2 dataframe (since the other dataframe only has long middle names anyway.)
+## Round 3: Middle Names with No Space
 
-## Matching Middle Names with no space.
-
-Have to keep track of where you are with filter(is.na(photos_Matched_Round2) == TRUE)
+Now I need to pull out the names that are only initials and match the no space version. These should only be contained in the `results_r2` dataframe (since the other dataframe (r1) only has long middle names anyway.)
 
 ```{r}
 #| label: pulling-out-unmatched-middle
-unmatched_middle_initials <- partial_matched_middle2 %>%
+middle_name_initials <- results_r2 %>%
   mutate(full_name_MI_no_space = na_if(full_name_MI_no_space, " ")) %>%
   filter(is.na(full_name_MI_no_space) == FALSE) %>%
   filter(is.na(photos_Matched_Round2) == TRUE)
@@ -796,60 +828,47 @@ Okay, 17 didn't match.
 
 ```{r}
 #| label: match-middle-no-space
-tester <- Matching_Photos(unmatched_middle_initials, "full_name_MI_no_space", match3)
+tester <- Matching_Photos(middle_name_initials, "full_name_MI_no_space", match3)
 ```
 
 No warnings or errors.
 
 ```{r}
 #| label: rename-middle-no-space
-matched_middle_final <- Update_Photo_Names(unmatched_middle_initials, "full_name_MI_no_space", match3)
+results_r3 <- Update_Photo_Names(middle_name_initials, "full_name_MI_no_space", match3)
 ```
 
-## Matching on Full Names
+## Round 4: No Middle Initials
 
-Find those names that haven't matched so far
-
-```{r}
-# unmatched_full <- tombstones_matched %>%
-#   filter(is.na(photo_names_r1) == TRUE) %>%
-#   filter(is.na(photo_names_r2) == TRUE)
-  
-  
-```
-
-Matching.
+Almost done. Now I'm matching the folks with no middle names. This group has more panel pictures than the others, I think, because it is slower to run than the other match rounds.
 
 ```{r}
 #| label: match-no-middle
 tester3 <- Matching_Photos(unmatched_no_middle, "full_name", match4)
 ```
 
-That actually doesn't seem too bad.
+Now we generate the new names.
 
 ```{r}
 #| label: rename-nomiddle
-matched_no_middle_final <- Update_Photo_Names(unmatched_no_middle, "full_name", match4)
+results_r4 <- Update_Photo_Names(unmatched_no_middle, "full_name", match4)
 ```
 
-Put the four datsets together.
+## Join all the Results
+
+Now I full_join all the results dataframes together.
 
 ```{r}
 #| label: merging-matched-df
-tombstones_matched <- matched_middle_final %>%
-  full_join(matched_no_middle_final) %>%
-  full_join(partial_matched_middle) %>%
-  full_join(partial_matched_middle2)
+tombstones_matched <- results_r1 %>%
+  full_join(results_r2) %>%
+  full_join(results_r3) %>%
+  full_join(results_r4)
 ```
 
-Now generate the final photo list. Because of the way I segmented the data and how careful I was about order of matching, there should be only one match per name. And this is true. WHY DO WE ONLY HAVE 388 OBSERVATIONS
+Now generate the final photo list. Because of the way I segmented the data and how careful I was about order of matching, there should be only one match per name. And this is true.
 
-```{r}
-temp <- tombstones_matched %>% select(starts_with("photos_Matched_"))
-head(temp)
-```
-
-However, by also being careful about what order I create the final photolist, I can put in a safeguard against inccorrect matching for future work. The file name should always be taking from the earliest match round if for some reason it matches in multiple rounds. This might be cleaner written as a case statment, but I wrote this section when I only had two rounds of matching and the nest ifelse was very clear.
+However, by also being careful about what order I create the final photo list, I can put in a safeguard against incorrect matching for future work. The file name should always be taking from the earliest match round if for some reason it matches in multiple rounds. This might be cleaner written as a case statement, but I wrote this section when I only had two rounds of matching and the nested ifelse was very clear.
 
 ```{r}
 #| label: merging-matches-to-photolist
@@ -870,20 +889,23 @@ tombstones_matched_final <- tombstones_matched %>%
   ))
 ```
 
-Double check this
-
-looko at just the photos
+Now I just double check that the photo_list was generated properly.
 
 ```{r}
 #| label: checking-matches
-tombstones_matched_final2 <- tombstones_matched_final %>%
+tombstones_matched_checker <- tombstones_matched_final %>%
   select(photo_list, contains("photos_Matched"))
 ```
 
-Move all the matched photos to a single folder. This should probably be a function that takes in the number of match rounds.
+# Cleaning Up in Prep for Mapping
+
+## Move to all Photos to the Map Folder
+
+Lastly, I move all the matched photos to a single folder. I'm putting it in a folder called "Map" since I'm using this to make my leaflet map. Again, I've suppressed the output for this block, but when troubleshooting you do want to make sure you are getting all trues.\
 
 ```{r}
 #| label: moving-to-map-folder
+#| output: false
 my_file_list <-
   list.files(here(blog_folder, photo_folder, match1))
 
@@ -919,13 +941,17 @@ file.copy(
 
 Now all trues and life is good.
 
-Now I need to make a column of the most complete name. This will be used as the label in the map.
+## Making a Complete Name Field
+
+Now I need to make a column of the most complete name. This will be used as the label in the map. If the person has a middle name, I use the full name with middle name, and if not, I use the first and last. Note that I'm generating this by pasting together the individual name parts rather than using all the name variations I generated to match with. I want this label to be in conventional order and not the last name first format that I used for matching.
 
 ```{r}
 tombstones_matched_final <- tombstones_matched_final %>%
   mutate(complete_name = ifelse(
-    is.na(full_name_MI) == FALSE, full_name_MI, full_name)
-    )
+    is.na(full_name_MI) == FALSE,
+    paste(First.Name, Middle.Name, Surname, sep = " "),
+    paste(First.Name, Middle.Name, Surname, sep = " "))
+  )
 ```
 
 # Converting to Geo Data
@@ -934,10 +960,16 @@ Dropping any NAs in lat/long. Converting it to a SF geo object. I'm adding some 
 
 ```{r}
 # | label: converting-to-geo
+
+drop_counter <- drop_counter + sum(is.na(tombstones_matched_final$lat) == TRUE) + sum(is.na(tombstones_matched_final$long) == TRUE) #this is probably double counting
+
 tombstones_matched_final <- tombstones_matched_final %>% drop_na(lat) %>% drop_na(long)
 
 
 tombstones_geo <- st_as_sf(tombstones_matched_final, coords = c("long", "lat"), crs = 4326)
+
+
+drop_counter <- drop_counter + sum(is.na(tombstones_geo$photo_list) == TRUE)
 
 tombstones_geo <- tombstones_geo %>% drop_na(photo_list)
 
@@ -945,6 +977,10 @@ tombstones_geo <- st_jitter(tombstones_geo, factor = 0.001)
 
 
 ```
+
+# Making the Leaflet Map
+
+This is just a draft. I'd like to link to some other material and color and group by cemetery. But this is another opportunity to check for obvious errors or bugs.
 
 ```{r}
 #| column: page
@@ -983,4 +1019,13 @@ leaflet() %>%
 
 ```
 
-Why is blockhouse cemetery in the ocean, and why is the name NA?
+Why is blockhouse cemetery in the ocean?
+
+```{r}
+tombstones_matched %>% filter(Cemetery == "Blockhouse") %>%
+  select(City, State, N, W)
+```
+
+A quick Google reveals that ["The latitude and longitude coordinates (GPS waypoint) of Peru are **44.578379 (North), -73.5268028 (West**) and the approximate elevation is 335 feet (102 meters)"](https://www.topozone.com/new-york/clinton-ny/city/peru-10/).
+
+So, this is a simple transposition typo- instead of 73 he typed 37. I could have put some sort of error handling in the cleaning GPS data section. For example, I could have flagged lats or longs that were outside the US.
