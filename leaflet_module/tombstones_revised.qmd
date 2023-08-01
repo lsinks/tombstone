@@ -10,6 +10,9 @@ draft: true # setting this to `true` will prevent your post from appearing on yo
 I'm working on a project for my father that will culminate in a website for his genealogy research. There are a couple of different parts that I'm working on independently. This part involves linking photos of family gravestones to an Excel sheet that records the GPS location of the tombstones. This combined dataset is used to generate a leaflet map. This portion focused on data cleaning and the photo matching. I do generate a leaflet map at the end, but it is not the final map. I'll do the styling of the map in a separate post.
 
 ```{r}
+#| label: loading-libraries
+#| warning: false
+#| output: false
 library(tidyverse) # who doesn't want to be tidy?
 library(ggthemes) # more themes for ggplot
 library(gt) # For nice tables
@@ -28,6 +31,9 @@ library(skimr)
 Reading in his spreadsheet
 
 ```{r}
+#| label: reading-data
+#| warning: false
+#| output: false
 blog_folder <- "leaflet_module"
 photo_folder <- "Photos"
 archive_folder <- "Archived Photos"
@@ -61,7 +67,13 @@ The tidyverse packages `stringr` and `tidyr` both have very powerful tools for d
 When you view the GPS data you can see a couple of issues.
 
 ```{r}
-tombstones_raw %>% select(Surname, N, W) %>% gt()
+#| label: viewing-GPS-data
+
+tombstones_raw %>% 
+  select(Surname, N, W) %>% 
+  gt() %>% 
+  tab_options(container.height = px(300))
+
 ```
 
 Latitude and longitude data contains some stray degree and minute symbols. The degree symbol appears both as a straight and curved apostrophe and the degree symbols appear both as o and O. This cleaning needs to be done on both N and W columns. The `str_replace_all()` function from stringr looks at a string, finds a pattern, and replaces it with a replacement. Here, the pattern is each of those symbols and the replacement is a space.
@@ -85,7 +97,11 @@ mutate(W = str_replace_all(W, pattern = "'", " "))
 Look at the cleaned data.
 
 ```{r}
-tombstones %>% select(Surname, First.Name, N, W) %>% gt()
+#| label: viewing-cleaned-gps
+tombstones %>%
+  select(Surname, First.Name, N, W) %>%
+  gt()  %>%
+  tab_options(container.height = px(300))
 ```
 
 Much better. There is some missing data, encoded both as blanks and as NAs. There are also some coordinates that don't make sense, like 524 (for the entry Dorris William). This will need to be dealt with.
@@ -120,15 +136,17 @@ tombstones <- tombstones %>%
 
 tombstones <- tombstones %>%
   select(-contains("part"))
-
-
 ```
 
 Taking a quick look at the results
 
 ```{r}
 #| label: viewing-decimal-latitude
-tombstones %>% select(Surname, First.Name, N, N_degree, N_minute, N_second, lat) %>% gt()
+tombstones %>%
+  select(Surname, First.Name, N, N_degree, N_minute, N_second, lat) %>%
+  gt()  %>%
+  tab_options(
+  container.height = px(300))
 ```
 
 Our weird coordinates like William Dorris had (524) were turned into NAs by this process, so we don't need to worry about fixing them. The leading zeros were removed from the seconds data. For this application, it doesn't matter. For others it might, and you could pad then back using `str_pad()`. So that's it for cleaning this variable.
@@ -140,7 +158,11 @@ Next, I'm going to clean up the dates. They imported as strings. I don't think I
 ```{r}
 #| label: viewing-dates
 class(tombstones$DOB)
-tombstones %>% select(Surname, First.Name,DOB, DOD) %>% gt()
+tombstones %>% 
+  select(Surname, First.Name,DOB, DOD) %>%
+  gt()  %>% 
+  tab_options(
+  container.height = px(300))
 ```
 
 A few things to note on first glance. The majority of the dates use day month(abbreviated) year. Some entries only have the year. There are NAs. A few abbreviations have a period (Nov. in the Follis Fawn entry). September is abbreviated as both Spt and Sep. There are some dates that are guesses (\[1949?\] in the Doley John record.) I will replace Spt with Sep and the period with "" using str_replace_all() as above. I'm making the corrections in the original columns (DOB, DOD) but putting the date version in new variables. That way it is easy to check that the conversions were done correctly.
@@ -164,7 +186,11 @@ Checking that everything worked.
 
 ```{r}
 #| label: looking-at-dates
-tombstones %>% select(Surname, First.Name,DOB, DOD, DOB_date, DOD_date) %>% gt()
+tombstones %>%
+  select(Surname, First.Name,DOB, DOD, DOB_date, DOD_date) %>%
+  gt()  %>% 
+  tab_options(
+  container.height = px(300))
 ```
 
 ## Cleaning up Cemetery Names
@@ -176,9 +202,14 @@ Here, I expect that there is a limited set of cemeteries, so I can group the dat
 ```{r}
 #| label: unique-cem-names
 
-cems_unique <- tombstones %>% distinct(Cemetery) %>% arrange(Cemetery)
-cems_unique %>% gt()
+cems_unique <- tombstones %>%
+  distinct(Cemetery) %>%
+  arrange(Cemetery)
 
+cems_unique %>%
+  gt() %>% 
+  tab_options(
+  container.height = px(300))
 ```
 
 There are 79 unique names. I see some obvious issues. Sometimes the word cemetery is added to the end (or an abbreviation like Cem and Cem.). Sometimes it isn't. Church is rendered as Ch. in some cases.
@@ -201,20 +232,28 @@ tombstones2 <- tombstones %>%
   mutate(Cemetery = str_replace_all(Cemetery, "Cem", "")) %>%
   mutate(Cemetery = str_replace_all(Cemetery, "Meth ", "Methodist ")) %>%
   mutate(Cemetery = str_replace_all(Cemetery, "Bapt ", "Baptist ")) 
- 
-
 ```
 
 See how I did...
 
 ```{r}
-cems_unique <- tombstones2 %>% distinct(Cemetery) %>% arrange(Cemetery)
-cems_unique %>% gt()
+#| label: viewing-cleaned-cemetery-1
+
+cems_unique <- tombstones2 %>%
+  distinct(Cemetery) %>%
+  arrange(Cemetery)
+
+cems_unique %>%
+  gt() %>% 
+  tab_options(
+  container.height = px(300))
 ```
 
 Badly! Almost like I should read my own digression about regex and escape characters.
 
 ```{r}
+#| label: correctly-replacing-periods
+
 tombstones3 <- tombstones %>%
   mutate(Cemetery = str_replace_all(Cemetery, "Ch ", "Church")) %>%
   mutate(Cemetery = str_replace_all(Cemetery, "Ch\\.", "Church")) %>%
@@ -230,13 +269,21 @@ tombstones3 <- tombstones %>%
 Did that work?
 
 ```{r}
-cems_unique <- tombstones3 %>% distinct(Cemetery) %>% arrange(Cemetery)
-cems_unique %>% gt()
+#| label: viewing-cleaned-cemetery-2
+cems_unique <- tombstones3 %>%
+  distinct(Cemetery) %>%
+  arrange(Cemetery)
+
+cems_unique %>% 
+  gt() %>% 
+  tab_options(
+  container.height = px(300))
 ```
 
 Better, but some names that look the same are coming up as distinct entries, like Bethlehem. This probably means that there are extraneous spaces floating around. These can be removed from the front and back of a string using the stringr function str_trim() with the side set to both.
 
 ```{r}
+#| label: trimming-whitespace-cemetery
 tombstones3 <- tombstones3 %>%
   mutate(Cemetery = str_trim(Cemetery, side = c("both")))
 ```
@@ -244,13 +291,21 @@ tombstones3 <- tombstones3 %>%
 Checking...
 
 ```{r}
-cems_unique <- tombstones3 %>% distinct(Cemetery) %>% arrange(Cemetery)
-cems_unique %>% gt()
+#| label: viewing-cleaned-cemetery-3
+cems_unique <- tombstones3 %>%
+  distinct(Cemetery) %>%
+  arrange(Cemetery)
+
+cems_unique %>% 
+  gt() %>% 
+  tab_options(
+  container.height = px(300))
 ```
 
 The abbreviation Ch at the end of the line doesn't have a space after it, so it isn't replaced. Here we can use [an anchor](https://www.regular-expressions.info/anchors.html) in our regex to specify that we want to match the pattern at the end of a string. "Ch\$" will match at the end and "\^Ch" will match at the start of a string.
 
 ```{r}
+#| label: using-anchor-end-regex
 tombstones3 <- tombstones3 %>%
   mutate(Cemetery = str_replace_all(Cemetery, "Ch$", "Church")) 
 ```
@@ -258,24 +313,42 @@ tombstones3 <- tombstones3 %>%
 Checking again.
 
 ```{r}
-cems_unique <- tombstones3 %>% distinct(Cemetery) %>% arrange(Cemetery)
-cems_unique %>% gt()
+#| label: viewing-cleaned-cemetery-4
+cems_unique <- tombstones3 %>%
+  distinct(Cemetery) %>% 
+  arrange(Cemetery)
+
+cems_unique %>% 
+  gt() %>% 
+  tab_options(
+  container.height = px(300))
 ```
 
 Now, I do have both geographic data and a subject matter expert (my father) to further refine this list. Let's start with geography. Bethlehem and Bethlehem Baptist Church could be the same place.
 
 ```{r}
-tombstones3 %>% filter(Cemetery == "Bethlehem" | Cemetery == "Bethlehem Baptist Church") %>% select(Cemetery, City, State, lat, long) %>% gt()
+#| label: cemetery-geo-view
+tombstones3 %>%
+  filter(Cemetery == "Bethlehem" |
+           Cemetery == "Bethlehem Baptist Church") %>%
+  select(Cemetery, City, State, lat, long) %>%
+  gt() %>%
+  tab_options(container.height = px(300))
 ```
 
 It turns out that Roberston County's county seat is Springfield, so these are all the same. You could also check by calculating the distance between the two sets of coordinates. There is a calculator [here](https://www.calculator.net/distance-calculator.html), which gives a distance as \<0.2 mi for one comparison between Bethlehem and Bethlehem Baptist Church. You could also calculate the distance programmatically, see code block 14 in [this blog post](https://lsinks.github.io/posts/2023-04-11-credit-card-fraud/fraud_tutorial.html#looking-at-the-geographic-data).
 
 ```{r}
-tombstones3 <- tombstones3 %>% 
-  mutate(Cemetery = str_replace_all(Cemetery, "Bethlehem$", "Bethlehem Baptist Church")) 
-         
-         
-tombstones3 %>% filter(Cemetery == "Bethlehem" | Cemetery == "Bethlehem Baptist Church") %>% select(Cemetery, City, State, lat, long) %>% gt()
+#| label: cemetery-geo-fix
+tombstones3 <- tombstones3 %>%
+  mutate(Cemetery = str_replace_all(Cemetery, "Bethlehem$", "Bethlehem Baptist Church"))
+
+
+tombstones3 %>% filter(Cemetery == "Bethlehem" |
+                         Cemetery == "Bethlehem Baptist Church") %>% 
+  select(Cemetery, City, State, lat, long) %>% 
+  gt() %>%
+  tab_options(container.height = px(300))
 ```
 
 There aren't that many possible duplicates.
@@ -294,31 +367,37 @@ There aren't that many possible duplicates.
 It is probably easier to check these by hand rather than writing code. It turns out that Webber (correct spelling) Campground Cemetery, Weber Campground and Campground are all the same. I wouldn't have caught Campground as being a match, but my father mentioned it. These entries also switch between city and county in the location part of the table, making it even trickier. It turns out all of these pairs are the same, so I'm going to correct them. I'm also writing this back to the main tombstones dataframe, rather than continuing with intermediate variables. My father also told me that Johnston City Cemetery is actually Shakerag Masonic Cemetery. He also stated that Oddfellows was Oddfellow and Masonic and Oddfellows was Masonic and Odd Fellows. So I'll correct these too.
 
 ```{r}
+#| label: hand-correcting-cem
 tombstones <- tombstones3 %>%
   mutate(Cemetery = str_replace_all(Cemetery, "Lebanon$", "Lebanon Cumberland Presbyterian Church")) %>%
   mutate(Cemetery = str_replace_all(Cemetery, "Mt Olive$", "Mt Olive Methodist Church")) %>%
   mutate(Cemetery = str_replace_all(Cemetery, "Trinity$", "Trinity Methodist Church")) %>%
   mutate(Cemetery = str_replace_all(Cemetery, "Weber-Campground", "Webber Campground")) %>%
-  mutate(Cemetery = str_replace_all(Cemetery, "^Campground", "Webber Campground"))%>%
-  mutate(Cemetery = str_replace_all(Cemetery, "Johnston City", "Shakerag Masonic"))%>%
-  mutate(Cemetery = str_replace_all(Cemetery, "Masonic & Oddfellows", "Masonic & Odd Fellows"))%>%
+  mutate(Cemetery = str_replace_all(Cemetery, "^Campground", "Webber Campground")) %>%
+  mutate(Cemetery = str_replace_all(Cemetery, "Johnston City", "Shakerag Masonic")) %>%
+  mutate(Cemetery = str_replace_all(Cemetery, "Masonic & Oddfellows", "Masonic & Odd Fellows")) %>%
   mutate(Cemetery = str_replace_all(Cemetery, "Oddfellows", "Oddfellow"))
-
 ```
 
 Final check.
 
 ```{r}
-cems_unique <- tombstones %>% distinct(Cemetery) %>% arrange(Cemetery)
-cems_unique %>% gt()
+#| label: viewing-cem-last
+cems_unique <- tombstones %>%
+  distinct(Cemetery) %>%
+  arrange(Cemetery)
+
+cems_unique %>%
+  gt() %>%
+  tab_options(container.height = px(300))
 ```
 
 Lastly, I'm going to replace the NAs with a blank. This will make things nicer if I use this for a label.
 
 ```{r}
+#| label: cem-na-to-blank
 tombstones <- tombstones %>%
   mutate(Cemetery = ifelse(is.na(Cemetery), "", Cemetery))
-
 ```
 
 ## Cleaning Up Names
@@ -349,7 +428,11 @@ With that said, let's clean up some names.
 Look at what we are dealing with.
 
 ```{r}
-tombstones_raw %>% select(First.Name) %>% gt()
+#| label: view-first-names
+tombstones_raw %>%
+  select(First.Name) %>%
+  gt() %>%
+  tab_options(container.height = px(300))
 ```
 
 Sometimes the tombstone only has the initial, but my father knows the full name through other means. This would be rendered as L\[ouise\]. The photos will usually use L not Louise, so I'm just removing this extra data and storing it elsewhere. I do this with str_extract() and then I replace it with a blank using str_replace_all(). There are also extra spaces that I will trim off as before with str_trim().
@@ -359,6 +442,7 @@ The regex for getting rid of the bracketed information is a bit more complicated
 And I'm dropping NAs. I'm also starting a counter to track how many records I drop. When I run through the whole project, I end up with 288 records from the 403 I started with.
 
 ```{r}
+#| label: cleaning-first-name
 
 drop_counter <- sum(is.na(tombstones$First.Name) == TRUE)
 
@@ -373,7 +457,11 @@ tombstones <- tombstones %>%
 Look at the data.
 
 ```{r}
-tombstones %>% select(First.Name) %>% gt()
+#| label: view-first-name
+tombstones %>%
+  select(First.Name) %>%
+  gt() %>%
+  tab_options(container.height = px(300))
 ```
 
 There is an unnamed child (infant son) and maybe a typo'd name (Jno). I'll keep these cases in mind as I move forward.
@@ -387,6 +475,7 @@ Most of this stuff is similar to what I've done with other fields. I'll strip ou
 I'm also changing all blanks to NAs and I will use this to partition my dataset when I am doing the photo matching. `na_if()` from dplyr will let you replace any specific value with NA.
 
 ```{r}
+#| label: cleaning-middle-names
 tombstones <- tombstones %>%
   mutate(Extra_Middle_Name1 = str_extract(Middle.Name, "ux .+")) %>%
   mutate(Middle.Name = str_replace(Middle.Name, "ux .+", "")) %>%
@@ -395,7 +484,6 @@ tombstones <- tombstones %>%
   mutate(Middle.Name = str_replace(Middle.Name, "\\.", "")) %>%
   mutate(Middle.Name = str_trim(Middle.Name, side = c("both"))) %>%
   mutate(Middle.Name = na_if(Middle.Name, "")) 
-
 ```
 
 This fixes most of the issues, but not all. I'm going to see how the rest of this going and then come back and fix problem cases if needed.
@@ -403,6 +491,7 @@ This fixes most of the issues, but not all. I'm going to see how the rest of thi
 Now I'm making the full name with Middle Name/initial (e.g. Sinks Louise Elaine). His photo naming format is almost always last name first. Nothing too exotic here. I do use `paste()` to glue together my pieces, using space as the separator.
 
 ```{r}
+#| label: constructing-full_name_MI
 tombstones <- tombstones %>%
   mutate(full_name_MI = ifelse(
     is.na(Middle.Name) == TRUE,
@@ -417,6 +506,7 @@ Now to deal with the case where first and middle names that are only letters, so
 This may not be elegant, but I'm just slamming together first and middle name without spaces. So I'm getting names like Sinks LouiseElaine also.
 
 ```{r}
+#| label: no-space-ver
 tombstones <- tombstones %>%
   mutate(full_name_MI_no_space = ifelse(
     is.na(Middle.Name) == TRUE,
@@ -428,6 +518,7 @@ tombstones <- tombstones %>%
 And here I filter out first + middle name combo that is longer than three characters and setting the middle name without spaces column to NA. So LouiseElaine gets set to NA but LE remains. I chose 3 because I did see some folks with double initials in the middle name (e.g. Ulysses SG Hess) and I wasn't sure if there were some fully initialed names that might be like that. I think in practice 2 is fine. This whole thing is a bit sloppy. The more rigorous way to do this is to check the patterns of the first and middle name and only created the combined name if they matched the pattern of being a single letter or two single letters separated by a space. Sometimes though, quick and dirty gets the job done.
 
 ```{r}
+#| label: filter-too-long-middles
 tombstones <- tombstones %>%
   mutate(full_name_MI_no_space = ifelse(
     nchar(paste0(First.Name, Middle.Name)) > 3,
@@ -440,6 +531,7 @@ tombstones <- tombstones %>%
 There is another part of this project that I'm working on separately, so I'm saving a copy of the cleaned dataset to be used in that module.
 
 ```{r}
+#| label: saving-cleaned-df
 saveRDS(tombstones, "tombstones_cleaned.RDS")
 ```
 
@@ -507,7 +599,6 @@ file.rename(
   to = here(blog_folder, photo_folder, "Trash", my_file_list)
 )
 
-
 # now I move a copy of all the photos into the starting folder.
 my_file_list <-
   list.files(here(blog_folder, photo_folder, "Original Photos"))
@@ -516,13 +607,6 @@ file.copy(
   from = here(blog_folder, photo_folder, "Original Photos", my_file_list),
   to = here(blog_folder, photo_folder, unmatched_folder, my_file_list)
 )
-
-```
-
-Now run it.
-
-```{r}
-
 ```
 
 ## Split out Middle Names and No Middle Names
@@ -532,7 +616,7 @@ Okay, now I am creating the two main data sets- with and without middle names
 ADDED SURNAME NA FILTER BUT NOT TESTED
 
 ```{r}
-#| label: making-datasets
+#| label: making-datasets-first-split
 
 unmatched_middle <- tombstones %>%
   filter(is.na(Surname) == FALSE) %>%
@@ -541,7 +625,6 @@ unmatched_middle <- tombstones %>%
 unmatched_no_middle <-  tombstones %>%
   filter(is.na(Surname) == FALSE) %>%
   filter(is.na(Middle.Name) == TRUE)
-
 ```
 
 Now a function to do the matching.
@@ -682,6 +765,7 @@ The first message is about "Jones Levi A Jones Hester J.JPG". The tombstone is f
 I'm suppressing the output, so you won't see pages of TRUES.
 
 ```{r}
+#| label: reset-photo-2
 #| output: false
 
 # first moving all the photos to the trash folder, folder by folder
@@ -729,7 +813,6 @@ file.rename(
   to = here(blog_folder, photo_folder, "Trash", my_file_list)
 )
 
-
 # now I move a copy of all the photos into the starting folder.
 my_file_list <-
   list.files(here(blog_folder, photo_folder, "Original Photos"))
@@ -754,18 +837,18 @@ I made a nice flowchart to explain. (I worked off of handwritten charts while I 
 ### Splitting : Long and Initials Middle Names
 
 ```{r}
+#| label: middle-name-middle-initial-split
 middle_names_long <- unmatched_middle %>%
   filter(nchar(Middle.Name) > 2)
   
 middle_names_short <- unmatched_middle %>%
   filter(nchar(Middle.Name) <= 2)
-
 ```
 
 ### Matching Round 1: Full Middle Names
 
 ```{r}
-#| label: matching-middle-2
+#| label: matching-middle-round1
 tester <- Matching_Photos(middle_names_long, "full_name_MI", match1)
 ```
 
@@ -776,23 +859,26 @@ No errors or warnings. Now I'm generating the new list of photos. This will have
 ```{r}
 #| label: rename-photo-function
 Update_Photo_Names <- function(df, name_to_match, match_folder) {
-  photo_names <- list.files(here(blog_folder, photo_folder, match_folder))
+  photo_names <-
+    list.files(here(blog_folder, photo_folder, match_folder))
   photo_df = as.data.frame(photo_names)
-  df_updated <- fuzzy_right_join(photo_df, df,
-                             by = c("photo_names" = name_to_match),
-                             match_fun = str_detect)
+  df_updated <- fuzzy_right_join(photo_df,
+                                 df,
+                                 by = c("photo_names" = name_to_match),
+                                 match_fun = str_detect)
   #new_name <- paste("photos", match_folder, sep = "_") this was for debugging
-
+  
   df_updated <- df_updated %>%
-    rename_with(.fn = ~paste("photos", match_folder, sep = "_"), .cols = photo_names)
+    rename_with(.fn = ~ paste("photos", match_folder, sep = "_"),
+                .cols = photo_names)
   return(df_updated)
- }
+}
 ```
 
 ### Rename Round 1: Generate first results DF
 
 ```{r}
-#| label: rename-middle-1
+#| label: update-file-list-r1
 results_r1 <- Update_Photo_Names(middle_names_long, "full_name_MI", match1)
 ```
 
@@ -801,13 +887,14 @@ And now we just go through this again for each round.
 ## Round 2: Short Middle Names
 
 ```{r}
-#| label: matching-middle-3
+#| label: matching-middle-match2
 tester2 <- Matching_Photos(middle_names_short, "full_name_MI", match2)
 ```
 
 Only get the Hester and Levi Jones warning, which is fine.
 
 ```{r}
+#| label: update-file-list-r2
 results_r2 <- Update_Photo_Names(middle_names_short, "full_name_MI", match2)
 ```
 
@@ -816,12 +903,11 @@ results_r2 <- Update_Photo_Names(middle_names_short, "full_name_MI", match2)
 Now I need to pull out the names that are only initials and match the no space version. These should only be contained in the `results_r2` dataframe (since the other dataframe (r1) only has long middle names anyway.)
 
 ```{r}
-#| label: pulling-out-unmatched-middle
+#| label: pulling-out-unmatched-middle-split
 middle_name_initials <- results_r2 %>%
   mutate(full_name_MI_no_space = na_if(full_name_MI_no_space, " ")) %>%
   filter(is.na(full_name_MI_no_space) == FALSE) %>%
   filter(is.na(photos_Matched_Round2) == TRUE)
-   
 ```
 
 Okay, 17 didn't match.
@@ -835,7 +921,8 @@ No warnings or errors.
 
 ```{r}
 #| label: rename-middle-no-space
-results_r3 <- Update_Photo_Names(middle_name_initials, "full_name_MI_no_space", match3)
+results_r3 <-
+  Update_Photo_Names(middle_name_initials, "full_name_MI_no_space", match3)
 ```
 
 ## Round 4: No Middle Initials
@@ -850,7 +937,7 @@ tester3 <- Matching_Photos(unmatched_no_middle, "full_name", match4)
 Now we generate the new names.
 
 ```{r}
-#| label: rename-nomiddle
+#| label: rename-no-middle
 results_r4 <- Update_Photo_Names(unmatched_no_middle, "full_name", match4)
 ```
 
@@ -946,11 +1033,12 @@ Now all trues and life is good.
 Now I need to make a column of the most complete name. This will be used as the label in the map. If the person has a middle name, I use the full name with middle name, and if not, I use the first and last. Note that I'm generating this by pasting together the individual name parts rather than using all the name variations I generated to match with. I want this label to be in conventional order and not the last name first format that I used for matching.
 
 ```{r}
+#| label: making-complete-name
 tombstones_matched_final <- tombstones_matched_final %>%
   mutate(complete_name = ifelse(
     is.na(full_name_MI) == FALSE,
     paste(First.Name, Middle.Name, Surname, sep = " "),
-    paste(First.Name, Middle.Name, Surname, sep = " "))
+    paste(First.Name, Surname, sep = " "))
   )
 ```
 
@@ -959,7 +1047,7 @@ tombstones_matched_final <- tombstones_matched_final %>%
 Dropping any NAs in lat/long. Converting it to a SF geo object. I'm adding some jitter to the coordinates; tombstones that are very close to each other have the same coordinates and show up as overlapping on the map.
 
 ```{r}
-# | label: converting-to-geo
+#| label: converting-to-geo
 
 drop_counter <- drop_counter + sum(is.na(tombstones_matched_final$lat) == TRUE) + sum(is.na(tombstones_matched_final$long) == TRUE) #this is probably double counting
 
@@ -974,7 +1062,6 @@ drop_counter <- drop_counter + sum(is.na(tombstones_geo$photo_list) == TRUE)
 tombstones_geo <- tombstones_geo %>% drop_na(photo_list)
 
 tombstones_geo <- st_jitter(tombstones_geo, factor = 0.001)
-
 
 ```
 
@@ -1016,12 +1103,12 @@ leaflet() %>%
      group = "group1", width = 600,
   maxHeight = 300, maxWidth = 600
    )
-
 ```
 
 Why is blockhouse cemetery in the ocean?
 
 ```{r}
+#| label: blockhouse-ocean-cem
 tombstones_matched %>% filter(Cemetery == "Blockhouse") %>%
   select(City, State, N, W)
 ```

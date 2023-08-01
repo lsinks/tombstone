@@ -1,0 +1,69 @@
+---
+title: "Table_tester"
+date: 07-28-2023
+categories: [Data-Viz, openxlsx, stringr, fuzzyjoin, mapview, sf] # self-defined categories
+draft: true # setting this to `true` will prevent your post from appearing on your listing page until you're ready!
+---
+
+# Project Overview
+
+I'm working on a project for my father that will culminate in a website for his genealogy research. There are a couple of different parts that I'm working on independently. This part involves linking photos of family gravestones to an Excel sheet that records the GPS location of the tombstones. This combined dataset is used to generate a leaflet map. This portion focused on data cleaning and the photo matching. I do generate a leaflet map at the end, but it is not the final map. I'll do the styling of the map in a separate post.
+
+```{r}
+library(tidyverse) # who doesn't want to be tidy?
+library(ggthemes) # more themes for ggplot
+library(gt) # For nice tables
+library(ggrepel) # to help position labels in ggplot graphs
+library(openxlsx) # importing excel files from a URL
+library(fuzzyjoin) # for joining on inexact matches
+library(sf) # for handling geo data
+
+library(leaflet) # more mapping
+library(here)
+library(magick)
+library(skimr)
+
+```
+
+Reading in his spreadsheet
+
+```{r}
+blog_folder <- "leaflet_module"
+photo_folder <- "Photos"
+archive_folder <- "Archived Photos"
+unmatched_folder <- "Unmatched Photos"
+match1 <- "Matched_Round1"
+match2 <- "Matched_Round2"
+match3 <- "Matched_Round3"
+match4 <- "Matched_Round4"
+#data_file <- "Tombstone_Data_small.xlsx"
+data_file <- "Tombstone Data.xlsx"
+# read in excel sheet
+tombstones_raw <-
+  read.xlsx(here(blog_folder, data_file),
+    sheet = 1
+  )
+
+```
+
+# Reformat and Clean the Data
+
+Cleaning the data is an iterative process. A quick scan of the data reveals a bunch of really obvious issues, but as the analysis proceeds, other errors pop up that can be traced back to improperly cleaned data. Continually checking the results against expected results is critical to find the mistakes. This is part of the reason I have a lot of temporary variables (tombstone_1, tombstone_2, etc.). If I'm not sure about something, I'll store the results in the temporary variable, so I don't have to rerun everything from data import to get a clean copy to work with. I can just go back one or two code blocks and regenerate from a working partially cleaned version. In some cases, I'll illustrate the process in detail, including my mistakes. For others, I just summarize the errors and the process and present cleaned and final code.
+
+Deciding on ground rules for what you will and will not correct is important. For this project, I decided I would not change any photo file names. I'm working with a copy of his photo archive; he has his own filing and naming scheme, and he also corresponds with other genealogists and shares information. Changing photo names on my copy would lead to a set of photos that no longer matched those out there in various places. This decision will lead to missed matches since some photos do appear to have typos in the names such as Octava instead of Octavia. Other photos seem to not follow his normal naming convention of last name first name middle name. Some use first name last name. This again is something that could be corrected programatically, but I won't because of my ground rules. For another project, a different decision might make more sense. (I'd definitely correct file names if it were my own data!)
+
+I also decided that any inferred data (usually denoted in \[\] here) would not be used. Everything going into the map is data directly from the photos.
+
+The tidyverse packages `stringr` and `tidyr` both have very powerful tools for data cleaning and tidying. For most tasks, there are multiple ways to accomplish the goal. I'll illustrate several different ways to perform tasks; there is likely one that is best suited for your application so it is good to know the various methods.
+
+## Fixing the GPS data
+
+When you view the GPS data you can see a couple of issues.
+
+```{r}
+tombstones_raw %>% select(Surname, N, W) %>% gt() %>% tab_options(
+  container.height = px(300)
+)
+
+
+```
