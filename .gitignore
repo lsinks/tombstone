@@ -5,3 +5,5 @@
 leaflet_module/Photos/*
 *.JPG
 *.png
+leaflet_module/my.html
+leaflet_module/tombstones_geo.RDS
