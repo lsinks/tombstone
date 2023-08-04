@@ -7,3 +7,4 @@ leaflet_module/Photos/*
 *.png
 leaflet_module/my.html
 leaflet_module/tombstones_geo.RDS
+leaflet_module/my2.html

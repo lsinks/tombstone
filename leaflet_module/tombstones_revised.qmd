@@ -770,7 +770,7 @@ Matching_Photos <-
             paste0(df_temp[[name_to_match]][1], "_panel.png")
             #paste0(df_temp$full_name_MI[1], "_panel.png")
           ),
-          format = "png"
+          format = "jpeg"
         )
         index2 <- 1
         for (index2 in seq(1:nrow(df_temp))) {
@@ -1080,7 +1080,9 @@ file.copy(
 )
 ```
 
-## Making a Complete Name Field
+## Making Labels for The Map
+
+### Making a Complete Name Field
 
 Now I need to make a column of the most complete name. This will be used as the label in the map. If the person has a middle name entry, I use the full name with middle name, and if not, I use the first and last. Note that I'm generating this by pasting together the individual name parts rather than using all the name variations I generated to match with. I want this label to be in conventional order and not the last name first format that I used for matching.
 
@@ -1094,11 +1096,27 @@ tombstones_matched_final <- tombstones_matched_final %>%
   )
 ```
 
+### Making a Cemetery Label
+
+```{r}
+#| label: making-cemetery-label
+tombstones_matched_final <- tombstones_matched_final %>%
+  mutate(cemetery_name = ifelse(Cemetery == "", "", paste(Cemetery, "Cemetery", sep = " "))
+  )
+```
+
+Saving the file
+
+```{r}
+#| label: saving-file-df
+saveRDS(tombstones_matched_final, "tombstones_matched_final.RDS")
+```
+
 # Converting to Geo Data
 
 First, I'm dropping any NAs in lat/long. I convert it to a [SF geo object](https://r-spatial.github.io/sf/index.html). I talk about that process in a [TidyTuesday post](https://lsinks.github.io/posts/2023-06-27-tidytuesday-US-populated-places/arlington-neighborhoods.html), where I also generate a map.
 
-I'm adding some jitter to the coordinates with [`sf_jitter()`](https://r-spatial.github.io/sf/reference/st_jitter.html); tombstones that are very close to each other have the same coordinates and show up as overlapping on the map.
+I'm adding some jitter to the coordinates with [`sf_jitter()`](https://r-spatial.github.io/sf/reference/st_jitter.html); tombstones that are very close to each other have the same coordinates and show up as overlapping on the map. I'm not really happy with how far apart they are jittered, but I'll play with that in the leaflet tutorial.
 
 ```{r}
 #| label: converting-to-geo
@@ -1110,7 +1128,7 @@ tombstones_geo <- st_as_sf(tombstones_matched_final, coords = c("long", "lat"), 
 
 tombstones_geo <- tombstones_geo %>% drop_na(photo_list)
 
-tombstones_geo <- st_jitter(tombstones_geo, amount = 5)
+tombstones_geo <- st_jitter(tombstones_geo, factor = 0.001)
 ```
 
 # Making the Leaflet Map
@@ -1124,15 +1142,12 @@ The draft map is another opportunity to check for obvious errors or bugs.
 #| label: making_map
 image_list <- tombstones_geo$photo_list
 
-labels <- sprintf(
-  "<strong>tombstones_geo$full_name</strong> <br/>,
-  tombstones_geo$Cemetery" ) %>% lapply(htmltools::HTML)
-
 leaflet() %>%
   addTiles() %>%
+  addProviderTiles(providers$CartoDB.Positron) %>%
   addCircleMarkers(
     data = tombstones_geo,
-    label = ~ (paste(complete_name, "-", Cemetery, "Cemetery", sep = " ")), 
+    label = ~ (paste(complete_name, cemetery_name, sep = " ")), 
     clusterOptions = markerClusterOptions(),
     opacity = 1,
     radius = 10,
@@ -1191,20 +1206,16 @@ map <- leaflet() %>%
    leafpop::addPopupImages(
     image = paste0(here("leaflet_module", photo_folder, "Map" ),"/", image_list),
       src = local,
-     group = "group1", width = 600,
+     group = "group1", width = 400,
   maxHeight = 300, maxWidth = 600
    )
-```
-
-```{r}
-#map
 ```
 
 Blockhouse is now correctly located in upstate New York.
 
 ```{r}
 library(htmlwidgets)
-saveWidget(map, file="my.html")
+saveWidget(map, file="map_to_upload.html")
 ```
 
 I assume I can save this file as a RDS file for use in the leaflet mapper module, but if not, I'll let you know.
