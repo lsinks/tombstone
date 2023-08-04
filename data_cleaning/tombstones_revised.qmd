@@ -48,7 +48,7 @@ Here set-up some variables that I use for the file/ folder structure and I read 
 #| output: false
 
 # folder names
-blog_folder <- "leaflet_module"
+blog_folder <- "data_cleaning"
 photo_folder <- "Photos"
 archive_folder <- "Archived Photos"
 unmatched_folder <- "Unmatched Photos"
@@ -693,10 +693,8 @@ It takes in a dataframe (df_to_match) and what column of names it should be matc
 5.  Move all the photos that matched to the appropriate folder for the round.
 6.  Remove all the unmatched names from the dataframe.
 7.  Generate a list of people who have multiple photos associated with their name.
-8.  Make a panel/composite photo from the individual photos for each person with multiples and move the original to the folder archive. The panel photos are made using the [magick package](https://cran.r-project.org/web/packages/magick/vignettes/intro.html). I got started using this solution from stack overflow.
+8.  Make a panel/composite photo from the individual photos for each person with multiples and move the original to the folder archive. The panel photos are made using the [magick package](https://cran.r-project.org/web/packages/magick/vignettes/intro.html). I got started using t[his solution from stack overflow](https://stackoverflow.com/questions/61196196/image-append-on-dynamic-number-of-variables).
 9.  Return the dataframe with the matches. This is useful for troubleshooting, but it is not the final results dataframe because it has the original (multiple) photos listed and not the new panel photos. Functions in R must return something, and I did use this returned dataframe extensively when troubleshooting, but in other cases, I'd probably silence the output or just return TRUE/FALSE (with some error checking) to reflect if the function executed properly. It could also return the duplicate names df which could be sent to my father to manually match photos to those names. Or it could call `Update_Photo_Names()` as the last part, which would then let `Matching_Photos()` return the dataframe with the correct file names.
-
-The panel photo is a png. The original photos are all jpg. I actually like that, because it is another flag/marker that those photos are not original files. (The date is also a clue right now, but this project is on-going for my father, so I expect photos with later dates than today to be generated.)
 
 ```{r}
 #| label: matching-function
@@ -1128,7 +1126,7 @@ tombstones_geo <- st_as_sf(tombstones_matched_final, coords = c("long", "lat"), 
 
 tombstones_geo <- tombstones_geo %>% drop_na(photo_list)
 
-tombstones_geo <- st_jitter(tombstones_geo, factor = 0.001)
+tombstones_geo <- st_jitter(tombstones_geo, factor = 0.0001)
 ```
 
 # Making the Leaflet Map
@@ -1145,6 +1143,7 @@ image_list <- tombstones_geo$photo_list
 leaflet() %>%
   addTiles() %>%
   addProviderTiles(providers$CartoDB.Positron) %>%
+  addScaleBar() %>%
   addCircleMarkers(
     data = tombstones_geo,
     label = ~ (paste(complete_name, cemetery_name, sep = " ")), 
@@ -1157,10 +1156,10 @@ leaflet() %>%
   )  %>%
 
    leafpop::addPopupImages(
-    image = paste0(here("leaflet_module", photo_folder, "Map" ),"/", image_list),
+    image = paste0(here(blog_folder, photo_folder, "Map" ),"/", image_list),
       src = local,
-     group = "group1", width = 600,
-  maxHeight = 300, maxWidth = 600
+     group = "group1", width = 400,
+  maxHeight = 300, maxWidth = 400
    )
 ```
 
@@ -1192,6 +1191,7 @@ Now re-check the map.
 #| label: new-map
 map <- leaflet() %>%
   addTiles() %>%
+  addScaleBar() %>%
   addCircleMarkers(
     data = tombstones_geo,
     label = ~ (paste(complete_name, "-", Cemetery, "Cemetery", sep = " ")), 
@@ -1204,7 +1204,7 @@ map <- leaflet() %>%
   )  %>%
 
    leafpop::addPopupImages(
-    image = paste0(here("leaflet_module", photo_folder, "Map" ),"/", image_list),
+    image = paste0(here(blog_folder, photo_folder, "Map" ),"/", image_list),
       src = local,
      group = "group1", width = 400,
   maxHeight = 300, maxWidth = 600
@@ -1215,7 +1215,7 @@ Blockhouse is now correctly located in upstate New York.
 
 ```{r}
 library(htmlwidgets)
-saveWidget(map, file="map_to_upload.html")
+saveWidget(map, file ="map_to_upload.html")
 ```
 
 I assume I can save this file as a RDS file for use in the leaflet mapper module, but if not, I'll let you know.
