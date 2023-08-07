@@ -1,0 +1,1207 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.3.433">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="dcterms.date" content="2023-06-30">
+
+<title>Leaflet_tester</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="tombstones_revised_files/libs/clipboard/clipboard.min.js"></script>
+<script src="tombstones_revised_files/libs/quarto-html/quarto.js"></script>
+<script src="tombstones_revised_files/libs/quarto-html/popper.min.js"></script>
+<script src="tombstones_revised_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="tombstones_revised_files/libs/quarto-html/anchor.min.js"></script>
+<link href="tombstones_revised_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="tombstones_revised_files/libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="tombstones_revised_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="tombstones_revised_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="tombstones_revised_files/libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+<script src="tombstones_revised_files/libs/htmlwidgets-1.6.2/htmlwidgets.js"></script>
+<script src="tombstones_revised_files/libs/jquery-1.12.4/jquery.min.js"></script>
+<link href="tombstones_revised_files/libs/leaflet-1.3.1/leaflet.css" rel="stylesheet">
+<script src="tombstones_revised_files/libs/leaflet-1.3.1/leaflet.js"></script>
+<link href="tombstones_revised_files/libs/leafletfix-1.0.0/leafletfix.css" rel="stylesheet">
+<script src="tombstones_revised_files/libs/proj4-2.6.2/proj4.min.js"></script>
+<script src="tombstones_revised_files/libs/Proj4Leaflet-1.0.1/proj4leaflet.js"></script>
+<link href="tombstones_revised_files/libs/rstudio_leaflet-1.3.1/rstudio_leaflet.css" rel="stylesheet">
+<script src="tombstones_revised_files/libs/leaflet-binding-2.1.2/leaflet.js"></script>
+<link href="tombstones_revised_files/libs/leaflet-markercluster-1.0.5/MarkerCluster.css" rel="stylesheet">
+<link href="tombstones_revised_files/libs/leaflet-markercluster-1.0.5/MarkerCluster.Default.css" rel="stylesheet">
+<script src="tombstones_revised_files/libs/leaflet-markercluster-1.0.5/leaflet.markercluster.js"></script>
+<script src="tombstones_revised_files/libs/leaflet-markercluster-1.0.5/leaflet.markercluster.freezable.js"></script>
+<script src="tombstones_revised_files/libs/leaflet-markercluster-1.0.5/leaflet.markercluster.layersupport.js"></script>
+<script src="tombstones_revised_files/libs/leaflet-providers-1.9.0/leaflet-providers_1.9.0.js"></script>
+<script src="tombstones_revised_files/libs/leaflet-providers-plugin-2.1.2/leaflet-providers-plugin.js"></script>
+<script src="tombstones_revised_files/libs/fuse_js-3.2.0/fuse_js-prod.js"></script>
+<link href="tombstones_revised_files/libs/lfx-search-2.3.7/lfx-search-prod.css" rel="stylesheet">
+<script src="tombstones_revised_files/libs/lfx-search-2.3.7/lfx-search-prod.js"></script>
+<script src="tombstones_revised_files/libs/lfx-search-2.3.7/lfx-search-bindings.js"></script>
+
+
+</head>
+
+<body class="fullcontent">
+
+<div id="quarto-content" class="page-columns page-rows-contents page-layout-article">
+
+<main class="content page-columns page-full" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Leaflet_tester</h1>
+  <div class="quarto-categories">
+    <div class="quarto-category">Data-Viz</div>
+    <div class="quarto-category">R</div>
+    <div class="quarto-category">leaflet</div>
+    <div class="quarto-category">quarto</div>
+    <div class="quarto-category">problem solving</div>
+    <div class="quarto-category">mapping</div>
+    <div class="quarto-category">Code-Along</div>
+  </div>
+  </div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">June 30, 2023</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+</header>
+
+<section id="project-overview" class="level1">
+<h1>Project Overview</h1>
+<p>I’m working on a project for my father that will culminate in a website for his genealogy research. <a href="https://lsinks.github.io/currentprojects.html">There are a couple of different parts</a> that I’m working on independently. In a previous part of the project, I matched an excel sheet with gps coordinates and some biographic data with photos of various tombstones. This part involves making a leaflet map of various family grave sites.</p>
+<p>One issue that needed to be dealt with was that some tombstones are very close together and have the same gps coordinates. I tried to solve this by adding jitter to the coordinates, but it was jittering them very far apart.</p>
+</section>
+<section id="setting-up" class="level1">
+<h1>Setting Up</h1>
+<section id="loading-libraries" class="level2">
+<h2 class="anchored" data-anchor-id="loading-libraries">Loading Libraries</h2>
+<p>I’ll include more info and reference information about the packages at the code blocks where I use them.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse) <span class="co"># who doesn't want to be tidy?</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(gt) <span class="co"># For nice tables</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(openxlsx) <span class="co"># importing excel files from a URL</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(fuzzyjoin) <span class="co"># for joining on inexact matches</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(sf) <span class="co"># for handling geo data</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(leaflet) <span class="co"># mapping</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(here) <span class="co"># reproducible file paths</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(magick) <span class="co"># makes panel pictures</span></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(leaflet.extras)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="file-folder-names-and-loading-data" class="level2">
+<h2 class="anchored" data-anchor-id="file-folder-names-and-loading-data">File Folder Names and Loading Data</h2>
+<p>Here set-up some variables that I use for the file/ folder structure and I read in the spreadsheet.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># folder names</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>blog_folder <span class="ot">&lt;-</span> <span class="st">"mapping_with_leaflet"</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>photo_folder <span class="ot">&lt;-</span> <span class="st">"Map"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Reading in the data. This is data created by the previous portion of the project.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>tombstones_geo <span class="ot">&lt;-</span> <span class="fu">readRDS</span>(<span class="fu">here</span>(blog_folder, <span class="st">"tombstones_geo.RDS"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+</section>
+<section id="how-many-gravestones-need-to-be-jittered" class="level1">
+<h1>How many gravestones need to be jittered?</h1>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>test <span class="ot">&lt;-</span> tombstones_geo <span class="sc">%&gt;%</span> <span class="fu">group_by</span>(geometry) <span class="sc">%&gt;%</span> <span class="fu">count</span>(geometry, <span class="at">sort =</span> <span class="cn">TRUE</span>) <span class="sc">%&gt;%</span> <span class="fu">filter</span>(n<span class="sc">&gt;</span><span class="dv">1</span>)</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>test <span class="sc">%&gt;%</span> <span class="fu">gt</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+
+<div id="yhimkaztwe" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>#yhimkaztwe table {
+  font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#yhimkaztwe thead, #yhimkaztwe tbody, #yhimkaztwe tfoot, #yhimkaztwe tr, #yhimkaztwe td, #yhimkaztwe th {
+  border-style: none;
+}
+
+#yhimkaztwe p {
+  margin: 0;
+  padding: 0;
+}
+
+#yhimkaztwe .gt_table {
+  display: table;
+  border-collapse: collapse;
+  line-height: normal;
+  margin-left: auto;
+  margin-right: auto;
+  color: #333333;
+  font-size: 16px;
+  font-weight: normal;
+  font-style: normal;
+  background-color: #FFFFFF;
+  width: auto;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #A8A8A8;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #A8A8A8;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+}
+
+#yhimkaztwe .gt_caption {
+  padding-top: 4px;
+  padding-bottom: 4px;
+}
+
+#yhimkaztwe .gt_title {
+  color: #333333;
+  font-size: 125%;
+  font-weight: initial;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-color: #FFFFFF;
+  border-bottom-width: 0;
+}
+
+#yhimkaztwe .gt_subtitle {
+  color: #333333;
+  font-size: 85%;
+  font-weight: initial;
+  padding-top: 3px;
+  padding-bottom: 5px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-color: #FFFFFF;
+  border-top-width: 0;
+}
+
+#yhimkaztwe .gt_heading {
+  background-color: #FFFFFF;
+  text-align: center;
+  border-bottom-color: #FFFFFF;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#yhimkaztwe .gt_bottom_border {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#yhimkaztwe .gt_col_headings {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#yhimkaztwe .gt_col_heading {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 6px;
+  padding-left: 5px;
+  padding-right: 5px;
+  overflow-x: hidden;
+}
+
+#yhimkaztwe .gt_column_spanner_outer {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  padding-top: 0;
+  padding-bottom: 0;
+  padding-left: 4px;
+  padding-right: 4px;
+}
+
+#yhimkaztwe .gt_column_spanner_outer:first-child {
+  padding-left: 0;
+}
+
+#yhimkaztwe .gt_column_spanner_outer:last-child {
+  padding-right: 0;
+}
+
+#yhimkaztwe .gt_column_spanner {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  overflow-x: hidden;
+  display: inline-block;
+  width: 100%;
+}
+
+#yhimkaztwe .gt_spanner_row {
+  border-bottom-style: hidden;
+}
+
+#yhimkaztwe .gt_group_heading {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+  text-align: left;
+}
+
+#yhimkaztwe .gt_empty_group_heading {
+  padding: 0.5px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: middle;
+}
+
+#yhimkaztwe .gt_from_md > :first-child {
+  margin-top: 0;
+}
+
+#yhimkaztwe .gt_from_md > :last-child {
+  margin-bottom: 0;
+}
+
+#yhimkaztwe .gt_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  margin: 10px;
+  border-top-style: solid;
+  border-top-width: 1px;
+  border-top-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+  overflow-x: hidden;
+}
+
+#yhimkaztwe .gt_stub {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: solid;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#yhimkaztwe .gt_stub_row_group {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: solid;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  padding-left: 5px;
+  padding-right: 5px;
+  vertical-align: top;
+}
+
+#yhimkaztwe .gt_row_group_first td {
+  border-top-width: 2px;
+}
+
+#yhimkaztwe .gt_row_group_first th {
+  border-top-width: 2px;
+}
+
+#yhimkaztwe .gt_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#yhimkaztwe .gt_first_summary_row {
+  border-top-style: solid;
+  border-top-color: #D3D3D3;
+}
+
+#yhimkaztwe .gt_first_summary_row.thick {
+  border-top-width: 2px;
+}
+
+#yhimkaztwe .gt_last_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#yhimkaztwe .gt_grand_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#yhimkaztwe .gt_first_grand_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-style: double;
+  border-top-width: 6px;
+  border-top-color: #D3D3D3;
+}
+
+#yhimkaztwe .gt_last_grand_summary_row_top {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-style: double;
+  border-bottom-width: 6px;
+  border-bottom-color: #D3D3D3;
+}
+
+#yhimkaztwe .gt_striped {
+  background-color: rgba(128, 128, 128, 0.05);
+}
+
+#yhimkaztwe .gt_table_body {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#yhimkaztwe .gt_footnotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#yhimkaztwe .gt_footnote {
+  margin: 0px;
+  font-size: 90%;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#yhimkaztwe .gt_sourcenotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#yhimkaztwe .gt_sourcenote {
+  font-size: 90%;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#yhimkaztwe .gt_left {
+  text-align: left;
+}
+
+#yhimkaztwe .gt_center {
+  text-align: center;
+}
+
+#yhimkaztwe .gt_right {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+#yhimkaztwe .gt_font_normal {
+  font-weight: normal;
+}
+
+#yhimkaztwe .gt_font_bold {
+  font-weight: bold;
+}
+
+#yhimkaztwe .gt_font_italic {
+  font-style: italic;
+}
+
+#yhimkaztwe .gt_super {
+  font-size: 65%;
+}
+
+#yhimkaztwe .gt_footnote_marks {
+  font-size: 75%;
+  vertical-align: 0.4em;
+  position: initial;
+}
+
+#yhimkaztwe .gt_asterisk {
+  font-size: 100%;
+  vertical-align: 0;
+}
+
+#yhimkaztwe .gt_indent_1 {
+  text-indent: 5px;
+}
+
+#yhimkaztwe .gt_indent_2 {
+  text-indent: 10px;
+}
+
+#yhimkaztwe .gt_indent_3 {
+  text-indent: 15px;
+}
+
+#yhimkaztwe .gt_indent_4 {
+  text-indent: 20px;
+}
+
+#yhimkaztwe .gt_indent_5 {
+  text-indent: 25px;
+}
+</style>
+<table class="gt_table" data-quarto-disable-processing="false" data-quarto-bootstrap="false">
+  <thead>
+    
+    <tr class="gt_col_headings">
+      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" scope="col" id="geometry">geometry</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" scope="col" id="n">n</th>
+    </tr>
+  </thead>
+  <tbody class="gt_table_body">
+    <tr><td headers="geometry" class="gt_row gt_center">c(-88.865, 37.9888888888889)</td>
+<td headers="n" class="gt_row gt_right">3</td></tr>
+    <tr><td headers="geometry" class="gt_row gt_center">c(-75.7125, 40.8777777777778)</td>
+<td headers="n" class="gt_row gt_right">2</td></tr>
+    <tr><td headers="geometry" class="gt_row gt_center">c(-88.6683333333333, 38.0686111111111)</td>
+<td headers="n" class="gt_row gt_right">2</td></tr>
+    <tr><td headers="geometry" class="gt_row gt_center">c(-89.1469444444445, 37.6091666666667)</td>
+<td headers="n" class="gt_row gt_right">2</td></tr>
+    <tr><td headers="geometry" class="gt_row gt_center">c(-88.9752777777778, 38.1669444444444)</td>
+<td headers="n" class="gt_row gt_right">2</td></tr>
+    <tr><td headers="geometry" class="gt_row gt_center">c(-88.6952777777778, 38.1044444444444)</td>
+<td headers="n" class="gt_row gt_right">2</td></tr>
+    <tr><td headers="geometry" class="gt_row gt_center">c(-89.0463888888889, 37.8788888888889)</td>
+<td headers="n" class="gt_row gt_right">2</td></tr>
+    <tr><td headers="geometry" class="gt_row gt_center">c(-86.7688888888889, 36.6922222222222)</td>
+<td headers="n" class="gt_row gt_right">2</td></tr>
+    <tr><td headers="geometry" class="gt_row gt_center">c(-89.1477777777778, 37.6080555555556)</td>
+<td headers="n" class="gt_row gt_right">2</td></tr>
+    <tr><td headers="geometry" class="gt_row gt_center">c(-88.7008333333333, 38.1088888888889)</td>
+<td headers="n" class="gt_row gt_right">2</td></tr>
+    <tr><td headers="geometry" class="gt_row gt_center">c(-89.0233333333333, 38.0594444444444)</td>
+<td headers="n" class="gt_row gt_right">2</td></tr>
+    <tr><td headers="geometry" class="gt_row gt_center">c(-83.2383333333333, 38.895)</td>
+<td headers="n" class="gt_row gt_right">2</td></tr>
+    <tr><td headers="geometry" class="gt_row gt_center">c(-88.6983333333333, 38.1036111111111)</td>
+<td headers="n" class="gt_row gt_right">2</td></tr>
+    <tr><td headers="geometry" class="gt_row gt_center">c(-89.0361111111111, 38.0386111111111)</td>
+<td headers="n" class="gt_row gt_right">2</td></tr>
+    <tr><td headers="geometry" class="gt_row gt_center">c(-89.0194444444444, 38.0566666666667)</td>
+<td headers="n" class="gt_row gt_right">2</td></tr>
+    <tr><td headers="geometry" class="gt_row gt_center">c(-89.1330555555556, 37.9472222222222)</td>
+<td headers="n" class="gt_row gt_right">2</td></tr>
+    <tr><td headers="geometry" class="gt_row gt_center">c(-87.1911111111111, 38.5569444444444)</td>
+<td headers="n" class="gt_row gt_right">2</td></tr>
+    <tr><td headers="geometry" class="gt_row gt_center">c(-88.8675, 37.6602777777778)</td>
+<td headers="n" class="gt_row gt_right">2</td></tr>
+    <tr><td headers="geometry" class="gt_row gt_center">c(-88.6944444444445, 38.1036111111111)</td>
+<td headers="n" class="gt_row gt_right">2</td></tr>
+    <tr><td headers="geometry" class="gt_row gt_center">c(-89.1475, 37.6088888888889)</td>
+<td headers="n" class="gt_row gt_right">2</td></tr>
+    <tr><td headers="geometry" class="gt_row gt_center">c(-87.1908333333333, 38.5572222222222)</td>
+<td headers="n" class="gt_row gt_right">2</td></tr>
+    <tr><td headers="geometry" class="gt_row gt_center">c(-75.5988888888889, 40.7125)</td>
+<td headers="n" class="gt_row gt_right">2</td></tr>
+    <tr><td headers="geometry" class="gt_row gt_center">c(-89.015, 37.8511111111111)</td>
+<td headers="n" class="gt_row gt_right">2</td></tr>
+    <tr><td headers="geometry" class="gt_row gt_center">c(-88.9466666666667, 37.9655555555556)</td>
+<td headers="n" class="gt_row gt_right">2</td></tr>
+    <tr><td headers="geometry" class="gt_row gt_center">c(-88.6794444444444, 38.0466666666667)</td>
+<td headers="n" class="gt_row gt_right">2</td></tr>
+    <tr><td headers="geometry" class="gt_row gt_center">c(-89.1938888888889, 37.9288888888889)</td>
+<td headers="n" class="gt_row gt_right">2</td></tr>
+    <tr><td headers="geometry" class="gt_row gt_center">c(-88.7016666666667, 38.1044444444444)</td>
+<td headers="n" class="gt_row gt_right">2</td></tr>
+  </tbody>
+  
+  
+</table>
+</div>
+</div>
+</div>
+<p>27 sets of identical coordinates.</p>
+<p>Now let’s make a set of entries that are only duplicates. To join spatial data, we need to use st_join. The type of join is set with the parameter left. If left = TRUE then the function returns a left join, otherwise, and inner_join. This function defaults to TRUE according to the documentation, but it seems that whether left is set to TRUE or FALSE, it returns the inner join.</p>
+<p>Join type defaults to intersect. <strong>More BLAH</strong></p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>test_for_jitter_left <span class="ot">&lt;-</span> tombstones_geo <span class="sc">%&gt;%</span> <span class="fu">st_join</span>(test, <span class="at">left =</span> <span class="cn">TRUE</span>) <span class="sc">%&gt;%</span> <span class="fu">filter</span>(n<span class="sc">&gt;</span><span class="dv">1</span>)</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>test_for_jitter_inner <span class="ot">&lt;-</span> tombstones_geo <span class="sc">%&gt;%</span> <span class="fu">st_join</span>(test, <span class="at">left =</span> <span class="cn">FALSE</span>) <span class="sc">%&gt;%</span> <span class="fu">filter</span>(n<span class="sc">&gt;</span><span class="dv">1</span>)</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="fu">identical</span>(test_for_jitter_left, test_for_jitter_inner)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] TRUE</code></pre>
+</div>
+</div>
+</section>
+<section id="building-a-simple-map" class="level1 page-columns page-full">
+<h1>Building a Simple Map</h1>
+<p>I’m going work on this problem using the one set of coordinate where there are 3 tombstones.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>test <span class="ot">&lt;-</span> test_for_jitter_inner <span class="sc">%&gt;%</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(n <span class="sc">==</span> <span class="dv">3</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Here is the simplest leafelt map we can make. The procedure is to intialize leaflet, add an underlying map (add_Tiles) and then add my markers with the label (addCircleMarkers) from my dataframe. The layerID is so we can remove this object later.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>test_map1 <span class="ot">&lt;-</span> <span class="fu">leaflet</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">addTiles</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">addCircleMarkers</span>(</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">data =</span> test,</span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">label =</span> <span class="sc">~</span> (<span class="fu">paste</span>(complete_name, cemetery_name, <span class="at">sep =</span> <span class="st">" "</span>)),</span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">layerId =</span>  <span class="st">"test"</span></span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>  ) </span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>test_map1</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div class="leaflet html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-de084a7b220b2eff5997" style="width:100%;height:464px;"></div>
+<script type="application/json" data-for="htmlwidget-de084a7b220b2eff5997">{"x":{"options":{"crs":{"crsClass":"L.CRS.EPSG3857","code":null,"proj4def":null,"projectedBounds":null,"options":{}}},"calls":[{"method":"addTiles","args":["https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",null,null,{"minZoom":0,"maxZoom":18,"tileSize":256,"subdomains":"abc","errorTileUrl":"","tms":false,"noWrap":false,"zoomOffset":0,"zoomReverse":false,"opacity":1,"zIndex":1,"detectRetina":false,"attribution":"&copy; <a href=\"https://openstreetmap.org\">OpenStreetMap<\/a> contributors, <a href=\"https://creativecommons.org/licenses/by-sa/2.0/\">CC-BY-SA<\/a>"}]},{"method":"addCircleMarkers","args":[[37.98888888888889,37.98888888888889,37.98888888888889],[-88.86499999999999,-88.86499999999999,-88.86499999999999],10,"test",null,{"interactive":true,"className":"","stroke":true,"color":"#03F","weight":5,"opacity":0.5,"fill":true,"fillColor":"#03F","fillOpacity":0.2},null,null,null,null,["W M Bundy Liberty Methodist Cemetery","Clem Bundy Liberty Methodist Cemetery","Nancy Bundy Liberty Methodist Cemetery"],{"interactive":false,"permanent":false,"direction":"auto","opacity":1,"offset":[0,0],"textsize":"10px","textOnly":false,"className":"","sticky":true},null]}],"limits":{"lat":[37.98888888888889,37.98888888888889],"lng":[-88.86499999999999,-88.86499999999999]}},"evals":[],"jsHooks":[]}</script>
+</div>
+</div>
+<p>Only one dot and only one label comes up no matter where you hover or how much you zoom. I’m going to add a bit of styling and then move on to solving the problem. The dark ring around the marker bugs me the most- it is controlled by stroke and should be set to NA to turn it off. The radius make the markers a bit smaller.</p>
+<p>First, you must remove the old markers before you add the new ones. Otherwise, it just adds the new points on top of the old ones.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>test_map1 <span class="ot">&lt;-</span> test_map1 <span class="sc">%&gt;%</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">addCircleMarkers</span>(</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">data =</span> test,</span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">label =</span> <span class="sc">~</span> (<span class="fu">paste</span>(complete_name, cemetery_name, <span class="at">sep =</span> <span class="st">" "</span>)), </span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">radius =</span> <span class="dv">5</span>,</span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">stroke =</span> <span class="cn">NA</span>,</span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">layerId =</span> <span class="st">"test2"</span></span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>  ) </span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a>test_map1</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div class="leaflet html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-d7417c7a2936fab7890f" style="width:100%;height:464px;"></div>
+<script type="application/json" data-for="htmlwidget-d7417c7a2936fab7890f">{"x":{"options":{"crs":{"crsClass":"L.CRS.EPSG3857","code":null,"proj4def":null,"projectedBounds":null,"options":{}}},"calls":[{"method":"addTiles","args":["https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",null,null,{"minZoom":0,"maxZoom":18,"tileSize":256,"subdomains":"abc","errorTileUrl":"","tms":false,"noWrap":false,"zoomOffset":0,"zoomReverse":false,"opacity":1,"zIndex":1,"detectRetina":false,"attribution":"&copy; <a href=\"https://openstreetmap.org\">OpenStreetMap<\/a> contributors, <a href=\"https://creativecommons.org/licenses/by-sa/2.0/\">CC-BY-SA<\/a>"}]},{"method":"addCircleMarkers","args":[[37.98888888888889,37.98888888888889,37.98888888888889],[-88.86499999999999,-88.86499999999999,-88.86499999999999],10,"test",null,{"interactive":true,"className":"","stroke":true,"color":"#03F","weight":5,"opacity":0.5,"fill":true,"fillColor":"#03F","fillOpacity":0.2},null,null,null,null,["W M Bundy Liberty Methodist Cemetery","Clem Bundy Liberty Methodist Cemetery","Nancy Bundy Liberty Methodist Cemetery"],{"interactive":false,"permanent":false,"direction":"auto","opacity":1,"offset":[0,0],"textsize":"10px","textOnly":false,"className":"","sticky":true},null]},{"method":"addCircleMarkers","args":[[37.98888888888889,37.98888888888889,37.98888888888889],[-88.86499999999999,-88.86499999999999,-88.86499999999999],5,"test2",null,{"interactive":true,"className":"","stroke":null,"color":"#03F","weight":5,"opacity":0.5,"fill":true,"fillColor":"#03F","fillOpacity":0.2},null,null,null,null,["W M Bundy Liberty Methodist Cemetery","Clem Bundy Liberty Methodist Cemetery","Nancy Bundy Liberty Methodist Cemetery"],{"interactive":false,"permanent":false,"direction":"auto","opacity":1,"offset":[0,0],"textsize":"10px","textOnly":false,"className":"","sticky":true},null]}],"limits":{"lat":[37.98888888888889,37.98888888888889],"lng":[-88.86499999999999,-88.86499999999999]}},"evals":[],"jsHooks":[]}</script>
+</div>
+</div>
+<p>To remove them, use removeMarker with the layer ID. I’m going to add a scale bar too, so I can see how far apart my dots end up being. When I was playing around with sf_jitter, some of the options put the markers several km apart, which isn’t acceptable.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>test_map1 <span class="ot">&lt;-</span> test_map1 <span class="sc">%&gt;%</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">removeMarker</span>(<span class="at">layerId=</span> <span class="st">"test"</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">addScaleBar</span>()</span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>test_map1</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div class="leaflet html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-8f9a0a89c65096f4d3be" style="width:100%;height:464px;"></div>
+<script type="application/json" data-for="htmlwidget-8f9a0a89c65096f4d3be">{"x":{"options":{"crs":{"crsClass":"L.CRS.EPSG3857","code":null,"proj4def":null,"projectedBounds":null,"options":{}}},"calls":[{"method":"addTiles","args":["https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",null,null,{"minZoom":0,"maxZoom":18,"tileSize":256,"subdomains":"abc","errorTileUrl":"","tms":false,"noWrap":false,"zoomOffset":0,"zoomReverse":false,"opacity":1,"zIndex":1,"detectRetina":false,"attribution":"&copy; <a href=\"https://openstreetmap.org\">OpenStreetMap<\/a> contributors, <a href=\"https://creativecommons.org/licenses/by-sa/2.0/\">CC-BY-SA<\/a>"}]},{"method":"addCircleMarkers","args":[[37.98888888888889,37.98888888888889,37.98888888888889],[-88.86499999999999,-88.86499999999999,-88.86499999999999],10,"test",null,{"interactive":true,"className":"","stroke":true,"color":"#03F","weight":5,"opacity":0.5,"fill":true,"fillColor":"#03F","fillOpacity":0.2},null,null,null,null,["W M Bundy Liberty Methodist Cemetery","Clem Bundy Liberty Methodist Cemetery","Nancy Bundy Liberty Methodist Cemetery"],{"interactive":false,"permanent":false,"direction":"auto","opacity":1,"offset":[0,0],"textsize":"10px","textOnly":false,"className":"","sticky":true},null]},{"method":"addCircleMarkers","args":[[37.98888888888889,37.98888888888889,37.98888888888889],[-88.86499999999999,-88.86499999999999,-88.86499999999999],5,"test2",null,{"interactive":true,"className":"","stroke":null,"color":"#03F","weight":5,"opacity":0.5,"fill":true,"fillColor":"#03F","fillOpacity":0.2},null,null,null,null,["W M Bundy Liberty Methodist Cemetery","Clem Bundy Liberty Methodist Cemetery","Nancy Bundy Liberty Methodist Cemetery"],{"interactive":false,"permanent":false,"direction":"auto","opacity":1,"offset":[0,0],"textsize":"10px","textOnly":false,"className":"","sticky":true},null]},{"method":"removeMarker","args":["test"]},{"method":"addScaleBar","args":[{"maxWidth":100,"metric":true,"imperial":true,"updateWhenIdle":true,"position":"topright"}]}],"limits":{"lat":[37.98888888888889,37.98888888888889],"lng":[-88.86499999999999,-88.86499999999999]}},"evals":[],"jsHooks":[]}</script>
+</div>
+</div>
+<p>The idea choice would be to “spiderify” this map. Spiderifying disperses the points as you zoom in (as we will see with the clustering option). <a href="https://leafletjs.com/index.html">Leaflet is a JavaScript library</a>. Some of the features and extras have been ported to the R package <a href="https://bhaskarvk.github.io/leaflet.extras/">leaflet.extras</a>, but <a href="https://github.com/jawj/OverlappingMarkerSpiderfier-Leaflet/issues/36">spiderifying isnt’</a>. The module for spiderifying in javascript can be found <a href="https://github.com/jawj/OverlappingMarkerSpiderfier-Leaflet">here</a>. (The <a href="http://jawj.github.io/OverlappingMarkerSpiderfier-Leaflet/demo.html">demo is awesome</a> and that is exactly what I want!)</p>
+<p>Now, MarkerCluster does include spiderifying. I’m going to go back to the 55 datapoints set just to illustrate the clustering more clearly</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>cluster_map <span class="ot">&lt;-</span> <span class="fu">leaflet</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">addTiles</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">addScaleBar</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">addCircleMarkers</span>(</span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">data =</span> test_for_jitter_inner,</span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">label =</span> <span class="sc">~</span> (<span class="fu">paste</span>(complete_name, cemetery_name, <span class="at">sep =</span> <span class="st">" "</span>)), </span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">clusterOptions =</span> <span class="fu">markerClusterOptions</span>(),</span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">radius =</span> <span class="dv">10</span>,</span>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a>    <span class="at">color =</span> <span class="st">"blue"</span>,</span>
+<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a>    <span class="at">stroke =</span> <span class="cn">NA</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>You can’t have a layerId with clustering?</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>cluster_map</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div class="leaflet html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-92abf59e961856baf1f1" style="width:100%;height:464px;"></div>
+<script type="application/json" data-for="htmlwidget-92abf59e961856baf1f1">{"x":{"options":{"crs":{"crsClass":"L.CRS.EPSG3857","code":null,"proj4def":null,"projectedBounds":null,"options":{}}},"calls":[{"method":"addTiles","args":["https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",null,null,{"minZoom":0,"maxZoom":18,"tileSize":256,"subdomains":"abc","errorTileUrl":"","tms":false,"noWrap":false,"zoomOffset":0,"zoomReverse":false,"opacity":1,"zIndex":1,"detectRetina":false,"attribution":"&copy; <a href=\"https://openstreetmap.org\">OpenStreetMap<\/a> contributors, <a href=\"https://creativecommons.org/licenses/by-sa/2.0/\">CC-BY-SA<\/a>"}]},{"method":"addScaleBar","args":[{"maxWidth":100,"metric":true,"imperial":true,"updateWhenIdle":true,"position":"topright"}]},{"method":"addCircleMarkers","args":[[40.87777777777777,38.06861111111112,37.60916666666667,37.60916666666667,38.16694444444445,38.10444444444445,37.98888888888889,37.87888888888889,38.06861111111112,36.69222222222223,37.60805555555555,38.10888888888889,38.10888888888889,38.05944444444444,38.05944444444444,38.895,38.895,38.10361111111111,38.10361111111111,38.03861111111111,38.05666666666666,38.05666666666666,37.94722222222222,37.94722222222222,38.55694444444444,37.66027777777777,37.66027777777777,38.16694444444445,38.10361111111111,38.10361111111111,38.10444444444445,38.55694444444444,40.87777777777777,37.98888888888889,37.98888888888889,37.87888888888889,37.60888888888888,37.60888888888888,38.55722222222222,36.69222222222223,38.55722222222222,37.60805555555555,40.7125,40.7125,37.85111111111111,37.85111111111111,37.96555555555555,37.96555555555555,38.04666666666667,38.04666666666667,38.03861111111111,37.92888888888889,37.92888888888889,38.10444444444445,38.10444444444445],[-75.71250000000001,-88.66833333333332,-89.14694444444446,-89.14694444444446,-88.97527777777778,-88.69527777777779,-88.86499999999999,-89.0463888888889,-88.66833333333332,-86.76888888888888,-89.14777777777779,-88.70083333333334,-88.70083333333334,-89.02333333333334,-89.02333333333334,-83.23833333333333,-83.23833333333333,-88.69833333333334,-88.69833333333334,-89.03611111111111,-89.01944444444445,-89.01944444444445,-89.13305555555556,-89.13305555555556,-87.1911111111111,-88.86749999999999,-88.86749999999999,-88.97527777777778,-88.69444444444446,-88.69444444444446,-88.69527777777779,-87.1911111111111,-75.71250000000001,-88.86499999999999,-88.86499999999999,-89.0463888888889,-89.14750000000001,-89.14750000000001,-87.19083333333333,-86.76888888888888,-87.19083333333333,-89.14777777777779,-75.59888888888889,-75.59888888888889,-89.015,-89.015,-88.94666666666667,-88.94666666666667,-88.67944444444444,-88.67944444444444,-89.03611111111111,-89.19388888888889,-89.19388888888889,-88.70166666666667,-88.70166666666667],10,null,null,{"interactive":true,"className":"","stroke":null,"color":"blue","weight":5,"opacity":0.5,"fill":true,"fillColor":"blue","fillOpacity":0.2},{"showCoverageOnHover":true,"zoomToBoundsOnClick":true,"spiderfyOnMaxZoom":true,"removeOutsideVisibleBounds":true,"spiderLegPolylineOptions":{"weight":1.5,"color":"#222","opacity":0.5},"freezeAtZoom":false},null,null,null,["Elizabeth Minnich Brown ","L Earl Doley Webber Campground Cemetery","Samuel Jackson Chapman Hess Vienna Fraternal Cemetery","Catherine West Hess Vienna Fraternal Cemetery","Millie Caroline Woolard Masonic &amp; Odd Fellows Cemetery","Albert A Anderson Lebanon Cumberland Presbyterian Church Cemetery","W M Bundy Liberty Methodist Cemetery","W J Burgess Shakerag Masonic Cemetery","William F Doley Webber Campground Cemetery","W P Dorris Bethlehem Baptist Church Cemetery","Jerome B Hess Vienna Fraternal Cemetery","James N Johnson Lebanon Cumberland Presbyterian Church Cemetery","Mary E Johnson Lebanon Cumberland Presbyterian Church Cemetery","Levi A Jones Lake Creek Cemetery","Hester J Jones Lake Creek Cemetery","John D Nagle Greenlawn Cemetery","Will F Nagel Greenlawn Cemetery","J M Ritter Lebanon Cumberland Presbyterian Church Cemetery","Mary J Ritter Lebanon Cumberland Presbyterian Church Cemetery","Martha J Sinks Boner Cemetery","William D Sinks Lake Creek Cemetery","Charlotte J Sinks Lake Creek Cemetery","Arlie T Sinks Rose Hill Cemetery","Eva E Sinks Rose Hill Cemetery","Richard G Steen Baldwin Cemetery","W F VanCleve Robinson Cemetery","J E VanCleve Robinson Cemetery","Lawrence A Woolard Masonic &amp; Odd Fellows Cemetery","Anna F Woolard Lebanon Cumberland Presbyterian Church Cemetery","Francis J Woolard Lebanon Cumberland Presbyterian Church Cemetery","Adesia Anderson Lebanon Cumberland Presbyterian Church Cemetery","William Baldwin Baldwin Cemetery","Joel Brown ","Clem Bundy Liberty Methodist Cemetery","Nancy Bundy Liberty Methodist Cemetery","Alzada Burgess Shakerag Masonic Cemetery","Caroline Chapman Vienna Fraternal Cemetery","Samuel Chapman Vienna Fraternal Cemetery","Polly Chapman Baldwin Cemetery","Sarah Dorris Bethlehem Baptist Church Cemetery","Semantha Everett Baldwin Cemetery","Franklin Hess Vienna Fraternal Cemetery","Catherina Mory Friedensville Evangelican Lutheran Church Cemetery","Peter Mory Friedensville Evangelican Lutheran Church Cemetery","Daniel Peters White Ash Cemetery","Charlotte Peters White Ash Cemetery","Lily Rex Spillertown Cemetery","Arthur Rex Spillertown Cemetery","Solomon Riegel Webber Campground Cemetery","Catherine Riegel Webber Campground Cemetery","Daniel Sinks Boner Cemetery","Arlie Sinks Maplewood Cemetery","Viola Sinks Maplewood Cemetery","Turner Ware Lebanon Cumberland Presbyterian Church Cemetery","Martha Ware Lebanon Cumberland Presbyterian Church Cemetery"],{"interactive":false,"permanent":false,"direction":"auto","opacity":1,"offset":[0,0],"textsize":"10px","textOnly":false,"className":"","sticky":true},null]}],"limits":{"lat":[36.69222222222223,40.87777777777777],"lng":[-89.19388888888889,-75.59888888888889]}},"evals":[],"jsHooks":[]}</script>
+</div>
+</div>
+<p>Click on a cluster. It will zoom and split the point as you keep clicking until you end up with just the points with the same coordinated.</p>
+<p>It does separate the points, but it is very hard to click on correct portion of the dot to get the label or pop-up. I think you need to hover on the part of the circle marker that does not overlap with either the cluster marker or the or the other circle markers. This can be solved by making the circle markers very large, so there is more non-overlapping area, but this is ugly. It turns out you can also set the spiderfying distance for the markerCluster. Documentation is back in the<a href="https://github.com/Leaflet/Leaflet.markercluster#other-options">js library</a>.</p>
+<div class="cell page-columns page-full">
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="fu">leaflet</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">addTiles</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">addProviderTiles</span>(providers<span class="sc">$</span>CartoDB.Positron) <span class="sc">%&gt;%</span></span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">addScaleBar</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">addCircleMarkers</span>(</span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">data =</span> test_for_jitter_inner,</span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">label =</span> <span class="sc">~</span> (<span class="fu">paste</span>(complete_name, cemetery_name, <span class="at">sep =</span> <span class="st">" "</span>)), </span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">clusterOptions =</span> <span class="fu">markerClusterOptions</span>(<span class="at">spiderfyDistanceMultiplier=</span> <span class="dv">2</span>),</span>
+<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a>    <span class="at">radius =</span> <span class="dv">10</span>,</span>
+<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a>    <span class="at">stroke =</span> <span class="cn">NA</span>,</span>
+<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-12"><a href="#cb13-12" aria-hidden="true" tabindex="-1"></a>  ) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display column-page">
+<div class="leaflet html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-6cac4a3f4a895c4683e2" style="width:100%;height:464px;"></div>
+<script type="application/json" data-for="htmlwidget-6cac4a3f4a895c4683e2">{"x":{"options":{"crs":{"crsClass":"L.CRS.EPSG3857","code":null,"proj4def":null,"projectedBounds":null,"options":{}}},"calls":[{"method":"addTiles","args":["https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",null,null,{"minZoom":0,"maxZoom":18,"tileSize":256,"subdomains":"abc","errorTileUrl":"","tms":false,"noWrap":false,"zoomOffset":0,"zoomReverse":false,"opacity":1,"zIndex":1,"detectRetina":false,"attribution":"&copy; <a href=\"https://openstreetmap.org\">OpenStreetMap<\/a> contributors, <a href=\"https://creativecommons.org/licenses/by-sa/2.0/\">CC-BY-SA<\/a>"}]},{"method":"addProviderTiles","args":["CartoDB.Positron",null,null,{"errorTileUrl":"","noWrap":false,"detectRetina":false}]},{"method":"addScaleBar","args":[{"maxWidth":100,"metric":true,"imperial":true,"updateWhenIdle":true,"position":"topright"}]},{"method":"addCircleMarkers","args":[[40.87777777777777,38.06861111111112,37.60916666666667,37.60916666666667,38.16694444444445,38.10444444444445,37.98888888888889,37.87888888888889,38.06861111111112,36.69222222222223,37.60805555555555,38.10888888888889,38.10888888888889,38.05944444444444,38.05944444444444,38.895,38.895,38.10361111111111,38.10361111111111,38.03861111111111,38.05666666666666,38.05666666666666,37.94722222222222,37.94722222222222,38.55694444444444,37.66027777777777,37.66027777777777,38.16694444444445,38.10361111111111,38.10361111111111,38.10444444444445,38.55694444444444,40.87777777777777,37.98888888888889,37.98888888888889,37.87888888888889,37.60888888888888,37.60888888888888,38.55722222222222,36.69222222222223,38.55722222222222,37.60805555555555,40.7125,40.7125,37.85111111111111,37.85111111111111,37.96555555555555,37.96555555555555,38.04666666666667,38.04666666666667,38.03861111111111,37.92888888888889,37.92888888888889,38.10444444444445,38.10444444444445],[-75.71250000000001,-88.66833333333332,-89.14694444444446,-89.14694444444446,-88.97527777777778,-88.69527777777779,-88.86499999999999,-89.0463888888889,-88.66833333333332,-86.76888888888888,-89.14777777777779,-88.70083333333334,-88.70083333333334,-89.02333333333334,-89.02333333333334,-83.23833333333333,-83.23833333333333,-88.69833333333334,-88.69833333333334,-89.03611111111111,-89.01944444444445,-89.01944444444445,-89.13305555555556,-89.13305555555556,-87.1911111111111,-88.86749999999999,-88.86749999999999,-88.97527777777778,-88.69444444444446,-88.69444444444446,-88.69527777777779,-87.1911111111111,-75.71250000000001,-88.86499999999999,-88.86499999999999,-89.0463888888889,-89.14750000000001,-89.14750000000001,-87.19083333333333,-86.76888888888888,-87.19083333333333,-89.14777777777779,-75.59888888888889,-75.59888888888889,-89.015,-89.015,-88.94666666666667,-88.94666666666667,-88.67944444444444,-88.67944444444444,-89.03611111111111,-89.19388888888889,-89.19388888888889,-88.70166666666667,-88.70166666666667],10,null,null,{"interactive":true,"className":"","stroke":null,"color":"#03F","weight":5,"opacity":0.5,"fill":true,"fillColor":"#03F","fillOpacity":0.2},{"showCoverageOnHover":true,"zoomToBoundsOnClick":true,"spiderfyOnMaxZoom":true,"removeOutsideVisibleBounds":true,"spiderLegPolylineOptions":{"weight":1.5,"color":"#222","opacity":0.5},"freezeAtZoom":false,"spiderfyDistanceMultiplier":2},null,null,null,["Elizabeth Minnich Brown ","L Earl Doley Webber Campground Cemetery","Samuel Jackson Chapman Hess Vienna Fraternal Cemetery","Catherine West Hess Vienna Fraternal Cemetery","Millie Caroline Woolard Masonic &amp; Odd Fellows Cemetery","Albert A Anderson Lebanon Cumberland Presbyterian Church Cemetery","W M Bundy Liberty Methodist Cemetery","W J Burgess Shakerag Masonic Cemetery","William F Doley Webber Campground Cemetery","W P Dorris Bethlehem Baptist Church Cemetery","Jerome B Hess Vienna Fraternal Cemetery","James N Johnson Lebanon Cumberland Presbyterian Church Cemetery","Mary E Johnson Lebanon Cumberland Presbyterian Church Cemetery","Levi A Jones Lake Creek Cemetery","Hester J Jones Lake Creek Cemetery","John D Nagle Greenlawn Cemetery","Will F Nagel Greenlawn Cemetery","J M Ritter Lebanon Cumberland Presbyterian Church Cemetery","Mary J Ritter Lebanon Cumberland Presbyterian Church Cemetery","Martha J Sinks Boner Cemetery","William D Sinks Lake Creek Cemetery","Charlotte J Sinks Lake Creek Cemetery","Arlie T Sinks Rose Hill Cemetery","Eva E Sinks Rose Hill Cemetery","Richard G Steen Baldwin Cemetery","W F VanCleve Robinson Cemetery","J E VanCleve Robinson Cemetery","Lawrence A Woolard Masonic &amp; Odd Fellows Cemetery","Anna F Woolard Lebanon Cumberland Presbyterian Church Cemetery","Francis J Woolard Lebanon Cumberland Presbyterian Church Cemetery","Adesia Anderson Lebanon Cumberland Presbyterian Church Cemetery","William Baldwin Baldwin Cemetery","Joel Brown ","Clem Bundy Liberty Methodist Cemetery","Nancy Bundy Liberty Methodist Cemetery","Alzada Burgess Shakerag Masonic Cemetery","Caroline Chapman Vienna Fraternal Cemetery","Samuel Chapman Vienna Fraternal Cemetery","Polly Chapman Baldwin Cemetery","Sarah Dorris Bethlehem Baptist Church Cemetery","Semantha Everett Baldwin Cemetery","Franklin Hess Vienna Fraternal Cemetery","Catherina Mory Friedensville Evangelican Lutheran Church Cemetery","Peter Mory Friedensville Evangelican Lutheran Church Cemetery","Daniel Peters White Ash Cemetery","Charlotte Peters White Ash Cemetery","Lily Rex Spillertown Cemetery","Arthur Rex Spillertown Cemetery","Solomon Riegel Webber Campground Cemetery","Catherine Riegel Webber Campground Cemetery","Daniel Sinks Boner Cemetery","Arlie Sinks Maplewood Cemetery","Viola Sinks Maplewood Cemetery","Turner Ware Lebanon Cumberland Presbyterian Church Cemetery","Martha Ware Lebanon Cumberland Presbyterian Church Cemetery"],{"interactive":false,"permanent":false,"direction":"auto","opacity":1,"offset":[0,0],"textsize":"10px","textOnly":false,"className":"","sticky":true},null]}],"limits":{"lat":[36.69222222222223,40.87777777777777],"lng":[-89.19388888888889,-75.59888888888889]}},"evals":[],"jsHooks":[]}</script>
+</div>
+</div>
+<p>This works, but the clustering is by distance and the color is by the number of items in the cluster. I’d like to add more information to the map- perhaps coloring by cemetery name. So I’d like an option that leaves color available for me.</p>
+</section>
+<section id="usinf-sf_jitter" class="level1">
+<h1>Usinf sf_jitter</h1>
+<p>So, now back at st_jitter</p>
+<dl>
+<dt><strong>amount</strong></dt>
+<dd>
+<p>numeric; amount of jittering applied; if missing, the amount is set to factor * the bounding box diagonal; units of coordinates.</p>
+</dd>
+<dt><strong>factor</strong></dt>
+<dd>
+<p>numeric; fractional amount of jittering to be applied</p>
+</dd>
+<dt>(also can’t use layer ID)</dt>
+<dd>
+<p>doesn’t work on a single set?</p>
+</dd>
+</dl>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>test_jittered <span class="ot">&lt;-</span> test <span class="sc">%&gt;%</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">st_jitter</span>( <span class="at">factor =</span> <span class="fl">0.00001</span>)</span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>test_sf_jitter <span class="ot">&lt;-</span> <span class="fu">leaflet</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">addTiles</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">addScaleBar</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">addCircleMarkers</span>(</span>
+<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">data =</span> test_jittered,</span>
+<span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a>    <span class="at">label =</span> <span class="sc">~</span> (<span class="fu">paste</span>(complete_name, cemetery_name, <span class="at">sep =</span> <span class="st">" "</span>)),<span class="at">radius =</span> <span class="dv">10</span>,</span>
+<span id="cb14-10"><a href="#cb14-10" aria-hidden="true" tabindex="-1"></a>    <span class="at">stroke =</span> <span class="cn">NA</span></span>
+<span id="cb14-11"><a href="#cb14-11" aria-hidden="true" tabindex="-1"></a>  ) </span>
+<span id="cb14-12"><a href="#cb14-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-13"><a href="#cb14-13" aria-hidden="true" tabindex="-1"></a>test_sf_jitter</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div class="leaflet html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-b3330d683aa30cf5cf81" style="width:100%;height:464px;"></div>
+<script type="application/json" data-for="htmlwidget-b3330d683aa30cf5cf81">{"x":{"options":{"crs":{"crsClass":"L.CRS.EPSG3857","code":null,"proj4def":null,"projectedBounds":null,"options":{}}},"calls":[{"method":"addTiles","args":["https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",null,null,{"minZoom":0,"maxZoom":18,"tileSize":256,"subdomains":"abc","errorTileUrl":"","tms":false,"noWrap":false,"zoomOffset":0,"zoomReverse":false,"opacity":1,"zIndex":1,"detectRetina":false,"attribution":"&copy; <a href=\"https://openstreetmap.org\">OpenStreetMap<\/a> contributors, <a href=\"https://creativecommons.org/licenses/by-sa/2.0/\">CC-BY-SA<\/a>"}]},{"method":"addScaleBar","args":[{"maxWidth":100,"metric":true,"imperial":true,"updateWhenIdle":true,"position":"topright"}]},{"method":"addCircleMarkers","args":[[37.98888888888889,37.98888888888889,37.98888888888889],[-88.86499999999999,-88.86499999999999,-88.86499999999999],10,null,null,{"interactive":true,"className":"","stroke":null,"color":"#03F","weight":5,"opacity":0.5,"fill":true,"fillColor":"#03F","fillOpacity":0.2},null,null,null,null,["W M Bundy Liberty Methodist Cemetery","Clem Bundy Liberty Methodist Cemetery","Nancy Bundy Liberty Methodist Cemetery"],{"interactive":false,"permanent":false,"direction":"auto","opacity":1,"offset":[0,0],"textsize":"10px","textOnly":false,"className":"","sticky":true},null]}],"limits":{"lat":[37.98888888888889,37.98888888888889],"lng":[-88.86499999999999,-88.86499999999999]}},"evals":[],"jsHooks":[]}</script>
+</div>
+</div>
+<p>Does work on a the whole test set.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>test_jittered <span class="ot">&lt;-</span> test_for_jitter_inner <span class="sc">%&gt;%</span></span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">st_jitter</span>( <span class="at">factor =</span> <span class="fl">0.00001</span>)</span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>test_sf_jitter <span class="ot">&lt;-</span> <span class="fu">leaflet</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">addTiles</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">addScaleBar</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">addCircleMarkers</span>(</span>
+<span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">data =</span> test_jittered,</span>
+<span id="cb15-9"><a href="#cb15-9" aria-hidden="true" tabindex="-1"></a>    <span class="at">label =</span> <span class="sc">~</span> (<span class="fu">paste</span>(complete_name, cemetery_name, <span class="at">sep =</span> <span class="st">" "</span>)),<span class="at">radius =</span> <span class="dv">10</span>,</span>
+<span id="cb15-10"><a href="#cb15-10" aria-hidden="true" tabindex="-1"></a>    <span class="at">stroke =</span> <span class="cn">NA</span></span>
+<span id="cb15-11"><a href="#cb15-11" aria-hidden="true" tabindex="-1"></a>  ) </span>
+<span id="cb15-12"><a href="#cb15-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-13"><a href="#cb15-13" aria-hidden="true" tabindex="-1"></a>test_sf_jitter</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div class="leaflet html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-a28907e24678a197a36f" style="width:100%;height:464px;"></div>
+<script type="application/json" data-for="htmlwidget-a28907e24678a197a36f">{"x":{"options":{"crs":{"crsClass":"L.CRS.EPSG3857","code":null,"proj4def":null,"projectedBounds":null,"options":{}}},"calls":[{"method":"addTiles","args":["https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",null,null,{"minZoom":0,"maxZoom":18,"tileSize":256,"subdomains":"abc","errorTileUrl":"","tms":false,"noWrap":false,"zoomOffset":0,"zoomReverse":false,"opacity":1,"zIndex":1,"detectRetina":false,"attribution":"&copy; <a href=\"https://openstreetmap.org\">OpenStreetMap<\/a> contributors, <a href=\"https://creativecommons.org/licenses/by-sa/2.0/\">CC-BY-SA<\/a>"}]},{"method":"addScaleBar","args":[{"maxWidth":100,"metric":true,"imperial":true,"updateWhenIdle":true,"position":"topright"}]},{"method":"addCircleMarkers","args":[[40.87782893589643,38.06870722112262,37.60917894129297,37.60926890307651,38.16684508375629,38.10434471121924,37.98880940755335,37.87874798814027,38.06857190215225,36.69224229192006,37.60804289171956,38.10875835308697,38.10897703368166,38.05933548554511,38.05942526798263,38.89510854298366,38.8949428986677,38.10373012870956,38.10373972199454,38.0386010470151,38.05656517538026,38.05670028269957,37.94708501525422,37.94732365683237,38.55686763577034,37.6601690913086,37.66020488466954,38.16690625887598,38.10375331476344,38.1035083202123,38.10435391377322,38.55702210965674,40.87786053615251,37.989000677541,37.98877824015638,37.87884701272398,37.60884293284491,37.60886523102072,38.55717914813707,36.69225081791206,38.55728702460561,37.60792730729259,40.71237228643564,40.71254478226184,37.8511180341865,37.85122755969807,37.9656650332997,37.96543254421955,38.04660993380573,38.04654284457915,38.03870790091123,37.92890832347781,37.92882773735885,38.10446293350412,38.1044189925549],[-75.71250011234933,-88.66832701593769,-89.14696165466401,-89.14691916676591,-88.97517005958279,-88.69532815697711,-88.86490688699371,-89.04645111891693,-88.66825365572443,-86.76896465606448,-89.14767680439547,-88.70081164135226,-88.70081446975217,-89.02329990484849,-89.02330489824939,-83.23826873383805,-83.2383827459244,-88.69825312763555,-88.69828366317205,-89.0360487878912,-89.01954976141757,-89.0194771121062,-89.13307349529053,-89.13303012048461,-87.19119642594488,-88.86760680797522,-88.86749822105746,-88.97530270083416,-88.69447905189439,-88.69454422893506,-88.69518626879406,-87.19105651204174,-75.71254480768326,-88.8650081171449,-88.86489809363772,-89.04634679458594,-89.14742777950862,-89.14754072564162,-87.19083628061611,-86.76892329713057,-87.19092406877976,-89.14767332304068,-75.59883060550264,-75.59883614508315,-89.0150531039741,-89.01492765493273,-88.94662933680523,-88.94674820401659,-88.67953716844796,-88.6794961322462,-89.03619603620356,-89.19380263472047,-89.19390365147221,-88.7016073931041,-88.70169045611665],10,null,null,{"interactive":true,"className":"","stroke":null,"color":"#03F","weight":5,"opacity":0.5,"fill":true,"fillColor":"#03F","fillOpacity":0.2},null,null,null,null,["Elizabeth Minnich Brown ","L Earl Doley Webber Campground Cemetery","Samuel Jackson Chapman Hess Vienna Fraternal Cemetery","Catherine West Hess Vienna Fraternal Cemetery","Millie Caroline Woolard Masonic &amp; Odd Fellows Cemetery","Albert A Anderson Lebanon Cumberland Presbyterian Church Cemetery","W M Bundy Liberty Methodist Cemetery","W J Burgess Shakerag Masonic Cemetery","William F Doley Webber Campground Cemetery","W P Dorris Bethlehem Baptist Church Cemetery","Jerome B Hess Vienna Fraternal Cemetery","James N Johnson Lebanon Cumberland Presbyterian Church Cemetery","Mary E Johnson Lebanon Cumberland Presbyterian Church Cemetery","Levi A Jones Lake Creek Cemetery","Hester J Jones Lake Creek Cemetery","John D Nagle Greenlawn Cemetery","Will F Nagel Greenlawn Cemetery","J M Ritter Lebanon Cumberland Presbyterian Church Cemetery","Mary J Ritter Lebanon Cumberland Presbyterian Church Cemetery","Martha J Sinks Boner Cemetery","William D Sinks Lake Creek Cemetery","Charlotte J Sinks Lake Creek Cemetery","Arlie T Sinks Rose Hill Cemetery","Eva E Sinks Rose Hill Cemetery","Richard G Steen Baldwin Cemetery","W F VanCleve Robinson Cemetery","J E VanCleve Robinson Cemetery","Lawrence A Woolard Masonic &amp; Odd Fellows Cemetery","Anna F Woolard Lebanon Cumberland Presbyterian Church Cemetery","Francis J Woolard Lebanon Cumberland Presbyterian Church Cemetery","Adesia Anderson Lebanon Cumberland Presbyterian Church Cemetery","William Baldwin Baldwin Cemetery","Joel Brown ","Clem Bundy Liberty Methodist Cemetery","Nancy Bundy Liberty Methodist Cemetery","Alzada Burgess Shakerag Masonic Cemetery","Caroline Chapman Vienna Fraternal Cemetery","Samuel Chapman Vienna Fraternal Cemetery","Polly Chapman Baldwin Cemetery","Sarah Dorris Bethlehem Baptist Church Cemetery","Semantha Everett Baldwin Cemetery","Franklin Hess Vienna Fraternal Cemetery","Catherina Mory Friedensville Evangelican Lutheran Church Cemetery","Peter Mory Friedensville Evangelican Lutheran Church Cemetery","Daniel Peters White Ash Cemetery","Charlotte Peters White Ash Cemetery","Lily Rex Spillertown Cemetery","Arthur Rex Spillertown Cemetery","Solomon Riegel Webber Campground Cemetery","Catherine Riegel Webber Campground Cemetery","Daniel Sinks Boner Cemetery","Arlie Sinks Maplewood Cemetery","Viola Sinks Maplewood Cemetery","Turner Ware Lebanon Cumberland Presbyterian Church Cemetery","Martha Ware Lebanon Cumberland Presbyterian Church Cemetery"],{"interactive":false,"permanent":false,"direction":"auto","opacity":1,"offset":[0,0],"textsize":"10px","textOnly":false,"className":"","sticky":true},null]}],"limits":{"lat":[36.69224229192006,40.87786053615251],"lng":[-89.19390365147221,-75.59883060550264]}},"evals":[],"jsHooks":[]}</script>
+</div>
+</div>
+<p>This works ok, but the zooming experience is very unpleasent. With the clustered option, the map is zoomed and centered as you click through the clusters. There is also a very clear indication (the number in the cluster) that there are mutiple data points in the dot. Here, more datapoints make a darker circle, but this isn’t crystal clear.</p>
+<p>So, I’m going to go with the clustered version. I can have additional information in layers. There are 70+ different cemeteries, so I don’t want to have 70+ layers.</p>
+<p>I could use era or surname as a layer option. There are 65 different surnames. That still feels like too much.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>tombstones_geo <span class="sc">%&gt;%</span> <span class="fu">group_by</span>(Surname) <span class="sc">%&gt;%</span> <span class="fu">count</span>(<span class="at">sort =</span> <span class="cn">TRUE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Simple feature collection with 65 features and 2 fields
+Geometry type: GEOMETRY
+Dimension:     XY
+Bounding box:  xmin: -89.2775 ymin: 35.97833 xmax: -73.48583 ymax: 44.75056
+Geodetic CRS:  WGS 84
+# A tibble: 65 × 3
+   Surname      n                                                       geometry
+ * &lt;chr&gt;    &lt;int&gt;                                               &lt;MULTIPOINT [°]&gt;
+ 1 Sinks       21 ((-86.86278 36.35861), (-89.2775 38.7825), (-88.87806 38.1088…
+ 2 Woolard     16 ((-88.69444 38.10389), (-88.69444 38.10361), (-88.69417 38.10…
+ 3 Dorris      13 ((-86.89139 36.56778), (-86.89139 36.56806), (-86.76889 36.69…
+ 4 Hess         9 ((-89.14639 37.6075), (-89.14694 37.6075), (-89.14778 37.6077…
+ 5 Veach        9 ((-86.90611 37.73194), (-86.90639 37.73194), (-86.90556 37.73…
+ 6 Follis       7 ((-89.18167 38.06056), (-89.18222 38.06056), (-89.18194 38.06…
+ 7 Jones        7 ((-89.0175 38.05972), (-89.0175 38.06028), (-89.02333 38.0594…
+ 8 Rex          7 ((-89.15417 37.95139), (-89.15417 37.95111), (-88.94861 37.96…
+ 9 Anderson     6 ((-88.7725 37.99333), (-88.69583 38.10333), (-88.69639 38.103…
+10 Bundy        5 ((-88.68278 38.10972), (-88.70222 38.10917), (-88.865 37.9888…
+# ℹ 55 more rows</code></pre>
+</div>
+</div>
+<p>fake_data &lt;- ch_generate(‘name’,‘job’,‘phone_number’, n=5000) %&gt;% mutate(lon = charlatan::ch_lon(n=5000), lat = charlatan::ch_lat(n=5000), boxinfo = paste0(‘&lt;strong&gt;Name:&lt;/strong&gt;’, name, ‘&lt;br/&gt;&lt;hr&gt;’, ‘&lt;strong&gt;Job:&lt;/strong&gt;’, job, ‘&lt;br/&gt;’, ‘&lt;strong&gt;Phone Number:&lt;/strong&gt;’, phone_number, ‘&lt;br/&gt;’) )%&gt;% sf::st_as_sf(coords = c(“lon”, “lat”), crs = 4326)</p>
+<p>#Leaflet Mapping ---</p>
+<p>lf_clergy &lt;- leaflet(fake_data) %&gt;% addProviderTiles(“Stamen.Toner”) %&gt;% addMarkers(popup = ~boxinfo, clusterOptions = markerClusterOptions())</p>
+</section>
+<section id="back-to-clustering" class="level1 page-columns page-full">
+<h1>Back to clustering</h1>
+<div class="cell page-columns page-full">
+<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="fu">leaflet</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">addTiles</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">addProviderTiles</span>(providers<span class="sc">$</span>CartoDB.Positron) <span class="sc">%&gt;%</span></span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">addScaleBar</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">addCircleMarkers</span>(</span>
+<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">data =</span> test_for_jitter_inner,</span>
+<span id="cb18-7"><a href="#cb18-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">label =</span> <span class="sc">~</span> (<span class="fu">paste</span>(complete_name, cemetery_name, <span class="at">sep =</span> <span class="st">" "</span>)),</span>
+<span id="cb18-8"><a href="#cb18-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">clusterOptions =</span> <span class="fu">markerClusterOptions</span>(<span class="at">spiderfyDistanceMultiplier=</span> <span class="dv">2</span>, <span class="at">maxClusterRadius =</span> <span class="dv">30</span>),</span>
+<span id="cb18-9"><a href="#cb18-9" aria-hidden="true" tabindex="-1"></a>    <span class="at">radius =</span> <span class="dv">10</span>,</span>
+<span id="cb18-10"><a href="#cb18-10" aria-hidden="true" tabindex="-1"></a>    <span class="at">stroke =</span> <span class="cn">NA</span>,</span>
+<span id="cb18-11"><a href="#cb18-11" aria-hidden="true" tabindex="-1"></a>    <span class="at">group =</span> <span class="sc">~</span>Surname</span>
+<span id="cb18-12"><a href="#cb18-12" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
+<span id="cb18-13"><a href="#cb18-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">addSearchFeatures</span>(<span class="at">targetGroups =</span> <span class="st">"Surname"</span>, <span class="at">options =</span> <span class="fu">searchFeaturesOptions</span>())</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display column-page">
+<div class="leaflet html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-97515ea5fcb6993d47bb" style="width:100%;height:464px;"></div>
+<script type="application/json" data-for="htmlwidget-97515ea5fcb6993d47bb">{"x":{"options":{"crs":{"crsClass":"L.CRS.EPSG3857","code":null,"proj4def":null,"projectedBounds":null,"options":{}}},"calls":[{"method":"addTiles","args":["https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",null,null,{"minZoom":0,"maxZoom":18,"tileSize":256,"subdomains":"abc","errorTileUrl":"","tms":false,"noWrap":false,"zoomOffset":0,"zoomReverse":false,"opacity":1,"zIndex":1,"detectRetina":false,"attribution":"&copy; <a href=\"https://openstreetmap.org\">OpenStreetMap<\/a> contributors, <a href=\"https://creativecommons.org/licenses/by-sa/2.0/\">CC-BY-SA<\/a>"}]},{"method":"addProviderTiles","args":["CartoDB.Positron",null,null,{"errorTileUrl":"","noWrap":false,"detectRetina":false}]},{"method":"addScaleBar","args":[{"maxWidth":100,"metric":true,"imperial":true,"updateWhenIdle":true,"position":"topright"}]},{"method":"addCircleMarkers","args":[[40.87777777777777,38.06861111111112,37.60916666666667,37.60916666666667,38.16694444444445,38.10444444444445,37.98888888888889,37.87888888888889,38.06861111111112,36.69222222222223,37.60805555555555,38.10888888888889,38.10888888888889,38.05944444444444,38.05944444444444,38.895,38.895,38.10361111111111,38.10361111111111,38.03861111111111,38.05666666666666,38.05666666666666,37.94722222222222,37.94722222222222,38.55694444444444,37.66027777777777,37.66027777777777,38.16694444444445,38.10361111111111,38.10361111111111,38.10444444444445,38.55694444444444,40.87777777777777,37.98888888888889,37.98888888888889,37.87888888888889,37.60888888888888,37.60888888888888,38.55722222222222,36.69222222222223,38.55722222222222,37.60805555555555,40.7125,40.7125,37.85111111111111,37.85111111111111,37.96555555555555,37.96555555555555,38.04666666666667,38.04666666666667,38.03861111111111,37.92888888888889,37.92888888888889,38.10444444444445,38.10444444444445],[-75.71250000000001,-88.66833333333332,-89.14694444444446,-89.14694444444446,-88.97527777777778,-88.69527777777779,-88.86499999999999,-89.0463888888889,-88.66833333333332,-86.76888888888888,-89.14777777777779,-88.70083333333334,-88.70083333333334,-89.02333333333334,-89.02333333333334,-83.23833333333333,-83.23833333333333,-88.69833333333334,-88.69833333333334,-89.03611111111111,-89.01944444444445,-89.01944444444445,-89.13305555555556,-89.13305555555556,-87.1911111111111,-88.86749999999999,-88.86749999999999,-88.97527777777778,-88.69444444444446,-88.69444444444446,-88.69527777777779,-87.1911111111111,-75.71250000000001,-88.86499999999999,-88.86499999999999,-89.0463888888889,-89.14750000000001,-89.14750000000001,-87.19083333333333,-86.76888888888888,-87.19083333333333,-89.14777777777779,-75.59888888888889,-75.59888888888889,-89.015,-89.015,-88.94666666666667,-88.94666666666667,-88.67944444444444,-88.67944444444444,-89.03611111111111,-89.19388888888889,-89.19388888888889,-88.70166666666667,-88.70166666666667],10,null,["Brown","Doley","Hess","Hess","Woolard","Anderson","Bundy","Burgess","Doley","Dorris","Hess","Johnson","Johnson","Jones","Jones","Nagle","Nagel","Ritter","Ritter","Sinks","Sinks","Sinks","Sinks","Sinks","Steen","VanCleve","VanCleve","Woolard","Woolard","Woolard","Anderson","Baldwin","Brown","Bundy","Bundy","Burgess","Chapman","Chapman","Chapman","Dorris","Everett","Hess","Mory","Mory","Peters","Peters","Rex","Rex","Riegel","Riegel","Sinks","Sinks","Sinks","Ware","Ware"],{"interactive":true,"className":"","stroke":null,"color":"#03F","weight":5,"opacity":0.5,"fill":true,"fillColor":"#03F","fillOpacity":0.2},{"showCoverageOnHover":true,"zoomToBoundsOnClick":true,"spiderfyOnMaxZoom":true,"removeOutsideVisibleBounds":true,"spiderLegPolylineOptions":{"weight":1.5,"color":"#222","opacity":0.5},"freezeAtZoom":false,"spiderfyDistanceMultiplier":2,"maxClusterRadius":30},null,null,null,["Elizabeth Minnich Brown ","L Earl Doley Webber Campground Cemetery","Samuel Jackson Chapman Hess Vienna Fraternal Cemetery","Catherine West Hess Vienna Fraternal Cemetery","Millie Caroline Woolard Masonic &amp; Odd Fellows Cemetery","Albert A Anderson Lebanon Cumberland Presbyterian Church Cemetery","W M Bundy Liberty Methodist Cemetery","W J Burgess Shakerag Masonic Cemetery","William F Doley Webber Campground Cemetery","W P Dorris Bethlehem Baptist Church Cemetery","Jerome B Hess Vienna Fraternal Cemetery","James N Johnson Lebanon Cumberland Presbyterian Church Cemetery","Mary E Johnson Lebanon Cumberland Presbyterian Church Cemetery","Levi A Jones Lake Creek Cemetery","Hester J Jones Lake Creek Cemetery","John D Nagle Greenlawn Cemetery","Will F Nagel Greenlawn Cemetery","J M Ritter Lebanon Cumberland Presbyterian Church Cemetery","Mary J Ritter Lebanon Cumberland Presbyterian Church Cemetery","Martha J Sinks Boner Cemetery","William D Sinks Lake Creek Cemetery","Charlotte J Sinks Lake Creek Cemetery","Arlie T Sinks Rose Hill Cemetery","Eva E Sinks Rose Hill Cemetery","Richard G Steen Baldwin Cemetery","W F VanCleve Robinson Cemetery","J E VanCleve Robinson Cemetery","Lawrence A Woolard Masonic &amp; Odd Fellows Cemetery","Anna F Woolard Lebanon Cumberland Presbyterian Church Cemetery","Francis J Woolard Lebanon Cumberland Presbyterian Church Cemetery","Adesia Anderson Lebanon Cumberland Presbyterian Church Cemetery","William Baldwin Baldwin Cemetery","Joel Brown ","Clem Bundy Liberty Methodist Cemetery","Nancy Bundy Liberty Methodist Cemetery","Alzada Burgess Shakerag Masonic Cemetery","Caroline Chapman Vienna Fraternal Cemetery","Samuel Chapman Vienna Fraternal Cemetery","Polly Chapman Baldwin Cemetery","Sarah Dorris Bethlehem Baptist Church Cemetery","Semantha Everett Baldwin Cemetery","Franklin Hess Vienna Fraternal Cemetery","Catherina Mory Friedensville Evangelican Lutheran Church Cemetery","Peter Mory Friedensville Evangelican Lutheran Church Cemetery","Daniel Peters White Ash Cemetery","Charlotte Peters White Ash Cemetery","Lily Rex Spillertown Cemetery","Arthur Rex Spillertown Cemetery","Solomon Riegel Webber Campground Cemetery","Catherine Riegel Webber Campground Cemetery","Daniel Sinks Boner Cemetery","Arlie Sinks Maplewood Cemetery","Viola Sinks Maplewood Cemetery","Turner Ware Lebanon Cumberland Presbyterian Church Cemetery","Martha Ware Lebanon Cumberland Presbyterian Church Cemetery"],{"interactive":false,"permanent":false,"direction":"auto","opacity":1,"offset":[0,0],"textsize":"10px","textOnly":false,"className":"","sticky":true},null]},{"method":"addSearchFeatures","args":["Surname",{"openPopup":false,"url":"","propertyLoc":"loc","propertyName":"label","moveToLocation":true,"zoom":17,"container":"","minLength":1,"initial":false,"casesensitive":false,"autoType":true,"delayType":400,"tooltipLimit":-1,"tipAutoSubmit":true,"firstTipSubmit":false,"autoResize":true,"collapsed":true,"autoCollapse":false,"autoCollapseTime":1200,"textErr":"Location Not Found","textCancel":"Cancel","textPlaceholder":"Search...","position":"topleft","hideMarkerOnCollapse":false}]}],"limits":{"lat":[36.69222222222223,40.87777777777777],"lng":[-89.19388888888889,-75.59888888888889]}},"evals":[],"jsHooks":[]}</script>
+</div>
+</div>
+<p>without clustering</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="fu">leaflet</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">addTiles</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">addProviderTiles</span>(providers<span class="sc">$</span>CartoDB.Positron) <span class="sc">%&gt;%</span></span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">addScaleBar</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">addCircleMarkers</span>(</span>
+<span id="cb19-6"><a href="#cb19-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">data =</span> test_for_jitter_inner,</span>
+<span id="cb19-7"><a href="#cb19-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">label =</span> <span class="sc">~</span> (<span class="fu">paste</span>(complete_name, cemetery_name, <span class="at">sep =</span> <span class="st">" "</span>)),</span>
+<span id="cb19-8"><a href="#cb19-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">radius =</span> <span class="dv">10</span>,</span>
+<span id="cb19-9"><a href="#cb19-9" aria-hidden="true" tabindex="-1"></a>    <span class="at">stroke =</span> <span class="cn">NA</span>,</span>
+<span id="cb19-10"><a href="#cb19-10" aria-hidden="true" tabindex="-1"></a>    <span class="at">group =</span> <span class="sc">~</span>Surname</span>
+<span id="cb19-11"><a href="#cb19-11" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
+<span id="cb19-12"><a href="#cb19-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">addSearchFeatures</span>(<span class="at">targetGroups =</span> <span class="st">"Surname"</span>, <span class="at">options =</span> <span class="fu">searchFeaturesOptions</span>())</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div class="leaflet html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-414f94984713e24cb23a" style="width:100%;height:464px;"></div>
+<script type="application/json" data-for="htmlwidget-414f94984713e24cb23a">{"x":{"options":{"crs":{"crsClass":"L.CRS.EPSG3857","code":null,"proj4def":null,"projectedBounds":null,"options":{}}},"calls":[{"method":"addTiles","args":["https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",null,null,{"minZoom":0,"maxZoom":18,"tileSize":256,"subdomains":"abc","errorTileUrl":"","tms":false,"noWrap":false,"zoomOffset":0,"zoomReverse":false,"opacity":1,"zIndex":1,"detectRetina":false,"attribution":"&copy; <a href=\"https://openstreetmap.org\">OpenStreetMap<\/a> contributors, <a href=\"https://creativecommons.org/licenses/by-sa/2.0/\">CC-BY-SA<\/a>"}]},{"method":"addProviderTiles","args":["CartoDB.Positron",null,null,{"errorTileUrl":"","noWrap":false,"detectRetina":false}]},{"method":"addScaleBar","args":[{"maxWidth":100,"metric":true,"imperial":true,"updateWhenIdle":true,"position":"topright"}]},{"method":"addCircleMarkers","args":[[40.87777777777777,38.06861111111112,37.60916666666667,37.60916666666667,38.16694444444445,38.10444444444445,37.98888888888889,37.87888888888889,38.06861111111112,36.69222222222223,37.60805555555555,38.10888888888889,38.10888888888889,38.05944444444444,38.05944444444444,38.895,38.895,38.10361111111111,38.10361111111111,38.03861111111111,38.05666666666666,38.05666666666666,37.94722222222222,37.94722222222222,38.55694444444444,37.66027777777777,37.66027777777777,38.16694444444445,38.10361111111111,38.10361111111111,38.10444444444445,38.55694444444444,40.87777777777777,37.98888888888889,37.98888888888889,37.87888888888889,37.60888888888888,37.60888888888888,38.55722222222222,36.69222222222223,38.55722222222222,37.60805555555555,40.7125,40.7125,37.85111111111111,37.85111111111111,37.96555555555555,37.96555555555555,38.04666666666667,38.04666666666667,38.03861111111111,37.92888888888889,37.92888888888889,38.10444444444445,38.10444444444445],[-75.71250000000001,-88.66833333333332,-89.14694444444446,-89.14694444444446,-88.97527777777778,-88.69527777777779,-88.86499999999999,-89.0463888888889,-88.66833333333332,-86.76888888888888,-89.14777777777779,-88.70083333333334,-88.70083333333334,-89.02333333333334,-89.02333333333334,-83.23833333333333,-83.23833333333333,-88.69833333333334,-88.69833333333334,-89.03611111111111,-89.01944444444445,-89.01944444444445,-89.13305555555556,-89.13305555555556,-87.1911111111111,-88.86749999999999,-88.86749999999999,-88.97527777777778,-88.69444444444446,-88.69444444444446,-88.69527777777779,-87.1911111111111,-75.71250000000001,-88.86499999999999,-88.86499999999999,-89.0463888888889,-89.14750000000001,-89.14750000000001,-87.19083333333333,-86.76888888888888,-87.19083333333333,-89.14777777777779,-75.59888888888889,-75.59888888888889,-89.015,-89.015,-88.94666666666667,-88.94666666666667,-88.67944444444444,-88.67944444444444,-89.03611111111111,-89.19388888888889,-89.19388888888889,-88.70166666666667,-88.70166666666667],10,null,["Brown","Doley","Hess","Hess","Woolard","Anderson","Bundy","Burgess","Doley","Dorris","Hess","Johnson","Johnson","Jones","Jones","Nagle","Nagel","Ritter","Ritter","Sinks","Sinks","Sinks","Sinks","Sinks","Steen","VanCleve","VanCleve","Woolard","Woolard","Woolard","Anderson","Baldwin","Brown","Bundy","Bundy","Burgess","Chapman","Chapman","Chapman","Dorris","Everett","Hess","Mory","Mory","Peters","Peters","Rex","Rex","Riegel","Riegel","Sinks","Sinks","Sinks","Ware","Ware"],{"interactive":true,"className":"","stroke":null,"color":"#03F","weight":5,"opacity":0.5,"fill":true,"fillColor":"#03F","fillOpacity":0.2},null,null,null,null,["Elizabeth Minnich Brown ","L Earl Doley Webber Campground Cemetery","Samuel Jackson Chapman Hess Vienna Fraternal Cemetery","Catherine West Hess Vienna Fraternal Cemetery","Millie Caroline Woolard Masonic &amp; Odd Fellows Cemetery","Albert A Anderson Lebanon Cumberland Presbyterian Church Cemetery","W M Bundy Liberty Methodist Cemetery","W J Burgess Shakerag Masonic Cemetery","William F Doley Webber Campground Cemetery","W P Dorris Bethlehem Baptist Church Cemetery","Jerome B Hess Vienna Fraternal Cemetery","James N Johnson Lebanon Cumberland Presbyterian Church Cemetery","Mary E Johnson Lebanon Cumberland Presbyterian Church Cemetery","Levi A Jones Lake Creek Cemetery","Hester J Jones Lake Creek Cemetery","John D Nagle Greenlawn Cemetery","Will F Nagel Greenlawn Cemetery","J M Ritter Lebanon Cumberland Presbyterian Church Cemetery","Mary J Ritter Lebanon Cumberland Presbyterian Church Cemetery","Martha J Sinks Boner Cemetery","William D Sinks Lake Creek Cemetery","Charlotte J Sinks Lake Creek Cemetery","Arlie T Sinks Rose Hill Cemetery","Eva E Sinks Rose Hill Cemetery","Richard G Steen Baldwin Cemetery","W F VanCleve Robinson Cemetery","J E VanCleve Robinson Cemetery","Lawrence A Woolard Masonic &amp; Odd Fellows Cemetery","Anna F Woolard Lebanon Cumberland Presbyterian Church Cemetery","Francis J Woolard Lebanon Cumberland Presbyterian Church Cemetery","Adesia Anderson Lebanon Cumberland Presbyterian Church Cemetery","William Baldwin Baldwin Cemetery","Joel Brown ","Clem Bundy Liberty Methodist Cemetery","Nancy Bundy Liberty Methodist Cemetery","Alzada Burgess Shakerag Masonic Cemetery","Caroline Chapman Vienna Fraternal Cemetery","Samuel Chapman Vienna Fraternal Cemetery","Polly Chapman Baldwin Cemetery","Sarah Dorris Bethlehem Baptist Church Cemetery","Semantha Everett Baldwin Cemetery","Franklin Hess Vienna Fraternal Cemetery","Catherina Mory Friedensville Evangelican Lutheran Church Cemetery","Peter Mory Friedensville Evangelican Lutheran Church Cemetery","Daniel Peters White Ash Cemetery","Charlotte Peters White Ash Cemetery","Lily Rex Spillertown Cemetery","Arthur Rex Spillertown Cemetery","Solomon Riegel Webber Campground Cemetery","Catherine Riegel Webber Campground Cemetery","Daniel Sinks Boner Cemetery","Arlie Sinks Maplewood Cemetery","Viola Sinks Maplewood Cemetery","Turner Ware Lebanon Cumberland Presbyterian Church Cemetery","Martha Ware Lebanon Cumberland Presbyterian Church Cemetery"],{"interactive":false,"permanent":false,"direction":"auto","opacity":1,"offset":[0,0],"textsize":"10px","textOnly":false,"className":"","sticky":true},null]},{"method":"addSearchFeatures","args":["Surname",{"openPopup":false,"url":"","propertyLoc":"loc","propertyName":"label","moveToLocation":true,"zoom":17,"container":"","minLength":1,"initial":false,"casesensitive":false,"autoType":true,"delayType":400,"tooltipLimit":-1,"tipAutoSubmit":true,"firstTipSubmit":false,"autoResize":true,"collapsed":true,"autoCollapse":false,"autoCollapseTime":1200,"textErr":"Location Not Found","textCancel":"Cancel","textPlaceholder":"Search...","position":"topleft","hideMarkerOnCollapse":false}]}],"limits":{"lat":[36.69222222222223,40.87777777777777],"lng":[-89.19388888888889,-75.59888888888889]}},"evals":[],"jsHooks":[]}</script>
+</div>
+</div>
+<p>%&gt;%</p>
+<p>leafpop::addPopupImages(</p>
+<p>image = paste0(here(blog_folder, “Map” ),“/”, image_list),</p>
+<p>src = local,</p>
+<p>group = “group1”, width = 400,</p>
+<p>maxHeight = 300, maxWidth = 400</p>
+<p>)</p>
+<p>Now, I wanted to grou or cluster by cemetery. Ideally cluster.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>image_list <span class="ot">&lt;-</span> tombstones_geo<span class="sc">$</span>photo_list</span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>cemetery_list <span class="ot">&lt;-</span> tombstones_geo<span class="sc">$</span>cemetery_name</span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a><span class="fu">leaflet</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb20-5"><a href="#cb20-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">addTiles</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb20-6"><a href="#cb20-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">addProviderTiles</span>(providers<span class="sc">$</span>CartoDB.Positron) <span class="sc">%&gt;%</span></span>
+<span id="cb20-7"><a href="#cb20-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">addScaleBar</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb20-8"><a href="#cb20-8" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb20-9"><a href="#cb20-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">addCircleMarkers</span>(</span>
+<span id="cb20-10"><a href="#cb20-10" aria-hidden="true" tabindex="-1"></a>    <span class="at">data =</span> tombstones_geo,</span>
+<span id="cb20-11"><a href="#cb20-11" aria-hidden="true" tabindex="-1"></a>    <span class="at">label =</span> <span class="sc">~</span> (<span class="fu">paste</span>(complete_name, cemetery_name, <span class="at">sep =</span> <span class="st">" "</span>)), </span>
+<span id="cb20-12"><a href="#cb20-12" aria-hidden="true" tabindex="-1"></a>    <span class="at">clusterOptions =</span> <span class="fu">markerClusterOptions</span>(),</span>
+<span id="cb20-13"><a href="#cb20-13" aria-hidden="true" tabindex="-1"></a>    <span class="at">opacity =</span> <span class="dv">1</span>,</span>
+<span id="cb20-14"><a href="#cb20-14" aria-hidden="true" tabindex="-1"></a>    <span class="at">radius =</span> <span class="dv">10</span>,</span>
+<span id="cb20-15"><a href="#cb20-15" aria-hidden="true" tabindex="-1"></a>    <span class="at">color =</span> <span class="sc">~</span>cemetery_list,</span>
+<span id="cb20-16"><a href="#cb20-16" aria-hidden="true" tabindex="-1"></a>    <span class="at">stroke =</span> <span class="cn">NA</span>,</span>
+<span id="cb20-17"><a href="#cb20-17" aria-hidden="true" tabindex="-1"></a>    <span class="at">group =</span> <span class="st">"group1"</span></span>
+<span id="cb20-18"><a href="#cb20-18" aria-hidden="true" tabindex="-1"></a>  )  </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div class="leaflet html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-83c91783df4ff6f35594" style="width:100%;height:464px;"></div>
+<script type="application/json" data-for="htmlwidget-83c91783df4ff6f35594">{"x":{"options":{"crs":{"crsClass":"L.CRS.EPSG3857","code":null,"proj4def":null,"projectedBounds":null,"options":{}}},"calls":[{"method":"addTiles","args":["https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",null,null,{"minZoom":0,"maxZoom":18,"tileSize":256,"subdomains":"abc","errorTileUrl":"","tms":false,"noWrap":false,"zoomOffset":0,"zoomReverse":false,"opacity":1,"zIndex":1,"detectRetina":false,"attribution":"&copy; <a href=\"https://openstreetmap.org\">OpenStreetMap<\/a> contributors, <a href=\"https://creativecommons.org/licenses/by-sa/2.0/\">CC-BY-SA<\/a>"}]},{"method":"addProviderTiles","args":["CartoDB.Positron",null,null,{"errorTileUrl":"","noWrap":false,"detectRetina":false}]},{"method":"addScaleBar","args":[{"maxWidth":100,"metric":true,"imperial":true,"updateWhenIdle":true,"position":"topright"}]},{"method":"addCircleMarkers","args":[[38.10361111111111,40.87777777777777,38.06861111111112,38.19166666666667,37.60916666666667,37.60916666666667,37.60833333333333,40.78277777777778,41.22527777777778,38.1875,38.32166666666667,38.05666666666666,37.73194444444444,37.60583333333333,37.60527777777777,37.63972222222222,38.16694444444445,38.1675,38.16666666666667,38.10444444444445,38.10361111111111,38.10333333333333,36.83083333333334,37.98888888888889,37.87888888888889,38.05222222222223,38.05416666666667,38.88972222222223,38.90305555555555,38.06861111111112,36.69222222222223,36.6925,36.56805555555555,37.98611111111111,38.17388888888889,38.17472222222222,38.05388888888889,38.05166666666667,38.05083333333334,38.04861111111111,38.04861111111111,38.06222222222222,38.06055555555556,38.06138888888889,38.06138888888889,38.06083333333333,38.06055555555556,38.06055555555556,38.10305555555556,38.9025,37.60805555555555,37.60916666666667,38.10888888888889,38.10888888888889,38.05944444444444,38.05944444444444,38.06027777777778,38.05972222222222,37.80666666666666,37.80555555555555,38.17472222222222,37.80638888888888,38.895,38.895,38.05916666666666,37.92333333333333,37.96583333333334,38.10361111111111,38.10361111111111,36.35861111111111,37.9225,38.03861111111111,38.05722222222222,38.05694444444444,38.05666666666666,38.05666666666666,37.80666666666666,37.80555555555555,37.92833333333333,37.92888888888889,37.94722222222222,37.94722222222222,38.55694444444444,37.60944444444444,37.66027777777777,37.66027777777777,37.73777777777778,37.73194444444444,37.73194444444444,37.60888888888888,37.60611111111111,36.26777777777778,36.68972222222222,38.16694444444445,38.16694444444445,37.95944444444444,37.95861111111111,37.96027777777778,38.10361111111111,38.10361111111111,38.10361111111111,38.10388888888889,37.99333333333333,38.10444444444445,36.63666666666667,38.55694444444444,36.63694444444445,40.87777777777777,37.98888888888889,37.98888888888889,38.10972222222222,38.10916666666667,37.87888888888889,37.60888888888888,37.60888888888888,38.55722222222222,36.58916666666666,36.59,37.92277777777778,37.92305555555556,38.89555555555555,38.89,36.69222222222223,36.56777777777778,36.825,40.7825,38.55722222222222,44.75056,37.53583333333333,36.68583333333333,38.90305555555555,38.06027777777778,37.60749999999999,37.60749999999999,37.60777777777778,37.60805555555555,40.75777777777778,40.75833333333333,37.925,38.8675,36.69,38.4375,38.43805555555556,38.0575,38.80472222222222,37.85694444444444,35.97916666666667,35.97833333333333,40.78305555555556,40.7125,40.71277777777777,40.71277777777777,40.7125,41.22583333333333,40.80972222222222,37.60611111111111,38.18722222222222,38.05944444444444,37.83527777777778,37.85111111111111,37.85111111111111,37.96555555555555,37.965,37.96555555555555,37.96555555555555,37.95111111111111,37.95138888888889,38.04666666666667,38.04666666666667,40.80416666666667,40.80555555555556,40.80555555555556,38.17555555555555,37.92472222222222,38.03861111111111,38.05805555555555,37.80666666666666,37.92888888888889,37.92888888888889,38.7825,38.10888888888888,37.62555555555555,37.73194444444444,37.51861111111111,37.51833333333334,38.10444444444445,38.10444444444445,36.63694444444445,37.80944444444444,37.93111111111111,37.92083333333333,37.95972222222223,37.96,38.05611111111111],[-88.69555555555556,-75.71250000000001,-88.66833333333332,-88.94,-89.14694444444446,-89.14694444444446,-89.14750000000001,-75.65027777777777,-76.0425,-89.00722222222223,-88.87444444444444,-89.0188888888889,-86.90555555555557,-88.90472222222223,-88.90472222222223,-88.98166666666665,-88.97527777777778,-88.97555555555556,-88.97583333333334,-88.69527777777779,-88.69638888888889,-88.69583333333334,-86.77333333333334,-88.86499999999999,-89.0463888888889,-89.10222222222222,-89.10472222222222,-83.24111111111111,-82.98694444444445,-88.66833333333332,-86.76888888888888,-86.76861111111111,-86.89138888888888,-88.98999999999999,-88.97333333333334,-88.97361111111111,-89.10416666666666,-89.10388888888889,-89.10638888888889,-89.10722222222222,-89.10555555555555,-89.1825,-89.18166666666667,-89.18138888888889,-89.18222222222222,-89.18194444444445,-89.18222222222222,-89.18444444444445,-88.69472222222223,-83.22277777777778,-89.14777777777779,-89.14638888888889,-88.70083333333334,-88.70083333333334,-89.02333333333334,-89.02333333333334,-89.01750000000001,-89.01750000000001,-89.00861111111112,-89.0125,-88.96138888888889,-89.00805555555556,-83.23833333333333,-83.23833333333333,-89.02500000000001,-89.19388888888889,-88.94861111111112,-88.69833333333334,-88.69833333333334,-86.86277777777778,-88.9813888888889,-89.03611111111111,-89.01916666666668,-89.01972222222223,-89.01944444444445,-89.01944444444445,-89.01194444444445,-89.01194444444445,-89.19388888888889,-89.19305555555556,-89.13305555555556,-89.13305555555556,-87.1911111111111,-89.13916666666667,-88.86749999999999,-88.86749999999999,-86.91222222222223,-86.9063888888889,-86.90611111111112,-89.14500000000001,-88.90472222222223,-86.36916666666667,-86.76861111111111,-88.97527777777778,-88.97583333333334,-88.89027777777778,-88.88944444444445,-88.88916666666667,-88.69444444444446,-88.69444444444446,-88.69416666666667,-88.69444444444446,-88.77250000000001,-88.69527777777779,-86.98694444444445,-87.1911111111111,-86.98694444444445,-75.71250000000001,-88.86499999999999,-88.86499999999999,-88.68277777777779,-88.70222222222223,-89.0463888888889,-89.14750000000001,-89.14750000000001,-87.19083333333333,-87.02361111111111,-87.02333333333333,-89.19277777777778,-89.19250000000001,-83.24083333333334,-83.24083333333334,-86.76888888888888,-86.89138888888888,-86.76777777777778,-75.64805555555556,-87.19083333333333,-73.48583000000001,-87.70333333333333,-86.99333333333333,-83.22277777777778,-89.18333333333334,-89.14638888888889,-89.14694444444446,-89.14777777777779,-89.14777777777779,-75.43666666666667,-75.43611111111112,-88.96055555555556,-87.28583333333334,-86.76861111111111,-85.76861111111111,-85.76833333333333,-89.12583333333333,-89.27527777777777,-89.26111111111112,-80.48583333333333,-80.48638888888888,-75.64277777777778,-75.59888888888889,-75.59888888888889,-75.59833333333334,-75.59888888888889,-76.04138888888889,-75.57083333333334,-88.90555555555557,-89.00666666666667,-89.02500000000001,-88.88194444444444,-89.015,-89.015,-88.94777777777779,-88.94694444444445,-88.94666666666667,-88.94666666666667,-89.15416666666667,-89.15416666666667,-88.67944444444444,-88.67944444444444,-75.57916666666667,-75.57222222222222,-75.57194444444445,-89.01166666666667,-88.95750000000001,-89.03611111111111,-89.01916666666668,-89.01222222222223,-89.19388888888889,-89.19388888888889,-89.27749999999999,-88.87805555555555,-88.97972222222222,-88.90611111111112,-89.0775,-88.80138888888888,-88.70166666666667,-88.70166666666667,-86.98638888888888,-89.00638888888889,-88.68666666666667,-88.98944444444444,-88.89055555555557,-88.89083333333333,-89.12638888888888],10,null,"group1",{"interactive":true,"className":"","stroke":null,"color":["Lebanon Cumberland Presbyterian Church Cemetery","","Webber Campground Cemetery","Masonic & Odd Fellows Cemetery","Vienna Fraternal Cemetery","Vienna Fraternal Cemetery","Vienna Fraternal Cemetery","Zion Stone Church Cemetery","Hanover Green Cemetery","Masonic & Odd Fellows Cemetery","Ewing Cemetery","Lake Creek Cemetery","Mt Olive Methodist Church Cemetery","Vienna Fraternal Cemetery","Vienna Fraternal Cemetery","Casey Springs Cemetery","Masonic & Odd Fellows Cemetery","Masonic & Odd Fellows Cemetery","Masonic & Odd Fellows Cemetery","Lebanon Cumberland Presbyterian Church Cemetery","Lebanon Cumberland Presbyterian Church Cemetery","Lebanon Cumberland Presbyterian Church Cemetery","Orlinda Cemetery","Liberty Methodist Cemetery","Shakerag Masonic Cemetery","Williams Prairie Baptist Church Cemetery","Williams Prairie Baptist Church Cemetery","Greenlawn Cemetery","Greenlawn Cemetery","Webber Campground Cemetery","Bethlehem Baptist Church Cemetery","Bethlehem Baptist Church Cemetery","Ebenezer Baptist Church Cemetery","Denning Cemetery","Masonic & Odd Fellows Cemetery","Masonic & Odd Fellows Cemetery","Williams Prairie Baptist Church Cemetery","Williams Prairie Baptist Church Cemetery","Williams Prairie Baptist Church Cemetery","Williams Prairie Baptist Church Cemetery","Williams Prairie Baptist Church Cemetery","Follis Cemetery","Follis Cemetery","Follis Cemetery","Follis Cemetery","Follis Cemetery","Follis Cemetery","Follis Cemetery","Lebanon Cumberland Presbyterian Church Cemetery","Greenlawn Cemetery","Vienna Fraternal Cemetery","Vienna Fraternal Cemetery","Lebanon Cumberland Presbyterian Church Cemetery","Lebanon Cumberland Presbyterian Church Cemetery","Lake Creek Cemetery","Lake Creek Cemetery","Lake Creek Cemetery","Lake Creek Cemetery","Hudgens Cemetery","Hudgens Cemetery","Masonic & Odd Fellows Cemetery","Hudgens Cemetery","Greenlawn Cemetery","Greenlawn Cemetery","Lake Creek Cemetery","","Spillertown Cemetery","Lebanon Cumberland Presbyterian Church Cemetery","Lebanon Cumberland Presbyterian Church Cemetery","Nashville National Cemetery","Oddfellow Cemetery","Boner Cemetery","Lake Creek Cemetery","Lake Creek Cemetery","Lake Creek Cemetery","Lake Creek Cemetery","Hudgens Cemetery","Hudgens Cemetery","Maplewood Cemetery","Maplewood Cemetery","Rose Hill Cemetery","Rose Hill Cemetery","Baldwin Cemetery","Vienna Fraternal Cemetery","Robinson Cemetery","Robinson Cemetery","Mt Olive Methodist Church Cemetery","Mt Olive Methodist Church Cemetery","Mt Olive Methodist Church Cemetery","Vienna Fraternal Cemetery","Vienna Fraternal Cemetery","Weir Cemetery","Bethlehem Baptist Church Cemetery","Masonic & Odd Fellows Cemetery","Masonic & Odd Fellows Cemetery","Ebenezer Cumberland Presbyterian Church Cemetery","Ebenezer Cumberland Presbyterian Church Cemetery","Ebenezer Cumberland Presbyterian Church Cemetery","Lebanon Cumberland Presbyterian Church Cemetery","Lebanon Cumberland Presbyterian Church Cemetery","Lebanon Cumberland Presbyterian Church Cemetery","Lebanon Cumberland Presbyterian Church Cemetery","Pleasant Valley Baptist Church Cemetery","Lebanon Cumberland Presbyterian Church Cemetery","Baggett Cemetery","Baldwin Cemetery","Baggett Cemetery","","Liberty Methodist Cemetery","Liberty Methodist Cemetery","Lebanon Cumberland Presbyterian Church Cemetery","Lebanon Cumberland Presbyterian Church Cemetery","Shakerag Masonic Cemetery","Vienna Fraternal Cemetery","Vienna Fraternal Cemetery","Baldwin Cemetery","Bethlehem Baptist Church Cemetery","Bethlehem Baptist Church Cemetery","","","Greenlawn Cemetery","Greenlawn Cemetery","Bethlehem Baptist Church Cemetery","Ebenezer Baptist Church Cemetery","Orlinda Cemetery","Zion Stone Church Cemetery","Baldwin Cemetery","Blockhouse Cemetery","Grapevine Cemetery","Oak Grove Cemetery","Greenlawn Cemetery","Follis Cemetery","Vienna Fraternal Cemetery","Vienna Fraternal Cemetery","Vienna Fraternal Cemetery","Vienna Fraternal Cemetery","St Paul's Lutheran \"Blue\" Church Cemetery","St Paul's Lutheran \"Blue\" Church Cemetery","Trinity Methodist Church Cemetery","Old Bethel Cemetery","Bethlehem Baptist Church Cemetery","New Chapel Methodist Church Cemetery","New Chapel Methodist Church Cemetery","Harmony Free Will Baptist Church Cemetery","","Green Cemetery","Jersey Baptis Church Cemetery","Jersey Baptis Church Cemetery","Zion Stone Church Cemetery","Friedensville Evangelican Lutheran Church Cemetery","Friedensville Evangelican Lutheran Church Cemetery","Friedensville Evangelican Lutheran Church Cemetery","Friedensville Evangelican Lutheran Church Cemetery","Hanover Green Cemetery","Christ Church Cemetery","Vienna Fraternal Cemetery","Masonic & Odd Fellows Cemetery","Lake Creek Cemetery","Union Grove Cemetery","White Ash Cemetery","White Ash Cemetery","Spillertown Cemetery","Spillertown Cemetery","Spillertown Cemetery","Spillertown Cemetery","Rose Hill Cemetery","Rose Hill Cemetery","Webber Campground Cemetery","Webber Campground Cemetery","Christ Church Cemetery","Christ Church Cemetery","Christ Church Cemetery","Masonic & Odd Fellows Cemetery","Trinity Methodist Church Cemetery","Boner Cemetery","Lake Creek Cemetery","Hudgens Cemetery","Maplewood Cemetery","Maplewood Cemetery","","Miller Cemetery","Casey Springs Cemetery","Mt Olive Methodist Church Cemetery","Chapman-Veatch Cemetery","Chapman-Veatch Cemetery","Lebanon Cumberland Presbyterian Church Cemetery","Lebanon Cumberland Presbyterian Church Cemetery","Baggett Cemetery","Hartwell Cemetery","Masonic Cemetery","Oddfellow Cemetery","Ebenezer Cumberland Presbyterian Church Cemetery","Ebenezer Cumberland Presbyterian Church Cemetery","Harmony Free Will Baptist Church Cemetery"],"weight":5,"opacity":1,"fill":true,"fillColor":["Lebanon Cumberland Presbyterian Church Cemetery","","Webber Campground Cemetery","Masonic & Odd Fellows Cemetery","Vienna Fraternal Cemetery","Vienna Fraternal Cemetery","Vienna Fraternal Cemetery","Zion Stone Church Cemetery","Hanover Green Cemetery","Masonic & Odd Fellows Cemetery","Ewing Cemetery","Lake Creek Cemetery","Mt Olive Methodist Church Cemetery","Vienna Fraternal Cemetery","Vienna Fraternal Cemetery","Casey Springs Cemetery","Masonic & Odd Fellows Cemetery","Masonic & Odd Fellows Cemetery","Masonic & Odd Fellows Cemetery","Lebanon Cumberland Presbyterian Church Cemetery","Lebanon Cumberland Presbyterian Church Cemetery","Lebanon Cumberland Presbyterian Church Cemetery","Orlinda Cemetery","Liberty Methodist Cemetery","Shakerag Masonic Cemetery","Williams Prairie Baptist Church Cemetery","Williams Prairie Baptist Church Cemetery","Greenlawn Cemetery","Greenlawn Cemetery","Webber Campground Cemetery","Bethlehem Baptist Church Cemetery","Bethlehem Baptist Church Cemetery","Ebenezer Baptist Church Cemetery","Denning Cemetery","Masonic & Odd Fellows Cemetery","Masonic & Odd Fellows Cemetery","Williams Prairie Baptist Church Cemetery","Williams Prairie Baptist Church Cemetery","Williams Prairie Baptist Church Cemetery","Williams Prairie Baptist Church Cemetery","Williams Prairie Baptist Church Cemetery","Follis Cemetery","Follis Cemetery","Follis Cemetery","Follis Cemetery","Follis Cemetery","Follis Cemetery","Follis Cemetery","Lebanon Cumberland Presbyterian Church Cemetery","Greenlawn Cemetery","Vienna Fraternal Cemetery","Vienna Fraternal Cemetery","Lebanon Cumberland Presbyterian Church Cemetery","Lebanon Cumberland Presbyterian Church Cemetery","Lake Creek Cemetery","Lake Creek Cemetery","Lake Creek Cemetery","Lake Creek Cemetery","Hudgens Cemetery","Hudgens Cemetery","Masonic & Odd Fellows Cemetery","Hudgens Cemetery","Greenlawn Cemetery","Greenlawn Cemetery","Lake Creek Cemetery","","Spillertown Cemetery","Lebanon Cumberland Presbyterian Church Cemetery","Lebanon Cumberland Presbyterian Church Cemetery","Nashville National Cemetery","Oddfellow Cemetery","Boner Cemetery","Lake Creek Cemetery","Lake Creek Cemetery","Lake Creek Cemetery","Lake Creek Cemetery","Hudgens Cemetery","Hudgens Cemetery","Maplewood Cemetery","Maplewood Cemetery","Rose Hill Cemetery","Rose Hill Cemetery","Baldwin Cemetery","Vienna Fraternal Cemetery","Robinson Cemetery","Robinson Cemetery","Mt Olive Methodist Church Cemetery","Mt Olive Methodist Church Cemetery","Mt Olive Methodist Church Cemetery","Vienna Fraternal Cemetery","Vienna Fraternal Cemetery","Weir Cemetery","Bethlehem Baptist Church Cemetery","Masonic & Odd Fellows Cemetery","Masonic & Odd Fellows Cemetery","Ebenezer Cumberland Presbyterian Church Cemetery","Ebenezer Cumberland Presbyterian Church Cemetery","Ebenezer Cumberland Presbyterian Church Cemetery","Lebanon Cumberland Presbyterian Church Cemetery","Lebanon Cumberland Presbyterian Church Cemetery","Lebanon Cumberland Presbyterian Church Cemetery","Lebanon Cumberland Presbyterian Church Cemetery","Pleasant Valley Baptist Church Cemetery","Lebanon Cumberland Presbyterian Church Cemetery","Baggett Cemetery","Baldwin Cemetery","Baggett Cemetery","","Liberty Methodist Cemetery","Liberty Methodist Cemetery","Lebanon Cumberland Presbyterian Church Cemetery","Lebanon Cumberland Presbyterian Church Cemetery","Shakerag Masonic Cemetery","Vienna Fraternal Cemetery","Vienna Fraternal Cemetery","Baldwin Cemetery","Bethlehem Baptist Church Cemetery","Bethlehem Baptist Church Cemetery","","","Greenlawn Cemetery","Greenlawn Cemetery","Bethlehem Baptist Church Cemetery","Ebenezer Baptist Church Cemetery","Orlinda Cemetery","Zion Stone Church Cemetery","Baldwin Cemetery","Blockhouse Cemetery","Grapevine Cemetery","Oak Grove Cemetery","Greenlawn Cemetery","Follis Cemetery","Vienna Fraternal Cemetery","Vienna Fraternal Cemetery","Vienna Fraternal Cemetery","Vienna Fraternal Cemetery","St Paul's Lutheran \"Blue\" Church Cemetery","St Paul's Lutheran \"Blue\" Church Cemetery","Trinity Methodist Church Cemetery","Old Bethel Cemetery","Bethlehem Baptist Church Cemetery","New Chapel Methodist Church Cemetery","New Chapel Methodist Church Cemetery","Harmony Free Will Baptist Church Cemetery","","Green Cemetery","Jersey Baptis Church Cemetery","Jersey Baptis Church Cemetery","Zion Stone Church Cemetery","Friedensville Evangelican Lutheran Church Cemetery","Friedensville Evangelican Lutheran Church Cemetery","Friedensville Evangelican Lutheran Church Cemetery","Friedensville Evangelican Lutheran Church Cemetery","Hanover Green Cemetery","Christ Church Cemetery","Vienna Fraternal Cemetery","Masonic & Odd Fellows Cemetery","Lake Creek Cemetery","Union Grove Cemetery","White Ash Cemetery","White Ash Cemetery","Spillertown Cemetery","Spillertown Cemetery","Spillertown Cemetery","Spillertown Cemetery","Rose Hill Cemetery","Rose Hill Cemetery","Webber Campground Cemetery","Webber Campground Cemetery","Christ Church Cemetery","Christ Church Cemetery","Christ Church Cemetery","Masonic & Odd Fellows Cemetery","Trinity Methodist Church Cemetery","Boner Cemetery","Lake Creek Cemetery","Hudgens Cemetery","Maplewood Cemetery","Maplewood Cemetery","","Miller Cemetery","Casey Springs Cemetery","Mt Olive Methodist Church Cemetery","Chapman-Veatch Cemetery","Chapman-Veatch Cemetery","Lebanon Cumberland Presbyterian Church Cemetery","Lebanon Cumberland Presbyterian Church Cemetery","Baggett Cemetery","Hartwell Cemetery","Masonic Cemetery","Oddfellow Cemetery","Ebenezer Cumberland Presbyterian Church Cemetery","Ebenezer Cumberland Presbyterian Church Cemetery","Harmony Free Will Baptist Church Cemetery"],"fillOpacity":0.2},{"showCoverageOnHover":true,"zoomToBoundsOnClick":true,"spiderfyOnMaxZoom":true,"removeOutsideVisibleBounds":true,"spiderLegPolylineOptions":{"weight":1.5,"color":"#222","opacity":0.5},"freezeAtZoom":false},null,null,null,["E Francis Anderson Lebanon Cumberland Presbyterian Church Cemetery","Elizabeth Minnich Brown ","L Earl Doley Webber Campground Cemetery","G Clyde Doley Masonic &amp; Odd Fellows Cemetery","Samuel Jackson Chapman Hess Vienna Fraternal Cemetery","Catherine West Hess Vienna Fraternal Cemetery","George Dougin Hess Vienna Fraternal Cemetery","Anna Maria Kleppinger Zion Stone Church Cemetery","Johann Georg Nagel Hanover Green Cemetery","Cynthia Ann Odom Masonic &amp; Odd Fellows Cemetery","William Epps Pickard Ewing Cemetery","Anna Lorena Sinks Lake Creek Cemetery","James Allen Veach Mt Olive Methodist Church Cemetery","John Logan Veach Vienna Fraternal Cemetery","Rose Ella Veach Vienna Fraternal Cemetery","Lucinda Jane Whiteside Casey Springs Cemetery","Millie Caroline Woolard Masonic &amp; Odd Fellows Cemetery","John Edward Woolard Masonic &amp; Odd Fellows Cemetery","C Leonard Woolard Masonic &amp; Odd Fellows Cemetery","Albert A Anderson Lebanon Cumberland Presbyterian Church Cemetery","William G Anderson Lebanon Cumberland Presbyterian Church Cemetery","Nancy A Anderson Lebanon Cumberland Presbyterian Church Cemetery","E C Beasley Orlinda Cemetery","W M Bundy Liberty Methodist Cemetery","W J Burgess Shakerag Masonic Cemetery","G M Clayton Williams Prairie Baptist Church Cemetery","L S Clayton Williams Prairie Baptist Church Cemetery","Catherine S Dolch Greenlawn Cemetery","Maggie M Doley Greenlawn Cemetery","William F Doley Webber Campground Cemetery","W P Dorris Bethlehem Baptist Church Cemetery","A C Dorris Bethlehem Baptist Church Cemetery","Robert T Dorris Ebenezer Baptist Church Cemetery","Smith H Dorris Denning Cemetery","John W Dorris Masonic &amp; Odd Fellows Cemetery","W E Dorris Masonic &amp; Odd Fellows Cemetery","William T Dorris Williams Prairie Baptist Church Cemetery","James J Dorris Williams Prairie Baptist Church Cemetery","W R Dorris Williams Prairie Baptist Church Cemetery","E L Dorris Williams Prairie Baptist Church Cemetery","James W Dorris Williams Prairie Baptist Church Cemetery","Fawn W Follis Follis Cemetery","Ralph R Follis Follis Cemetery","A O Follis Follis Cemetery","Christian R Follis Follis Cemetery","G W Follis Follis Cemetery","E P Follis Follis Cemetery","Jeff M Follis Follis Cemetery","Florence W Ford Lebanon Cumberland Presbyterian Church Cemetery","Leonard N Gregory Greenlawn Cemetery","Jerome B Hess Vienna Fraternal Cemetery","Bernice L Hess Vienna Fraternal Cemetery","James N Johnson Lebanon Cumberland Presbyterian Church Cemetery","Mary E Johnson Lebanon Cumberland Presbyterian Church Cemetery","Levi A Jones Lake Creek Cemetery","Hester J Jones Lake Creek Cemetery","Ridley A Jones Lake Creek Cemetery","James T Jones Lake Creek Cemetery","Ezra L Jones Hudgens Cemetery","Samuel D Jones Hudgens Cemetery","Willard M Karnes Masonic &amp; Odd Fellows Cemetery","Myrtie V Miller Hudgens Cemetery","John D Nagle Greenlawn Cemetery","Will F Nagel Greenlawn Cemetery","G W Odom Lake Creek Cemetery","Karl F Pletz ","George W Rex Spillertown Cemetery","J M Ritter Lebanon Cumberland Presbyterian Church Cemetery","Mary J Ritter Lebanon Cumberland Presbyterian Church Cemetery","A T Sinks Nashville National Cemetery","Francis A Sinks Oddfellow Cemetery","Martha J Sinks Boner Cemetery","John H Sinks Lake Creek Cemetery","Mary E Sinks Lake Creek Cemetery","William D Sinks Lake Creek Cemetery","Charlotte J Sinks Lake Creek Cemetery","John A Sinks Hudgens Cemetery","Sena L Sinks Hudgens Cemetery","William J Sinks Maplewood Cemetery","Jewell S Sweet Maplewood Cemetery","Arlie T Sinks Rose Hill Cemetery","Eva E Sinks Rose Hill Cemetery","Richard G Steen Baldwin Cemetery","Martin T VanCleve Vienna Fraternal Cemetery","W F VanCleve Robinson Cemetery","J E VanCleve Robinson Cemetery","Pleasant G Veach Mt Olive Methodist Church Cemetery","Ward B Veach Mt Olive Methodist Church Cemetery","Cynthia M Veach Mt Olive Methodist Church Cemetery","James C Veach Vienna Fraternal Cemetery","Ruth E Veach Vienna Fraternal Cemetery","James C Weir Weir Cemetery","Sallie J Wilson Bethlehem Baptist Church Cemetery","Lawrence A Woolard Masonic &amp; Odd Fellows Cemetery","James B Woolard Masonic &amp; Odd Fellows Cemetery","L B Woolard Ebenezer Cumberland Presbyterian Church Cemetery","James H Woolard Ebenezer Cumberland Presbyterian Church Cemetery","Romey D Woolard Ebenezer Cumberland Presbyterian Church Cemetery","Anna F Woolard Lebanon Cumberland Presbyterian Church Cemetery","Francis J Woolard Lebanon Cumberland Presbyterian Church Cemetery","Turner W Woolard Lebanon Cumberland Presbyterian Church Cemetery","William C Woolard Lebanon Cumberland Presbyterian Church Cemetery","Zady Anderson Pleasant Valley Baptist Church Cemetery","Adesia Anderson Lebanon Cumberland Presbyterian Church Cemetery","Richard Appleton Baggett Cemetery","William Baldwin Baldwin Cemetery","Mahalia Baggett Baggett Cemetery","Joel Brown ","Clem Bundy Liberty Methodist Cemetery","Nancy Bundy Liberty Methodist Cemetery","Thomas Bundy Lebanon Cumberland Presbyterian Church Cemetery","George Bundy Lebanon Cumberland Presbyterian Church Cemetery","Alzada Burgess Shakerag Masonic Cemetery","Caroline Chapman Vienna Fraternal Cemetery","Samuel Chapman Vienna Fraternal Cemetery","Polly Chapman Baldwin Cemetery","Mandy Crockett Bethlehem Baptist Church Cemetery","John Crockett Bethlehem Baptist Church Cemetery","Ezra Davis ","Lizzie Davis ","Christian Dolch Greenlawn Cemetery","Peter Dolch Greenlawn Cemetery","Sarah Dorris Bethlehem Baptist Church Cemetery","Rebecca Dorris Ebenezer Baptist Church Cemetery","Mary Drake Orlinda Cemetery","Johannes Dreisbach Zion Stone Church Cemetery","Semantha Everett Baldwin Cemetery","Isaac Finch Blockhouse Cemetery","Ebenezer Frost Grapevine Cemetery","William Fuqua Oak Grove Cemetery","Lucille Gregory Greenlawn Cemetery","Parmelia Hart Follis Cemetery","Amalphus Hess Vienna Fraternal Cemetery","Adolphus Hess Vienna Fraternal Cemetery","Samuel Hess Vienna Fraternal Cemetery","Franklin Hess Vienna Fraternal Cemetery","Daniel Horlacher St Paul's Lutheran \"Blue\" Church Cemetery","Margaretha Horlacher St Paul's Lutheran \"Blue\" Church Cemetery","Polly Horrall Trinity Methodist Church Cemetery","William Horrall Old Bethel Cemetery","Elizabeth Hurt Bethlehem Baptist Church Cemetery","Jeremiah Jacobs New Chapel Methodist Church Cemetery","Rebecca Jacobs New Chapel Methodist Church Cemetery","John Jones Harmony Free Will Baptist Church Cemetery","Joe Lipsey ","Jon Loomis Green Cemetery","Azariah Merrell Jersey Baptis Church Cemetery","Abigail Merrell Jersey Baptis Church Cemetery","Nicolaus Mildenberger Zion Stone Church Cemetery","Catherina Mory Friedensville Evangelican Lutheran Church Cemetery","Gotthard Mory Friedensville Evangelican Lutheran Church Cemetery","Magdelena Mory Friedensville Evangelican Lutheran Church Cemetery","Peter Mory Friedensville Evangelican Lutheran Church Cemetery","Caty Nagel Hanover Green Cemetery","Daniel Nagel Christ Church Cemetery","Beatrice Nutty Vienna Fraternal Cemetery","Archibald Odom Masonic &amp; Odd Fellows Cemetery","Sarah Odom Lake Creek Cemetery","Wiley Odum Union Grove Cemetery","Daniel Peters White Ash Cemetery","Charlotte Peters White Ash Cemetery","Bertie Rex Spillertown Cemetery","Lulie Rex Spillertown Cemetery","Lily Rex Spillertown Cemetery","Arthur Rex Spillertown Cemetery","Guy Rex Rose Hill Cemetery","Harlie Rex Rose Hill Cemetery","Solomon Riegel Webber Campground Cemetery","Catherine Riegel Webber Campground Cemetery","Elisabetha Rockel Christ Church Cemetery","Johannes Rockel Christ Church Cemetery","Elizabeth Rockel Christ Church Cemetery","Euna Ross Masonic &amp; Odd Fellows Cemetery","Salem Sinks Trinity Methodist Church Cemetery","Daniel Sinks Boner Cemetery","Elizabeth Sinks Lake Creek Cemetery","Etta Faye Sinks Hudgens Cemetery","Arlie Sinks Maplewood Cemetery","Viola Sinks Maplewood Cemetery","Mae Sinks ","Caroline Sinks Miller Cemetery","John Veatch Casey Springs Cemetery","Pleasant Veach Mt Olive Methodist Church Cemetery","Mary Veatch Chapman-Veatch Cemetery","Frelin Veatch Chapman-Veatch Cemetery","Turner Ware Lebanon Cumberland Presbyterian Church Cemetery","Martha Ware Lebanon Cumberland Presbyterian Church Cemetery","Joseph Wilson Baggett Cemetery","Thomas Wilson Hartwell Cemetery","Luvena Wise Masonic Cemetery","Nettie Woolard Oddfellow Cemetery","Ama Woolard Ebenezer Cumberland Presbyterian Church Cemetery","Robert Woolard Ebenezer Cumberland Presbyterian Church Cemetery","George Woolard Harmony Free Will Baptist Church Cemetery"],{"interactive":false,"permanent":false,"direction":"auto","opacity":1,"offset":[0,0],"textsize":"10px","textOnly":false,"className":"","sticky":true},null]}],"limits":{"lat":[35.97833333333333,44.75056],"lng":[-89.27749999999999,-73.48583000000001]}},"evals":[],"jsHooks":[]}</script>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="co">#library(htmlwidgets)</span></span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a><span class="co">#saveWidget(map, file ="map_to_upload.html")</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="conclusions" class="level1">
+<h1>Conclusions</h1>
+<p>Despite fairly intensive efforts with data cleaning, only 194 names and photos were included in the final map. A handful of matched names and photos didn’t make it on the map because there was a problem with the geographic data and got dropped for not having latitude or longitude.</p>
+<p>Hand correction of the files names would be needed to increase the matches in the current dataset. Moving forward, photos should include an additional identifier, perhaps birth or death year to disambiguate people with identical names.</p>
+</section>
+
+</main>
+<!-- /main column -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    text: function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+</body></html>
