@@ -224,7 +224,50 @@ I could use era or surname as a layer option. There are 65 different surnames. T
 tombstones_geo %>% group_by(Surname) %>% count(sort = TRUE)
 ```
 
-Make a nice label formatted with HTML
+## Make a nice label formatted with HTML
+
+I'd like a pop-up with the picutre, but there is a lot of missing data, so I need to construct the info box carefully or it will be full of NAs.
+
+```{r}
+#| label: dob-dod-formatting
+
+tombstones_geo %>% select(DOB, DOD)
+
+tombstones_geo <- tombstones_geo %>%
+  mutate(dob_label = ifelse(is.na(DOB)== TRUE, "", paste0("Born: ", DOB)))
+
+tombstones_geo <- tombstones_geo %>%
+  mutate(dod_label = ifelse(is.na(DOD)== TRUE, "", paste0("Died: ", DOD)))
+
+
+```
+
+Playing with the map, I see that two entries have the state in both the city and the state column.
+
+```{r}
+#| fixing-duplicate-states-in-city
+tombstones_geo %>% filter(Surname == "Brown") %>% select(City, State)
+
+
+
+tombstones_geo <-
+  tombstones_geo %>%
+  mutate(City = ifelse(City == "Egypt, Lehigh Co., PA", "Egypt, Lehigh Co.", City)
+)
+```
+
+The formatting of the city column is pretty inconsistent. I'm going to clean it up.
+
+```{r}
+#| label: clean-city
+tombstones_geo <-
+  tombstones_geo %>%
+  mutate(City = str_replace_all(City, "Co\\.", "County")) %>%
+  mutate(City = str_replace_all(City, "Co$", "County"))         
+
+
+
+```
 
 ```{r}
 #| label: html-formating-info-box
@@ -232,12 +275,11 @@ tombstones_geo <- tombstones_geo %>%
     mutate(boxinfo = paste0(
       '<strong>',  complete_name ,'</strong>',
       '<br/><hr>',
-       DOB, ' ', DOD,
+       dob_label, ' ', dod_label,
       '<br/><hr>',
       
-     '<strong>',  cemetery_name ,'</strong>',
-      '<br/><hr>',
-       City, ' ', State,
+    cemetery_name , " in ",
+       City, ' , ', State,
     
       '<br/>'
       )%>% 
