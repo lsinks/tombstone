@@ -1,0 +1,7 @@
+---
+title: "Quarto and RStudio"
+format: html
+editor: visual
+---
+
+"\>\>\> C:/Program Files/Git/cmd/git.exe push origin HEAD:refs/heads/main To https://github.com/lsinks/tombstone.git ! \[rejected\] HEAD -\> main (non-fast-forward) error: failed to push some refs to 'https://github.com/lsinks/tombstone.git' hint: Updates were rejected because the tip of your current branch is behind hint: its remote counterpart. Integrate the remote changes (e.g. hint: 'git pull \...') before pushing again. hint: See the 'Note about fast-forwards' in 'git push \--help' for details."
