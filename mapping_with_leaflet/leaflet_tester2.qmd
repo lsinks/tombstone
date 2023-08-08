@@ -1,13 +1,13 @@
 ---
 title: "Leaflet_tester"
-date: 06-30-2023
+date: 08-08-2023
 categories: [Data-Viz, R, leaflet, quarto, problem solving, mapping, Code-Along] # self-defined categories
 draft: true # setting this to `true` will prevent your post from appearing on your listing page until you're ready!
 ---
 
 # Project Overview
 
-I'm working on a project for my father that will culminate in a website for his genealogy research. [There are a couple of different parts](https://lsinks.github.io/currentprojects.html) that I'm working on independently. In a previous part of the project, I matched an excel sheet with gps coordinates and some biographic data with photos of various tombstones. This part involves making a leaflet map of various family grave sites.
+I'm working on a project for my father that will culminate in a website for his genealogy research. [There are a couple of different parts](https://lsinks.github.io/currentprojects.html) that I'm working on independently. In a previous part of the project, I matched an excel sheet with GPS coordinates and some biographic data with photos of various tombstones. This part involves making a leaflet map of various family grave sites.
 
 In this part, I'm going to show you how to create a nicely styled leaflet map. I will use the R package leaflet exclusively; while the package leaflet.extras has some nice features, the contributor stopped maintaining it in 2018 and [recommends against using it for security reasons](https://github.com/bhaskarvk/leaflet.extras#readme).
 
@@ -46,7 +46,7 @@ blog_folder <- "mapping_with_leaflet"
 photo_folder <- "Map"
 ```
 
-Reading in the data. This is data created by the previous portion of the project. There are also a bunch of photos in the Map folder. The specific photo that is associated with a given entry is listed in the photo_list column.
+Reading in the data. This is data created by the previous portion of the project. There are also a bunch of photos in the `Map` folder. The specific photo that is associated with a given entry is listed in the `photo_list` column.
 
 ```{r}
 tombstones_geo <- readRDS(here(blog_folder, "tombstones_geo.RDS"))
@@ -54,13 +54,13 @@ tombstones_geo <- readRDS(here(blog_folder, "tombstones_geo.RDS"))
 
 # About Leaflet
 
-[Leaflet is a JavaScript library](https://leafletjs.com/index.html). The R package leaflet provides an interface to many of the core leaflet features. The options for leaflet maps are endless; the R package documentation is a high level overview and delving into the JavaScript documentation for details is a must if you want to do a lot of customizations. You can also extend R leaflet by calling [JavaScript plugins within R leaflet](http://rstudio.github.io/leaflet/extending.html). This is beyond the scope of this tutorial. Since the number of plugins/libraries/extensions for leaflet in JavaScript is extensive, it is worth being aware of this option.
+[Leaflet is a JavaScript library](https://leafletjs.com/index.html). The R package leaflet provides an interface to many of the core leaflet features. The options for leaflet maps are endless; the R package documentation is a high level overview and delving into the JavaScript documentation for details is a must if you want to do a lot of customization. You can also extend R leaflet by calling [JavaScript plugins within R leaflet](http://rstudio.github.io/leaflet/extending.html). This is beyond the scope of this tutorial. Since the number of plugins/libraries/extensions for leaflet in JavaScript is extensive, it is worth being aware of this option.
 
 Here, I'm going to stick with features available in the R leaflet package, though I will pass some options that I found in the JavaScript documentation.
 
 # Handling Overlapping Points?
 
-Some tombstones are very close together and have the same gps coordinates. I initially solved this by using sf_jitter() to jitter the coordinates, but I didn't optimize it at all. Here I'm going to demonstrate a few different ways to handle this issue.
+Some tombstones are very close together and have the same GPS coordinates. I initially solved this by using `sf_jitter()` to jitter the coordinates, but I didn't optimize it at all. Here I'm going to demonstrate a few different ways to handle this issue.
 
 First, how many overlapping points do I have?
 
@@ -78,7 +78,7 @@ test %>% gt() %>%
 
 27 sets of identical coordinates.
 
-Now let's make a set of entries that are only duplicates. To join spatial data, we need to use st_join. The type of join is set with the parameter left. If left = TRUE then the function returns a left join, otherwise, and inner_join. This function defaults to TRUE according to the documentation, but it seems that whether left is set to TRUE or FALSE, it returns the inner join.
+Now let's make a set of entries that are only duplicates. To join spatial data, we need to use st_join. The type of join is set with the parameter left. If `left = TRU`E then the function returns a left join, otherwise, and inner join. This function defaults to `TRUE` according to the documentation, but it seems that whether left is set to `TRUE` or `FALSE`, it returns the inner join.
 
 Join type defaults to intersect. **More BLAH**
 
@@ -101,7 +101,7 @@ test <- test_for_jitter_inner %>%
   filter(n == 3)
 ```
 
-Here is the simplest leafelt map we can make. The procedure is to intialize leaflet, add an underlying map (add_Tiles) and then add my markers with the label (addCircleMarkers) from my dataframe. The layerID is so we can remove this object later.
+Here is the simplest leaflet map we can make. The procedure is to initialize leaflet, add an underlying map (add_Tiles) and then add my markers with the label (addCircleMarkers) from my dataframe. The layerID is so we can remove this object later.
 
 ## Default Map
 
@@ -116,11 +116,11 @@ simple_map <- leaflet() %>%
 simple_map
 ```
 
-The idea choice would be to "spiderify" this map. Spiderifying disperses the points as you zoom in (as we will see with the clustering option). [Leaflet is a JavaScript library](https://leafletjs.com/index.html). Some of the features and extras have been ported to the R package [leaflet.extras](https://bhaskarvk.github.io/leaflet.extras/), but [spiderifying isnt'](https://github.com/jawj/OverlappingMarkerSpiderfier-Leaflet/issues/36). The module for spiderifying in javascript can be found [here](https://github.com/jawj/OverlappingMarkerSpiderfier-Leaflet). (The [demo is awesome](http://jawj.github.io/OverlappingMarkerSpiderfier-Leaflet/demo.html) and that is exactly what I want!)
+The idea choice would be to "spiderify" this map. Spiderifying disperses the points as you zoom in (as we will see with the clustering option). [Leaflet is a JavaScript library](https://leafletjs.com/index.html). Some of the features and extras have been ported to the R package [leaflet.extras](https://bhaskarvk.github.io/leaflet.extras/), but [spiderifying isn't'](https://github.com/jawj/OverlappingMarkerSpiderfier-Leaflet/issues/36). The module for spiderifying in javascript can be found [here](https://github.com/jawj/OverlappingMarkerSpiderfier-Leaflet). (The [demo is awesome](http://jawj.github.io/OverlappingMarkerSpiderfier-Leaflet/demo.html) and that is exactly what I want!)
 
 # MarkerCluster Map
 
-Now, MarkerCluster does include spiderifying. I'm going to go back to the 55 datapoints set just to illustrate the clustering more clearly
+Now, MarkerCluster does include spiderifying. I'm going to go back to the 55 data points set just to illustrate the clustering more clearly
 
 ```{r}
 #| label: markercluster-map
@@ -139,7 +139,7 @@ cluster_map
 
 (You can't have a layerId with clustering?)
 
-It does separate the points, but it is very hard to click on correct portion of the dot to get the label or pop-up. I think you need to hover on the part of the circle marker that does not overlap with either the cluster marker or the or the other circle markers. This can be solved by making the circle markers very large, so there is more non-overlapping area, but this is ugly. It turns out you can also set the spiderfying distance for the markerCluster. Documentation is back in the [js library](https://github.com/Leaflet/Leaflet.markercluster#other-options).
+It does separate the points, but it is very hard to click on correct portion of the dot to get the label or pop-up. I think you need to hover on the part of the circle marker that does not overlap with either the cluster marker or the or the other circle markers. This can be solved by making the circle markers very large, so there is more non-overlapping area, but this is ugly. It turns out you can also set the spiderifying distance for the `markerCluster`. Documentation is back in the [js library](https://github.com/Leaflet/Leaflet.markercluster#other-options).
 
 ```{r}
 #| label: markercluster-map-more-spiderified
@@ -161,7 +161,7 @@ cluster_map_separated
 
 ## Using sf_jitter
 
-So, now back at st_jitter
+So, now back at `st_jitter(`).
 
 **amount**
 
@@ -211,7 +211,7 @@ map_sf_jitter_all <- leaflet() %>%
 map_sf_jitter_all
 ```
 
-This works ok, but the zooming experience is very unpleasent. With the clustered option, the map is zoomed and centered as you click through the clusters. There is also a very clear indication (the number in the cluster) that there are mutiple data points in the dot. Here, more datapoints make a darker circle, but this isn't crystal clear.
+This works OK, but the zooming experience is very unpleasant. With the clustered option, the map is zoomed and centered as you click through the clusters. There is also a very clear indication (the number in the cluster) that there are multiple data points in the dot. Here, more data points make a darker circle, but this isn't crystal clear.
 
 # Styling the Clustered Map
 
@@ -253,31 +253,9 @@ tombstones_geo <- tombstones_geo %>%
 #  lapply(htmltools::HTML)
 ```
 
-tombstones_geo \<- tombstones_geo %\>%
-
-mutate(boxinfo = paste0(
-
-'\<strong\>Name:\</strong\>',
-
-complete_name,
-
-'\<br/\>\<hr\>',
-
-'\<strong\>Cemetery:\</strong\>',
-
-Cemetery,
-
-'\<br/\>'
-
-)%\>%
-
-lapply(htmltools::HTML)
-
-)
-
 # Back to clustering
 
-Click on a cluster. It will zoom and split the point as you keep clicking until you end up with just the points with the same coordinated.
+Click on a cluster. It will zoom and split the point as you keep clicking until you end up with just the points with the same coordinates.
 
 ```{r}
 #| label: final-cluster-map
