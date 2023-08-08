@@ -10,3 +10,5 @@ leaflet_module/tombstones_geo.RDS
 leaflet_module/my2.html
 leaflet_module/map_to_upload.html
 data_cleaning/map_to_upload.html
+mapping_with_leaflet/leaflet_tester2.html
+mapping_with_leaflet/map_to_upload.html
