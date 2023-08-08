@@ -65,6 +65,7 @@ Some tombstones are very close together and have the same gps coordinates. I ini
 First, how many overlapping points do I have?
 
 ```{r}
+#| label: table-duplicate-geos
 test <-
   tombstones_geo %>% 
   group_by(geometry) %>% 
@@ -82,6 +83,7 @@ Now let's make a set of entries that are only duplicates. To join spatial data, 
 Join type defaults to intersect. **More BLAH**
 
 ```{r}
+#| label: spatial-join
 test_for_jitter_left <- tombstones_geo %>% st_join(test, left = TRUE) %>% filter(n>1)
 
 test_for_jitter_inner <- tombstones_geo %>% st_join(test, left = FALSE) %>% filter(n>1)
@@ -94,6 +96,7 @@ identical(test_for_jitter_left, test_for_jitter_inner)
 I'm going work on this problem using the one set of coordinate where there are 3 tombstones.
 
 ```{r}
+#| label: site-with-three-graves
 test <- test_for_jitter_inner %>%
   filter(n == 3)
 ```
@@ -103,6 +106,7 @@ Here is the simplest leafelt map we can make. The procedure is to intialize leaf
 ## Default Map
 
 ```{r}
+#| label: default-leaflet-map
 
 simple_map <- leaflet() %>%
   addTiles() %>%
@@ -119,6 +123,7 @@ The idea choice would be to "spiderify" this map. Spiderifying disperses the poi
 Now, MarkerCluster does include spiderifying. I'm going to go back to the 55 datapoints set just to illustrate the clustering more clearly
 
 ```{r}
+#| label: markercluster-map
 cluster_map <- leaflet() %>%
   addTiles() %>%
   addScaleBar() %>%
@@ -137,7 +142,9 @@ cluster_map
 It does separate the points, but it is very hard to click on correct portion of the dot to get the label or pop-up. I think you need to hover on the part of the circle marker that does not overlap with either the cluster marker or the or the other circle markers. This can be solved by making the circle markers very large, so there is more non-overlapping area, but this is ugly. It turns out you can also set the spiderfying distance for the markerCluster. Documentation is back in the [js library](https://github.com/Leaflet/Leaflet.markercluster#other-options).
 
 ```{r}
+#| label: markercluster-map-more-spiderified
 #| column: page
+
 
 cluster_map_separated <- leaflet() %>%
   addTiles() %>%
@@ -169,6 +176,7 @@ So, now back at st_jitter
 :   doesn't work on a single set?
 
 ```{r}
+#| label: map-spatial-jitter-small
 
 test_jittered <- test %>%
   st_jitter( factor = 0.00001)
@@ -187,6 +195,7 @@ map_sf_jitter_one
 Does work on a the whole test set.
 
 ```{r}
+#| label: map-spatial-jitter-large
 test_jittered_all <- test_for_jitter_inner %>%
   st_jitter( factor = 0.00001)
 
@@ -211,12 +220,14 @@ So, I'm going to go with the clustered version. I can have additional informatio
 I could use era or surname as a layer option. There are 65 different surnames. That still feels like too much.
 
 ```{r}
+#| label: number-surnames
 tombstones_geo %>% group_by(Surname) %>% count(sort = TRUE)
 ```
 
 Make a nice label formatted with HTML
 
 ```{r}
+#| label: html-formating-info-box
 tombstones_geo <- tombstones_geo %>%
     mutate(boxinfo = paste0(
       '<strong>',  complete_name ,'</strong>',
@@ -269,6 +280,7 @@ lapply(htmltools::HTML)
 Click on a cluster. It will zoom and split the point as you keep clicking until you end up with just the points with the same coordinated.
 
 ```{r}
+#| label: final-cluster-map
 #| column: page
 image_list <- tombstones_geo$photo_list
 final_map <- leaflet() %>%
@@ -293,10 +305,12 @@ final_map <- leaflet() %>%
 ```
 
 ```{r}
+#| label: viewing-final-map
 final_map
 ```
 
 ```{r}
+#| label: saving-map
 #library(htmlwidgets)
 saveWidget(final_map, file ="map_to_upload.html")
 ```
