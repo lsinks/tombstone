@@ -178,11 +178,14 @@ I'm not sure why, but it doesn't work on our test set (with 3 entries at the sam
 ```{r}
 #| label: spatial-jitter-small
 
+st_crs(test)
+test %>% select(geometry)
+
 test_jittered <- test %>%
-  st_jitter(amount = 1,  factor = 0.00001)
+  st_jitter(amount = 0.1,  factor = 1)
 
 test_jittered %>% select(geometry)
-test %>% select(geometry)
+
 
 ```
 
