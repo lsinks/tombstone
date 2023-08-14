@@ -105,7 +105,7 @@ test <- test_for_jitter_inner %>%
   filter(n == 3)
 ```
 
-Here is a simple leaflet map. The procedure is to initialize leaflet with `leaflet()`, add an underlying map (`add_Tiles()`) and then add my markers with the label (`addCircleMarkers()`) from my dataframe. I'm also adding a scale bar (`addScaleBar()`). Everything is piped together with the standard [tidyverse/ magrittr pipe,](https://magrittr.tidyverse.org/articles/magrittr.html) though of course you can use standard[ function calls instead](https://rstudio.github.io/leaflet/).
+Here is a simple leaflet map. The procedure is to initialize leaflet with `leaflet()`, add an underlying map (`add_Tiles()`) and then add my markers with the label (`addCircleMarkers()`) from my dataframe. I'm also adding a scale bar (`addScaleBar()`). Everything is piped together with the standard [tidyverse/ magrittr pipe,](https://magrittr.tidyverse.org/articles/magrittr.html) though of course you can use standard[function calls instead](https://rstudio.github.io/leaflet/).
 
 The default underlying map used by `addTiles()` is OpenStreetMap. If you want to use different map, you can `addProviderTiles(name)` instead. A demo of the different providers is found [here](http://leaflet-extras.github.io/leaflet-providers/preview/index.html).
 
