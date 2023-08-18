@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Louise E. Sinks">
-<meta name="dcterms.date" content="2023-06-29">
+<meta name="dcterms.date" content="2023-08-16">
 
 <title>web-scraping</title>
 <style>
@@ -106,7 +106,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">June 29, 2023</p>
+      <p class="date">August 16, 2023</p>
     </div>
   </div>
   
@@ -124,7 +124,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stderr">
 <pre><code>── Attaching core tidyverse packages ──────────────────────── tidyverse 2.0.0 ──
-✔ dplyr     1.1.1     ✔ readr     2.1.4
+✔ dplyr     1.1.2     ✔ readr     2.1.4
 ✔ forcats   1.0.0     ✔ stringr   1.5.0
 ✔ ggplot2   3.4.2     ✔ tibble    3.2.1
 ✔ lubridate 1.9.2     ✔ tidyr     1.3.0
@@ -147,36 +147,62 @@ The following object is masked from 'package:readr':
 
     guess_encoding</code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(gt)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(gt)</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(openxlsx)</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(xml2)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p>This is my father’s spreadsheet after some clean-up.</p>
+<p><strong>This is my father’s spreadsheet after some clean-up.</strong></p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co"># tombstones_raw &lt;-</span></span>
-<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="co">#   read.xlsx(here(web_scraping_module, data_file),</span></span>
-<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="co">#     sheet = 1</span></span>
-<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a><span class="co">#   )</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co"># data_file &lt;- "Tombstone Data.xlsx"</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="co">#  tombstones_raw &lt;-</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="co">#    read.xlsx(here("leaflet_module", data_file),</span></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a><span class="co">#      sheet = 1</span></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a><span class="co">#    )</span></span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>data_file <span class="ot">&lt;-</span> <span class="fu">readRDS</span>(<span class="fu">here</span>(<span class="st">"data_cleaning"</span>, <span class="st">"tombstones_matched_final.RDS"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
+</section>
+<section id="conceptual-overview-of-webscraping" class="level1">
+<h1>Conceptual Overview of Webscraping</h1>
+<p>You want to find the HTML elements that correspond to the data you wish to obtain. There are a few ways to do this. One is to right click on the webpage in your browser and chose “inspect” to find out what elements you want to use (choose the elements tab). Many items may have the same elements, so you probably need to construct sets of elements to get to the right items.</p>
+<p>Another way is to use the <a href="https://rvest.tidyverse.org/articles/selectorgadget.html">SelectorGadget</a>. The SelectorGadget is iterative. You need to keep clicking on</p>
+</section>
+<section id="ethics-and-legality-of-web-scraping" class="level1">
+<h1>Ethics and Legality of Web Scraping</h1>
 </section>
 <section id="webscraping-with-rvest" class="level1">
 <h1>Webscraping with rvest</h1>
-<p>I decided to use the rvest package for webscraping. I was introduced to it through TidyTuesday. For politeness sake, I am working on a downloaded copy of the webpage.</p>
-<p>There is an overview of <a href="https://rvest.tidyverse.org/articles/rvest.html">webscraping using rvest</a> on the package website. Basically, you want to right click on the webpage in your browser and chose “inspect” to find out what elements you want to use. In my case, the information was formatted as a table, so I pull out the children of the table element. There is an html_table() function, but it only extracts the text elements from the table, not the links. If you are only interested in the text, then this is a great option. To get the links that I wanted, I found an <a href="https://stackoverflow.com/questions/63093926/retrieve-link-from-html-table-with-rvest">example on Stack Overflow</a>.</p>
+<p>I decided to use the <a href="https://CRAN.R-project.org/package=rvest">rvest package</a> for webscraping. I was introduced to it through <a href="https://github.com/rfordatascience/tidytuesday">TidyTuesday</a>. rvest is a tidyverse package and is installed with installation of tidyverse. However, it is not <a href="https://www.tidyverse.org/packages/">a core tidyverse package</a> and does need to be loaded separately with a call to <code>library()</code>.</p>
+<p>For politeness sake, I am working on a downloaded copy of the webpage. The function <code>read_html()</code> can also take a url to read directly from a website.</p>
+<p>There is an overview of <a href="https://rvest.tidyverse.org/articles/rvest.html">webscraping using rvest</a> on the package website.</p>
+<p>In my case, the information was formatted as a table, so I pull out the children of the table element. There is an html_table() function, but it only extracts the text elements from the table, not the links. <strong>And produces a list.</strong> If you are only interested in the text, then this is a great option. To get the links that I wanted, I found an <a href="https://stackoverflow.com/questions/63093926/retrieve-link-from-html-table-with-rvest">example on Stack Overflow</a>.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>sar <span class="ot">&lt;-</span> <span class="fu">read_html</span>( <span class="st">"Display Member - 121743 - John Douglas Sinks Ph.D..html"</span>)</span>
 <span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>link_nodes <span class="ot">&lt;-</span> sar <span class="sc">%&gt;%</span> <span class="fu">html_nodes</span>(<span class="at">xpath =</span> <span class="st">"//table//a"</span>)  </span>
-<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>link_text  <span class="ot">&lt;-</span> link_nodes <span class="sc">%&gt;%</span> <span class="fu">html_text</span>()</span>
-<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>text_df <span class="ot">=</span> <span class="fu">as.data.frame</span>(link_text)</span>
-<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>index <span class="ot">&lt;-</span> <span class="dv">1</span></span>
-<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (index <span class="cf">in</span> <span class="fu">seq</span>(<span class="dv">1</span><span class="sc">:</span><span class="fu">nrow</span>(text_df))) {</span>
-<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>  text_df<span class="sc">$</span>url[index] <span class="ot">&lt;-</span> link_nodes[index] <span class="sc">%&gt;%</span>  <span class="fu">html_attr</span>(<span class="st">"href"</span>)</span>
-<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a><span class="co">#xml_structure(sar)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>blah</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>link_nodes <span class="ot">&lt;-</span> sar <span class="sc">%&gt;%</span> <span class="fu">html_nodes</span>(<span class="at">xpath =</span> <span class="st">"//table//a"</span>)  </span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>link_text  <span class="ot">&lt;-</span> link_nodes <span class="sc">%&gt;%</span> <span class="fu">html_text</span>()</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>text_df <span class="ot">=</span> <span class="fu">as.data.frame</span>(link_text)</span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>index <span class="ot">&lt;-</span> <span class="dv">1</span></span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (index <span class="cf">in</span> <span class="fu">seq</span>(<span class="dv">1</span><span class="sc">:</span><span class="fu">nrow</span>(text_df))) {</span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>  text_df<span class="sc">$</span>url[index] <span class="ot">&lt;-</span> link_nodes[index] <span class="sc">%&gt;%</span>  <span class="fu">html_attr</span>(<span class="st">"href"</span>)</span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>alternate method</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>link_nodes2 <span class="ot">&lt;-</span> sar <span class="sc">%&gt;%</span> <span class="fu">html_nodes</span>(<span class="st">"table a"</span>)  </span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>link_text2  <span class="ot">&lt;-</span> link_nodes2 <span class="sc">%&gt;%</span> <span class="fu">html_text</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>There are actually three sets of links- one with the name, one with the application, and one to purchase the detailed application. I only want the one that goes to the application. So I take every third link, starting with the first.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>raw_data <span class="ot">&lt;-</span> text_df[<span class="fu">seq</span>(<span class="dv">1</span>, <span class="fu">nrow</span>(text_df), <span class="dv">3</span>),]</span>
-<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(raw_data)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>raw_data <span class="ot">&lt;-</span> text_df[<span class="fu">seq</span>(<span class="dv">1</span>, <span class="fu">nrow</span>(text_df), <span class="dv">3</span>),]</span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(raw_data)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>                                        link_text
 1                       John  PHELPS   (P-335209)
@@ -199,31 +225,31 @@ The following object is masked from 'package:readr':
 <h1>Reformat the Data</h1>
 <p>Now to wrangle the text data into a usable form. The link_text contains the name and an ID number, like John PHELPS (P-335209). This can be split into two components using <code>(</code> as a separator. Remember that special characters like <code>(</code> need to be escaped (more on that later). So the actual separator is <code>" \\("</code> I took the space also. Then I removed the other parenthesis with <code>str_replace()</code>. I used transmute do the final mutation and select the columns I wanted moving forward.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="co"># first clean up the names</span></span>
-<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>rev_war <span class="ot">&lt;-</span> raw_data <span class="sc">%&gt;%</span></span>
-<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">separate</span>(link_text, <span class="at">sep =</span> <span class="st">" </span><span class="sc">\\</span><span class="st">("</span>, <span class="at">into =</span> <span class="fu">c</span>(<span class="st">"name_unclean"</span>, <span class="st">"id_unclean"</span>) ) </span>
-<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a><span class="co">#clean up the id number</span></span>
-<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>rev_war <span class="ot">&lt;-</span> rev_war <span class="sc">%&gt;%</span></span>
-<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">transmute</span>(name_unclean, url, <span class="at">SAR_ID =</span> <span class="fu">str_replace</span>(id_unclean, <span class="st">"</span><span class="sc">\\</span><span class="st">)"</span>, <span class="st">""</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="co"># first clean up the names</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>rev_war <span class="ot">&lt;-</span> raw_data <span class="sc">%&gt;%</span></span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">separate</span>(link_text, <span class="at">sep =</span> <span class="st">" </span><span class="sc">\\</span><span class="st">("</span>, <span class="at">into =</span> <span class="fu">c</span>(<span class="st">"name_unclean"</span>, <span class="st">"id_unclean"</span>) ) </span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a><span class="co">#clean up the id number</span></span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a>rev_war <span class="ot">&lt;-</span> rev_war <span class="sc">%&gt;%</span></span>
+<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">transmute</span>(name_unclean, url, <span class="at">SAR_ID =</span> <span class="fu">str_replace</span>(id_unclean, <span class="st">"</span><span class="sc">\\</span><span class="st">)"</span>, <span class="st">""</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 <section id="dataframes-arent-tibbles" class="level1">
 <h1>Dataframes aren’t Tibbles!</h1>
-<p>R keeps the indexing of the raw_data, so the row numbers are by 3s. However, indexing is as normal, by position. So rev_war$name_unclean[3] returns the name associated with the row number 7. This is annoying and makes it difficult to pull out test cases. So, this should be fixed. This issue will pop up when you use data frames, but not when you use tibbles. The tidyverse doesn’t approve of row names or numbers, so they aren’t used. If you look at the data in RStudio viewer, you will get row numbers and the tibble will have them correctly numbered. Tibbles and data frames are usually completely interchangeable, but sometimes you do run into the differences.</p>
+<p>R keeps the indexing of the raw_data, so the row numbers are by 3s. However, indexing is as normal, by position. So rev_war$name_unclean[3] returns the name associated with the row number 7. This is annoying and makes it difficult to pull out test cases. So, this should be fixed. This issue will pop up when you use data frames, but not when you use tibbles. The tidyverse doesn’t approve of row names or numbers, so they aren’t used. If you look at a tibble in RStudio viewer, you will get row numbers and the tibble will have them correctly numbered. Tibbles and data frames are usually completely interchangeable, but sometimes you do run into the differences.</p>
 <p>So, two ways to fix this:</p>
 <ol type="1">
 <li>Convert to a tibble.</li>
 </ol>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>rev_war_tibble <span class="ot">&lt;-</span> <span class="fu">as.tibble</span>(rev_war)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>rev_war_tibble <span class="ot">&lt;-</span> <span class="fu">as.tibble</span>(rev_war)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stderr">
 <pre><code>Warning: `as.tibble()` was deprecated in tibble 2.0.0.
 ℹ Please use `as_tibble()` instead.
 ℹ The signature and semantics have changed, see `?as_tibble`.</code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(rev_war_tibble)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(rev_war_tibble)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 6 × 3
   name_unclean                          url                               SAR_ID
@@ -240,7 +266,7 @@ The following object is masked from 'package:readr':
 <li>Reassign the indexing of the data frame.</li>
 </ol>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(rev_war)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(rev_war)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>                          name_unclean
 1                       John  PHELPS  
@@ -257,9 +283,9 @@ The following object is masked from 'package:readr':
 13 https://sarpatriots.sar.org/patriot/display/309334 P-309334
 16 https://sarpatriots.sar.org/patriot/display/310578 P-310578</code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="fu">rownames</span>(rev_war) <span class="ot">=</span> <span class="fu">seq</span>(<span class="at">length =</span> <span class="fu">nrow</span>(rev_war))</span>
-<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(rev_war)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="fu">rownames</span>(rev_war) <span class="ot">=</span> <span class="fu">seq</span>(<span class="at">length =</span> <span class="fu">nrow</span>(rev_war))</span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(rev_war)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>                         name_unclean
 1                      John  PHELPS  
@@ -275,1517 +301,6 @@ The following object is masked from 'package:readr':
 4 https://sarpatriots.sar.org/patriot/display/310164 P-310164
 5 https://sarpatriots.sar.org/patriot/display/309334 P-309334
 6 https://sarpatriots.sar.org/patriot/display/310578 P-310578</code></pre>
-</div>
-</div>
-<p>trying to do a quarto thing</p>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>rev_war <span class="sc">%&gt;%</span> <span class="fu">select</span>(name_unclean) <span class="sc">%&gt;%</span> <span class="fu">group_by</span>(name_unclean) <span class="sc">%&gt;%</span> <span class="fu">count</span>(name_unclean) <span class="sc">%&gt;%</span> <span class="fu">gt</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output-display">
-
-<div id="qkgnnaxliz" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
-<style>#qkgnnaxliz table {
-  font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-#qkgnnaxliz thead, #qkgnnaxliz tbody, #qkgnnaxliz tfoot, #qkgnnaxliz tr, #qkgnnaxliz td, #qkgnnaxliz th {
-  border-style: none;
-}
-
-#qkgnnaxliz p {
-  margin: 0;
-  padding: 0;
-}
-
-#qkgnnaxliz .gt_table {
-  display: table;
-  border-collapse: collapse;
-  line-height: normal;
-  margin-left: auto;
-  margin-right: auto;
-  color: #333333;
-  font-size: 16px;
-  font-weight: normal;
-  font-style: normal;
-  background-color: #FFFFFF;
-  width: auto;
-  border-top-style: solid;
-  border-top-width: 2px;
-  border-top-color: #A8A8A8;
-  border-right-style: none;
-  border-right-width: 2px;
-  border-right-color: #D3D3D3;
-  border-bottom-style: solid;
-  border-bottom-width: 2px;
-  border-bottom-color: #A8A8A8;
-  border-left-style: none;
-  border-left-width: 2px;
-  border-left-color: #D3D3D3;
-}
-
-#qkgnnaxliz .gt_caption {
-  padding-top: 4px;
-  padding-bottom: 4px;
-}
-
-#qkgnnaxliz .gt_title {
-  color: #333333;
-  font-size: 125%;
-  font-weight: initial;
-  padding-top: 4px;
-  padding-bottom: 4px;
-  padding-left: 5px;
-  padding-right: 5px;
-  border-bottom-color: #FFFFFF;
-  border-bottom-width: 0;
-}
-
-#qkgnnaxliz .gt_subtitle {
-  color: #333333;
-  font-size: 85%;
-  font-weight: initial;
-  padding-top: 3px;
-  padding-bottom: 5px;
-  padding-left: 5px;
-  padding-right: 5px;
-  border-top-color: #FFFFFF;
-  border-top-width: 0;
-}
-
-#qkgnnaxliz .gt_heading {
-  background-color: #FFFFFF;
-  text-align: center;
-  border-bottom-color: #FFFFFF;
-  border-left-style: none;
-  border-left-width: 1px;
-  border-left-color: #D3D3D3;
-  border-right-style: none;
-  border-right-width: 1px;
-  border-right-color: #D3D3D3;
-}
-
-#qkgnnaxliz .gt_bottom_border {
-  border-bottom-style: solid;
-  border-bottom-width: 2px;
-  border-bottom-color: #D3D3D3;
-}
-
-#qkgnnaxliz .gt_col_headings {
-  border-top-style: solid;
-  border-top-width: 2px;
-  border-top-color: #D3D3D3;
-  border-bottom-style: solid;
-  border-bottom-width: 2px;
-  border-bottom-color: #D3D3D3;
-  border-left-style: none;
-  border-left-width: 1px;
-  border-left-color: #D3D3D3;
-  border-right-style: none;
-  border-right-width: 1px;
-  border-right-color: #D3D3D3;
-}
-
-#qkgnnaxliz .gt_col_heading {
-  color: #333333;
-  background-color: #FFFFFF;
-  font-size: 100%;
-  font-weight: normal;
-  text-transform: inherit;
-  border-left-style: none;
-  border-left-width: 1px;
-  border-left-color: #D3D3D3;
-  border-right-style: none;
-  border-right-width: 1px;
-  border-right-color: #D3D3D3;
-  vertical-align: bottom;
-  padding-top: 5px;
-  padding-bottom: 6px;
-  padding-left: 5px;
-  padding-right: 5px;
-  overflow-x: hidden;
-}
-
-#qkgnnaxliz .gt_column_spanner_outer {
-  color: #333333;
-  background-color: #FFFFFF;
-  font-size: 100%;
-  font-weight: normal;
-  text-transform: inherit;
-  padding-top: 0;
-  padding-bottom: 0;
-  padding-left: 4px;
-  padding-right: 4px;
-}
-
-#qkgnnaxliz .gt_column_spanner_outer:first-child {
-  padding-left: 0;
-}
-
-#qkgnnaxliz .gt_column_spanner_outer:last-child {
-  padding-right: 0;
-}
-
-#qkgnnaxliz .gt_column_spanner {
-  border-bottom-style: solid;
-  border-bottom-width: 2px;
-  border-bottom-color: #D3D3D3;
-  vertical-align: bottom;
-  padding-top: 5px;
-  padding-bottom: 5px;
-  overflow-x: hidden;
-  display: inline-block;
-  width: 100%;
-}
-
-#qkgnnaxliz .gt_spanner_row {
-  border-bottom-style: hidden;
-}
-
-#qkgnnaxliz .gt_group_heading {
-  padding-top: 8px;
-  padding-bottom: 8px;
-  padding-left: 5px;
-  padding-right: 5px;
-  color: #333333;
-  background-color: #FFFFFF;
-  font-size: 100%;
-  font-weight: initial;
-  text-transform: inherit;
-  border-top-style: solid;
-  border-top-width: 2px;
-  border-top-color: #D3D3D3;
-  border-bottom-style: solid;
-  border-bottom-width: 2px;
-  border-bottom-color: #D3D3D3;
-  border-left-style: none;
-  border-left-width: 1px;
-  border-left-color: #D3D3D3;
-  border-right-style: none;
-  border-right-width: 1px;
-  border-right-color: #D3D3D3;
-  vertical-align: middle;
-  text-align: left;
-}
-
-#qkgnnaxliz .gt_empty_group_heading {
-  padding: 0.5px;
-  color: #333333;
-  background-color: #FFFFFF;
-  font-size: 100%;
-  font-weight: initial;
-  border-top-style: solid;
-  border-top-width: 2px;
-  border-top-color: #D3D3D3;
-  border-bottom-style: solid;
-  border-bottom-width: 2px;
-  border-bottom-color: #D3D3D3;
-  vertical-align: middle;
-}
-
-#qkgnnaxliz .gt_from_md > :first-child {
-  margin-top: 0;
-}
-
-#qkgnnaxliz .gt_from_md > :last-child {
-  margin-bottom: 0;
-}
-
-#qkgnnaxliz .gt_row {
-  padding-top: 8px;
-  padding-bottom: 8px;
-  padding-left: 5px;
-  padding-right: 5px;
-  margin: 10px;
-  border-top-style: solid;
-  border-top-width: 1px;
-  border-top-color: #D3D3D3;
-  border-left-style: none;
-  border-left-width: 1px;
-  border-left-color: #D3D3D3;
-  border-right-style: none;
-  border-right-width: 1px;
-  border-right-color: #D3D3D3;
-  vertical-align: middle;
-  overflow-x: hidden;
-}
-
-#qkgnnaxliz .gt_stub {
-  color: #333333;
-  background-color: #FFFFFF;
-  font-size: 100%;
-  font-weight: initial;
-  text-transform: inherit;
-  border-right-style: solid;
-  border-right-width: 2px;
-  border-right-color: #D3D3D3;
-  padding-left: 5px;
-  padding-right: 5px;
-}
-
-#qkgnnaxliz .gt_stub_row_group {
-  color: #333333;
-  background-color: #FFFFFF;
-  font-size: 100%;
-  font-weight: initial;
-  text-transform: inherit;
-  border-right-style: solid;
-  border-right-width: 2px;
-  border-right-color: #D3D3D3;
-  padding-left: 5px;
-  padding-right: 5px;
-  vertical-align: top;
-}
-
-#qkgnnaxliz .gt_row_group_first td {
-  border-top-width: 2px;
-}
-
-#qkgnnaxliz .gt_row_group_first th {
-  border-top-width: 2px;
-}
-
-#qkgnnaxliz .gt_summary_row {
-  color: #333333;
-  background-color: #FFFFFF;
-  text-transform: inherit;
-  padding-top: 8px;
-  padding-bottom: 8px;
-  padding-left: 5px;
-  padding-right: 5px;
-}
-
-#qkgnnaxliz .gt_first_summary_row {
-  border-top-style: solid;
-  border-top-color: #D3D3D3;
-}
-
-#qkgnnaxliz .gt_first_summary_row.thick {
-  border-top-width: 2px;
-}
-
-#qkgnnaxliz .gt_last_summary_row {
-  padding-top: 8px;
-  padding-bottom: 8px;
-  padding-left: 5px;
-  padding-right: 5px;
-  border-bottom-style: solid;
-  border-bottom-width: 2px;
-  border-bottom-color: #D3D3D3;
-}
-
-#qkgnnaxliz .gt_grand_summary_row {
-  color: #333333;
-  background-color: #FFFFFF;
-  text-transform: inherit;
-  padding-top: 8px;
-  padding-bottom: 8px;
-  padding-left: 5px;
-  padding-right: 5px;
-}
-
-#qkgnnaxliz .gt_first_grand_summary_row {
-  padding-top: 8px;
-  padding-bottom: 8px;
-  padding-left: 5px;
-  padding-right: 5px;
-  border-top-style: double;
-  border-top-width: 6px;
-  border-top-color: #D3D3D3;
-}
-
-#qkgnnaxliz .gt_last_grand_summary_row_top {
-  padding-top: 8px;
-  padding-bottom: 8px;
-  padding-left: 5px;
-  padding-right: 5px;
-  border-bottom-style: double;
-  border-bottom-width: 6px;
-  border-bottom-color: #D3D3D3;
-}
-
-#qkgnnaxliz .gt_striped {
-  background-color: rgba(128, 128, 128, 0.05);
-}
-
-#qkgnnaxliz .gt_table_body {
-  border-top-style: solid;
-  border-top-width: 2px;
-  border-top-color: #D3D3D3;
-  border-bottom-style: solid;
-  border-bottom-width: 2px;
-  border-bottom-color: #D3D3D3;
-}
-
-#qkgnnaxliz .gt_footnotes {
-  color: #333333;
-  background-color: #FFFFFF;
-  border-bottom-style: none;
-  border-bottom-width: 2px;
-  border-bottom-color: #D3D3D3;
-  border-left-style: none;
-  border-left-width: 2px;
-  border-left-color: #D3D3D3;
-  border-right-style: none;
-  border-right-width: 2px;
-  border-right-color: #D3D3D3;
-}
-
-#qkgnnaxliz .gt_footnote {
-  margin: 0px;
-  font-size: 90%;
-  padding-top: 4px;
-  padding-bottom: 4px;
-  padding-left: 5px;
-  padding-right: 5px;
-}
-
-#qkgnnaxliz .gt_sourcenotes {
-  color: #333333;
-  background-color: #FFFFFF;
-  border-bottom-style: none;
-  border-bottom-width: 2px;
-  border-bottom-color: #D3D3D3;
-  border-left-style: none;
-  border-left-width: 2px;
-  border-left-color: #D3D3D3;
-  border-right-style: none;
-  border-right-width: 2px;
-  border-right-color: #D3D3D3;
-}
-
-#qkgnnaxliz .gt_sourcenote {
-  font-size: 90%;
-  padding-top: 4px;
-  padding-bottom: 4px;
-  padding-left: 5px;
-  padding-right: 5px;
-}
-
-#qkgnnaxliz .gt_left {
-  text-align: left;
-}
-
-#qkgnnaxliz .gt_center {
-  text-align: center;
-}
-
-#qkgnnaxliz .gt_right {
-  text-align: right;
-  font-variant-numeric: tabular-nums;
-}
-
-#qkgnnaxliz .gt_font_normal {
-  font-weight: normal;
-}
-
-#qkgnnaxliz .gt_font_bold {
-  font-weight: bold;
-}
-
-#qkgnnaxliz .gt_font_italic {
-  font-style: italic;
-}
-
-#qkgnnaxliz .gt_super {
-  font-size: 65%;
-}
-
-#qkgnnaxliz .gt_footnote_marks {
-  font-size: 75%;
-  vertical-align: 0.4em;
-  position: initial;
-}
-
-#qkgnnaxliz .gt_asterisk {
-  font-size: 100%;
-  vertical-align: 0;
-}
-
-#qkgnnaxliz .gt_indent_1 {
-  text-indent: 5px;
-}
-
-#qkgnnaxliz .gt_indent_2 {
-  text-indent: 10px;
-}
-
-#qkgnnaxliz .gt_indent_3 {
-  text-indent: 15px;
-}
-
-#qkgnnaxliz .gt_indent_4 {
-  text-indent: 20px;
-}
-
-#qkgnnaxliz .gt_indent_5 {
-  text-indent: 25px;
-}
-</style>
-<table class="gt_table" data-quarto-disable-processing="false" data-quarto-bootstrap="false">
-  <thead>
-    
-    <tr class="gt_col_headings">
-      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" scope="col" id="n">n</th>
-    </tr>
-  </thead>
-  <tbody class="gt_table_body">
-    <tr class="gt_group_heading_row">
-      <th colspan="1" class="gt_group_heading" scope="col" id="    Aaron   VAN CLEVE/VAN CLEAVE  ">    Aaron   VAN CLEVE/VAN CLEAVE  </th>
-    </tr>
-    <tr class="gt_row_group_first"><td headers="Aaron   VAN CLEVE/VAN CLEAVE    n" class="gt_row gt_right">1</td></tr>
-    <tr class="gt_group_heading_row">
-      <th colspan="1" class="gt_group_heading" scope="col" id="    Abraham  ANDERSON  ">    Abraham  ANDERSON  </th>
-    </tr>
-    <tr class="gt_row_group_first"><td headers="Abraham  ANDERSON    n" class="gt_row gt_right">1</td></tr>
-    <tr class="gt_group_heading_row">
-      <th colspan="1" class="gt_group_heading" scope="col" id="    Abraham  FORREST II ">    Abraham  FORREST II </th>
-    </tr>
-    <tr class="gt_row_group_first"><td headers="Abraham  FORREST II   n" class="gt_row gt_right">1</td></tr>
-    <tr class="gt_group_heading_row">
-      <th colspan="1" class="gt_group_heading" scope="col" id="    Absalom  WOOLARD  ">    Absalom  WOOLARD  </th>
-    </tr>
-    <tr class="gt_row_group_first"><td headers="Absalom  WOOLARD    n" class="gt_row gt_right">1</td></tr>
-    <tr class="gt_group_heading_row">
-      <th colspan="1" class="gt_group_heading" scope="col" id="    Archibald  ALLAN  ">    Archibald  ALLAN  </th>
-    </tr>
-    <tr class="gt_row_group_first"><td headers="Archibald  ALLAN    n" class="gt_row gt_right">1</td></tr>
-    <tr class="gt_group_heading_row">
-      <th colspan="1" class="gt_group_heading" scope="col" id="    Balzer  ROCKEL  ">    Balzer  ROCKEL  </th>
-    </tr>
-    <tr class="gt_row_group_first"><td headers="Balzer  ROCKEL    n" class="gt_row gt_right">1</td></tr>
-    <tr class="gt_group_heading_row">
-      <th colspan="1" class="gt_group_heading" scope="col" id="    Benjamin  HURT  ">    Benjamin  HURT  </th>
-    </tr>
-    <tr class="gt_row_group_first"><td headers="Benjamin  HURT    n" class="gt_row gt_right">1</td></tr>
-    <tr class="gt_group_heading_row">
-      <th colspan="1" class="gt_group_heading" scope="col" id="    Burgess  WALL  ">    Burgess  WALL  </th>
-    </tr>
-    <tr class="gt_row_group_first"><td headers="Burgess  WALL    n" class="gt_row gt_right">1</td></tr>
-    <tr class="gt_group_heading_row">
-      <th colspan="1" class="gt_group_heading" scope="col" id="    Christian  METZGER  ">    Christian  METZGER  </th>
-    </tr>
-    <tr class="gt_row_group_first"><td headers="Christian  METZGER    n" class="gt_row gt_right">1</td></tr>
-    <tr class="gt_group_heading_row">
-      <th colspan="1" class="gt_group_heading" scope="col" id="    Daniel   CHAPMAN  ">    Daniel   CHAPMAN  </th>
-    </tr>
-    <tr class="gt_row_group_first"><td headers="Daniel   CHAPMAN    n" class="gt_row gt_right">1</td></tr>
-    <tr class="gt_group_heading_row">
-      <th colspan="1" class="gt_group_heading" scope="col" id="    Daniel  HORLACHER  ">    Daniel  HORLACHER  </th>
-    </tr>
-    <tr class="gt_row_group_first"><td headers="Daniel  HORLACHER    n" class="gt_row gt_right">1</td></tr>
-    <tr class="gt_group_heading_row">
-      <th colspan="1" class="gt_group_heading" scope="col" id="    David   BUNDY  ">    David   BUNDY  </th>
-    </tr>
-    <tr class="gt_row_group_first"><td headers="David   BUNDY    n" class="gt_row gt_right">1</td></tr>
-    <tr class="gt_group_heading_row">
-      <th colspan="1" class="gt_group_heading" scope="col" id="    Ebenezer  FROST  ">    Ebenezer  FROST  </th>
-    </tr>
-    <tr class="gt_row_group_first"><td headers="Ebenezer  FROST    n" class="gt_row gt_right">1</td></tr>
-    <tr class="gt_group_heading_row">
-      <th colspan="1" class="gt_group_heading" scope="col" id="    Edward  LAURANCE Jr ">    Edward  LAURANCE Jr </th>
-    </tr>
-    <tr class="gt_row_group_first"><td headers="Edward  LAURANCE Jr   n" class="gt_row gt_right">1</td></tr>
-    <tr class="gt_group_heading_row">
-      <th colspan="1" class="gt_group_heading" scope="col" id="    Edward  LAURANCE/LAWRENCE Sr ">    Edward  LAURANCE/LAWRENCE Sr </th>
-    </tr>
-    <tr class="gt_row_group_first"><td headers="Edward  LAURANCE/LAWRENCE Sr   n" class="gt_row gt_right">1</td></tr>
-    <tr class="gt_group_heading_row">
-      <th colspan="1" class="gt_group_heading" scope="col" id="    Edward  MAXEY Sr ">    Edward  MAXEY Sr </th>
-    </tr>
-    <tr class="gt_row_group_first"><td headers="Edward  MAXEY Sr   n" class="gt_row gt_right">1</td></tr>
-    <tr class="gt_group_heading_row">
-      <th colspan="1" class="gt_group_heading" scope="col" id="    Elisha  CAIN  ">    Elisha  CAIN  </th>
-    </tr>
-    <tr class="gt_row_group_first"><td headers="Elisha  CAIN    n" class="gt_row gt_right">1</td></tr>
-    <tr class="gt_group_heading_row">
-      <th colspan="1" class="gt_group_heading" scope="col" id="    Elisha Moore WILSON  ">    Elisha Moore WILSON  </th>
-    </tr>
-    <tr class="gt_row_group_first"><td headers="Elisha Moore WILSON    n" class="gt_row gt_right">1</td></tr>
-    <tr class="gt_group_heading_row">
-      <th colspan="1" class="gt_group_heading" scope="col" id="    Friderick William NAGEL/NAGLE Jr ">    Friderick William NAGEL/NAGLE Jr </th>
-    </tr>
-    <tr class="gt_row_group_first"><td headers="Friderick William NAGEL/NAGLE Jr   n" class="gt_row gt_right">1</td></tr>
-    <tr class="gt_group_heading_row">
-      <th colspan="1" class="gt_group_heading" scope="col" id="    Friederich Wilhelm NAGEL/NAGLE  ">    Friederich Wilhelm NAGEL/NAGLE  </th>
-    </tr>
-    <tr class="gt_row_group_first"><td headers="Friederich Wilhelm NAGEL/NAGLE    n" class="gt_row gt_right">1</td></tr>
-    <tr class="gt_group_heading_row">
-      <th colspan="1" class="gt_group_heading" scope="col" id="    George  DIXON Sr ">    George  DIXON Sr </th>
-    </tr>
-    <tr class="gt_row_group_first"><td headers="George  DIXON Sr   n" class="gt_row gt_right">1</td></tr>
-    <tr class="gt_group_heading_row">
-      <th colspan="1" class="gt_group_heading" scope="col" id="    George  EMERSON  ">    George  EMERSON  </th>
-    </tr>
-    <tr class="gt_row_group_first"><td headers="George  EMERSON    n" class="gt_row gt_right">1</td></tr>
-    <tr class="gt_group_heading_row">
-      <th colspan="1" class="gt_group_heading" scope="col" id="    Gilbert  ATWOOD  ">    Gilbert  ATWOOD  </th>
-    </tr>
-    <tr class="gt_row_group_first"><td headers="Gilbert  ATWOOD    n" class="gt_row gt_right">1</td></tr>
-    <tr class="gt_group_heading_row">
-      <th colspan="1" class="gt_group_heading" scope="col" id="    Gotthard  MORY  ">    Gotthard  MORY  </th>
-    </tr>
-    <tr class="gt_row_group_first"><td headers="Gotthard  MORY    n" class="gt_row gt_right">1</td></tr>
-    <tr class="gt_group_heading_row">
-      <th colspan="1" class="gt_group_heading" scope="col" id="    Henry   BEASLEY Sr ">    Henry   BEASLEY Sr </th>
-    </tr>
-    <tr class="gt_row_group_first"><td headers="Henry   BEASLEY Sr   n" class="gt_row gt_right">1</td></tr>
-    <tr class="gt_group_heading_row">
-      <th colspan="1" class="gt_group_heading" scope="col" id="    Henry   WOODCOCK  ">    Henry   WOODCOCK  </th>
-    </tr>
-    <tr class="gt_row_group_first"><td headers="Henry   WOODCOCK    n" class="gt_row gt_right">1</td></tr>
-    <tr class="gt_group_heading_row">
-      <th colspan="1" class="gt_group_heading" scope="col" id="    Henry   YOUNG  ">    Henry   YOUNG  </th>
-    </tr>
-    <tr class="gt_row_group_first"><td headers="Henry   YOUNG    n" class="gt_row gt_right">1</td></tr>
-    <tr class="gt_group_heading_row">
-      <th colspan="1" class="gt_group_heading" scope="col" id="    Henry  BEASLEY Jr ">    Henry  BEASLEY Jr </th>
-    </tr>
-    <tr class="gt_row_group_first"><td headers="Henry  BEASLEY Jr   n" class="gt_row gt_right">1</td></tr>
-    <tr class="gt_group_heading_row">
-      <th colspan="1" class="gt_group_heading" scope="col" id="    Isaac  DORRIS  ">    Isaac  DORRIS  </th>
-    </tr>
-    <tr class="gt_row_group_first"><td headers="Isaac  DORRIS    n" class="gt_row gt_right">1</td></tr>
-    <tr class="gt_group_heading_row">
-      <th colspan="1" class="gt_group_heading" scope="col" id="    Isaac  FINCH  ">    Isaac  FINCH  </th>
-    </tr>
-    <tr class="gt_row_group_first"><td headers="Isaac  FINCH    n" class="gt_row gt_right">1</td></tr>
-    <tr class="gt_group_heading_row">
-      <th colspan="1" class="gt_group_heading" scope="col" id="    Jacob  SINKS  ">    Jacob  SINKS  </th>
-    </tr>
-    <tr class="gt_row_group_first"><td headers="Jacob  SINKS    n" class="gt_row gt_right">1</td></tr>
-    <tr class="gt_group_heading_row">
-      <th colspan="1" class="gt_group_heading" scope="col" id="    James  CULBERSON  ">    James  CULBERSON  </th>
-    </tr>
-    <tr class="gt_row_group_first"><td headers="James  CULBERSON    n" class="gt_row gt_right">1</td></tr>
-    <tr class="gt_group_heading_row">
-      <th colspan="1" class="gt_group_heading" scope="col" id="    James  HUDGENS Sr ">    James  HUDGENS Sr </th>
-    </tr>
-    <tr class="gt_row_group_first"><td headers="James  HUDGENS Sr   n" class="gt_row gt_right">1</td></tr>
-    <tr class="gt_group_heading_row">
-      <th colspan="1" class="gt_group_heading" scope="col" id="    James  KITCHENS/KITCHING  ">    James  KITCHENS/KITCHING  </th>
-    </tr>
-    <tr class="gt_row_group_first"><td headers="James  KITCHENS/KITCHING    n" class="gt_row gt_right">1</td></tr>
-    <tr class="gt_group_heading_row">
-      <th colspan="1" class="gt_group_heading" scope="col" id="    James  LIDDELL Sr ">    James  LIDDELL Sr </th>
-    </tr>
-    <tr class="gt_row_group_first"><td headers="James  LIDDELL Sr   n" class="gt_row gt_right">1</td></tr>
-    <tr class="gt_group_heading_row">
-      <th colspan="1" class="gt_group_heading" scope="col" id="    James  TURNER Sr ">    James  TURNER Sr </th>
-    </tr>
-    <tr class="gt_row_group_first"><td headers="James  TURNER Sr   n" class="gt_row gt_right">1</td></tr>
-    <tr class="gt_group_heading_row">
-      <th colspan="1" class="gt_group_heading" scope="col" id="    Jaques/James  FAURE/FORD Sr ">    Jaques/James  FAURE/FORD Sr </th>
-    </tr>
-    <tr class="gt_row_group_first"><td headers="Jaques/James  FAURE/FORD Sr   n" class="gt_row gt_right">1</td></tr>
-    <tr class="gt_group_heading_row">
-      <th colspan="1" class="gt_group_heading" scope="col" id="    Jeremiah  JACOB/JACOBS  ">    Jeremiah  JACOB/JACOBS  </th>
-    </tr>
-    <tr class="gt_row_group_first"><td headers="Jeremiah  JACOB/JACOBS    n" class="gt_row gt_right">1</td></tr>
-    <tr class="gt_group_heading_row">
-      <th colspan="1" class="gt_group_heading" scope="col" id="    Johann Nicholas MILDENBERGER  ">    Johann Nicholas MILDENBERGER  </th>
-    </tr>
-    <tr class="gt_row_group_first"><td headers="Johann Nicholas MILDENBERGER    n" class="gt_row gt_right">1</td></tr>
-    <tr class="gt_group_heading_row">
-      <th colspan="1" class="gt_group_heading" scope="col" id="    Johannes/John   ROCKEL  ">    Johannes/John   ROCKEL  </th>
-    </tr>
-    <tr class="gt_row_group_first"><td headers="Johannes/John   ROCKEL    n" class="gt_row gt_right">1</td></tr>
-    <tr class="gt_group_heading_row">
-      <th colspan="1" class="gt_group_heading" scope="col" id="    John   WILSON  ">    John   WILSON  </th>
-    </tr>
-    <tr class="gt_row_group_first"><td headers="John   WILSON    n" class="gt_row gt_right">1</td></tr>
-    <tr class="gt_group_heading_row">
-      <th colspan="1" class="gt_group_heading" scope="col" id="    John   WOOLARD   ">    John   WOOLARD   </th>
-    </tr>
-    <tr class="gt_row_group_first"><td headers="John   WOOLARD     n" class="gt_row gt_right">1</td></tr>
-    <tr class="gt_group_heading_row">
-      <th colspan="1" class="gt_group_heading" scope="col" id="    John  GAITHER  ">    John  GAITHER  </th>
-    </tr>
-    <tr class="gt_row_group_first"><td headers="John  GAITHER    n" class="gt_row gt_right">1</td></tr>
-    <tr class="gt_group_heading_row">
-      <th colspan="1" class="gt_group_heading" scope="col" id="    John  GOODALL/GOODALE  ">    John  GOODALL/GOODALE  </th>
-    </tr>
-    <tr class="gt_row_group_first"><td headers="John  GOODALL/GOODALE    n" class="gt_row gt_right">1</td></tr>
-    <tr class="gt_group_heading_row">
-      <th colspan="1" class="gt_group_heading" scope="col" id="    John  HATLEY  ">    John  HATLEY  </th>
-    </tr>
-    <tr class="gt_row_group_first"><td headers="John  HATLEY    n" class="gt_row gt_right">1</td></tr>
-    <tr class="gt_group_heading_row">
-      <th colspan="1" class="gt_group_heading" scope="col" id="    John  MAXEY  ">    John  MAXEY  </th>
-    </tr>
-    <tr class="gt_row_group_first"><td headers="John  MAXEY    n" class="gt_row gt_right">1</td></tr>
-    <tr class="gt_group_heading_row">
-      <th colspan="1" class="gt_group_heading" scope="col" id="    John  PHELPS  ">    John  PHELPS  </th>
-    </tr>
-    <tr class="gt_row_group_first"><td headers="John  PHELPS    n" class="gt_row gt_right">1</td></tr>
-    <tr class="gt_group_heading_row">
-      <th colspan="1" class="gt_group_heading" scope="col" id="    John  WEIR/WARE  ">    John  WEIR/WARE  </th>
-    </tr>
-    <tr class="gt_row_group_first"><td headers="John  WEIR/WARE    n" class="gt_row gt_right">1</td></tr>
-    <tr class="gt_group_heading_row">
-      <th colspan="1" class="gt_group_heading" scope="col" id="    John Philip BOOKER  ">    John Philip BOOKER  </th>
-    </tr>
-    <tr class="gt_row_group_first"><td headers="John Philip BOOKER    n" class="gt_row gt_right">1</td></tr>
-    <tr class="gt_group_heading_row">
-      <th colspan="1" class="gt_group_heading" scope="col" id="    Matthew  CLINTON  ">    Matthew  CLINTON  </th>
-    </tr>
-    <tr class="gt_row_group_first"><td headers="Matthew  CLINTON    n" class="gt_row gt_right">1</td></tr>
-    <tr class="gt_group_heading_row">
-      <th colspan="1" class="gt_group_heading" scope="col" id="    Moses   ALLEN  ">    Moses   ALLEN  </th>
-    </tr>
-    <tr class="gt_row_group_first"><td headers="Moses   ALLEN    n" class="gt_row gt_right">1</td></tr>
-    <tr class="gt_group_heading_row">
-      <th colspan="1" class="gt_group_heading" scope="col" id="    Moses  ODAM Sr ">    Moses  ODAM Sr </th>
-    </tr>
-    <tr class="gt_row_group_first"><td headers="Moses  ODAM Sr   n" class="gt_row gt_right">1</td></tr>
-    <tr class="gt_group_heading_row">
-      <th colspan="1" class="gt_group_heading" scope="col" id="    Moses  ODOM Jr ">    Moses  ODOM Jr </th>
-    </tr>
-    <tr class="gt_row_group_first"><td headers="Moses  ODOM Jr   n" class="gt_row gt_right">1</td></tr>
-    <tr class="gt_group_heading_row">
-      <th colspan="1" class="gt_group_heading" scope="col" id="    Nathaniel  BARKER  ">    Nathaniel  BARKER  </th>
-    </tr>
-    <tr class="gt_row_group_first"><td headers="Nathaniel  BARKER    n" class="gt_row gt_right">1</td></tr>
-    <tr class="gt_group_heading_row">
-      <th colspan="1" class="gt_group_heading" scope="col" id="    Peter  FOLLIS  ">    Peter  FOLLIS  </th>
-    </tr>
-    <tr class="gt_row_group_first"><td headers="Peter  FOLLIS    n" class="gt_row gt_right">1</td></tr>
-    <tr class="gt_group_heading_row">
-      <th colspan="1" class="gt_group_heading" scope="col" id="    Peter  MINNICH/MINNIG  ">    Peter  MINNICH/MINNIG  </th>
-    </tr>
-    <tr class="gt_row_group_first"><td headers="Peter  MINNICH/MINNIG    n" class="gt_row gt_right">1</td></tr>
-    <tr class="gt_group_heading_row">
-      <th colspan="1" class="gt_group_heading" scope="col" id="    Philip  BUCHER/POKER/BOOKER  ">    Philip  BUCHER/POKER/BOOKER  </th>
-    </tr>
-    <tr class="gt_row_group_first"><td headers="Philip  BUCHER/POKER/BOOKER    n" class="gt_row gt_right">1</td></tr>
-    <tr class="gt_group_heading_row">
-      <th colspan="1" class="gt_group_heading" scope="col" id="    Philip  WITMAN/WIEDEMAN  ">    Philip  WITMAN/WIEDEMAN  </th>
-    </tr>
-    <tr class="gt_row_group_first"><td headers="Philip  WITMAN/WIEDEMAN    n" class="gt_row gt_right">1</td></tr>
-    <tr class="gt_group_heading_row">
-      <th colspan="1" class="gt_group_heading" scope="col" id="    Richard   VEATCH/VEETCH  ">    Richard   VEATCH/VEETCH  </th>
-    </tr>
-    <tr class="gt_row_group_first"><td headers="Richard   VEATCH/VEETCH    n" class="gt_row gt_right">1</td></tr>
-    <tr class="gt_group_heading_row">
-      <th colspan="1" class="gt_group_heading" scope="col" id="    Robert  GREEN  ">    Robert  GREEN  </th>
-    </tr>
-    <tr class="gt_row_group_first"><td headers="Robert  GREEN    n" class="gt_row gt_right">1</td></tr>
-    <tr class="gt_group_heading_row">
-      <th colspan="1" class="gt_group_heading" scope="col" id="    Robert  HUDGENS  ">    Robert  HUDGENS  </th>
-    </tr>
-    <tr class="gt_row_group_first"><td headers="Robert  HUDGENS    n" class="gt_row gt_right">1</td></tr>
-    <tr class="gt_group_heading_row">
-      <th colspan="1" class="gt_group_heading" scope="col" id="    Samuel  MEREDITH Sr ">    Samuel  MEREDITH Sr </th>
-    </tr>
-    <tr class="gt_row_group_first"><td headers="Samuel  MEREDITH Sr   n" class="gt_row gt_right">1</td></tr>
-    <tr class="gt_group_heading_row">
-      <th colspan="1" class="gt_group_heading" scope="col" id="    Thomas   BALDWIN  ">    Thomas   BALDWIN  </th>
-    </tr>
-    <tr class="gt_row_group_first"><td headers="Thomas   BALDWIN    n" class="gt_row gt_right">1</td></tr>
-    <tr class="gt_group_heading_row">
-      <th colspan="1" class="gt_group_heading" scope="col" id="    William   BALDWIN  ">    William   BALDWIN  </th>
-    </tr>
-    <tr class="gt_row_group_first"><td headers="William   BALDWIN    n" class="gt_row gt_right">1</td></tr>
-    <tr class="gt_group_heading_row">
-      <th colspan="1" class="gt_group_heading" scope="col" id="    William   COX  ">    William   COX  </th>
-    </tr>
-    <tr class="gt_row_group_first"><td headers="William   COX    n" class="gt_row gt_right">1</td></tr>
-    <tr class="gt_group_heading_row">
-      <th colspan="1" class="gt_group_heading" scope="col" id="    William   VAN CLEVE/VANCLEAVE  ">    William   VAN CLEVE/VANCLEAVE  </th>
-    </tr>
-    <tr class="gt_row_group_first"><td headers="William   VAN CLEVE/VANCLEAVE    n" class="gt_row gt_right">1</td></tr>
-    <tr class="gt_group_heading_row">
-      <th colspan="1" class="gt_group_heading" scope="col" id="    William   WILLIS  ">    William   WILLIS  </th>
-    </tr>
-    <tr class="gt_row_group_first"><td headers="William   WILLIS    n" class="gt_row gt_right">1</td></tr>
-    <tr class="gt_group_heading_row">
-      <th colspan="1" class="gt_group_heading" scope="col" id="    William  DORRIS  ">    William  DORRIS  </th>
-    </tr>
-    <tr class="gt_row_group_first"><td headers="William  DORRIS    n" class="gt_row gt_right">1</td></tr>
-    <tr class="gt_group_heading_row">
-      <th colspan="1" class="gt_group_heading" scope="col" id="    William  HARRELL/HORRALL Jr ">    William  HARRELL/HORRALL Jr </th>
-    </tr>
-    <tr class="gt_row_group_first"><td headers="William  HARRELL/HORRALL Jr   n" class="gt_row gt_right">1</td></tr>
-    <tr class="gt_group_heading_row">
-      <th colspan="1" class="gt_group_heading" scope="col" id="    William  HORRALL Sr ">    William  HORRALL Sr </th>
-    </tr>
-    <tr class="gt_row_group_first"><td headers="William  HORRALL Sr   n" class="gt_row gt_right">1</td></tr>
-    <tr class="gt_group_heading_row">
-      <th colspan="1" class="gt_group_heading" scope="col" id="    William  HURT  ">    William  HURT  </th>
-    </tr>
-    <tr class="gt_row_group_first"><td headers="William  HURT    n" class="gt_row gt_right">1</td></tr>
-    <tr class="gt_group_heading_row">
-      <th colspan="1" class="gt_group_heading" scope="col" id="   Mrs Anna Maria ENGEL/NAGEL  ">   Mrs Anna Maria ENGEL/NAGEL  </th>
-    </tr>
-    <tr class="gt_row_group_first"><td headers="Mrs Anna Maria ENGEL/NAGEL    n" class="gt_row gt_right">1</td></tr>
-    <tr class="gt_group_heading_row">
-      <th colspan="1" class="gt_group_heading" scope="col" id="   Mrs Elizabeth  YOUNG  ">   Mrs Elizabeth  YOUNG  </th>
-    </tr>
-    <tr class="gt_row_group_first"><td headers="Mrs Elizabeth  YOUNG    n" class="gt_row gt_right">1</td></tr>
-    <tr class="gt_group_heading_row">
-      <th colspan="1" class="gt_group_heading" scope="col" id="   Mrs Ruth  JENNINGS/BUNDY  ">   Mrs Ruth  JENNINGS/BUNDY  </th>
-    </tr>
-    <tr class="gt_row_group_first"><td headers="Mrs Ruth  JENNINGS/BUNDY    n" class="gt_row gt_right">1</td></tr>
-  </tbody>
-  
-  
-</table>
-</div>
-</div>
-</div>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>rev_war_tibble <span class="sc">%&gt;%</span> <span class="fu">select</span>(name_unclean) <span class="sc">%&gt;%</span> <span class="fu">group_by</span>(name_unclean) <span class="sc">%&gt;%</span> <span class="fu">count</span>(name_unclean) <span class="sc">%&gt;%</span> <span class="fu">gt</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output-display">
-
-<div id="eewjyrodbz" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
-<style>#eewjyrodbz table {
-  font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-#eewjyrodbz thead, #eewjyrodbz tbody, #eewjyrodbz tfoot, #eewjyrodbz tr, #eewjyrodbz td, #eewjyrodbz th {
-  border-style: none;
-}
-
-#eewjyrodbz p {
-  margin: 0;
-  padding: 0;
-}
-
-#eewjyrodbz .gt_table {
-  display: table;
-  border-collapse: collapse;
-  line-height: normal;
-  margin-left: auto;
-  margin-right: auto;
-  color: #333333;
-  font-size: 16px;
-  font-weight: normal;
-  font-style: normal;
-  background-color: #FFFFFF;
-  width: auto;
-  border-top-style: solid;
-  border-top-width: 2px;
-  border-top-color: #A8A8A8;
-  border-right-style: none;
-  border-right-width: 2px;
-  border-right-color: #D3D3D3;
-  border-bottom-style: solid;
-  border-bottom-width: 2px;
-  border-bottom-color: #A8A8A8;
-  border-left-style: none;
-  border-left-width: 2px;
-  border-left-color: #D3D3D3;
-}
-
-#eewjyrodbz .gt_caption {
-  padding-top: 4px;
-  padding-bottom: 4px;
-}
-
-#eewjyrodbz .gt_title {
-  color: #333333;
-  font-size: 125%;
-  font-weight: initial;
-  padding-top: 4px;
-  padding-bottom: 4px;
-  padding-left: 5px;
-  padding-right: 5px;
-  border-bottom-color: #FFFFFF;
-  border-bottom-width: 0;
-}
-
-#eewjyrodbz .gt_subtitle {
-  color: #333333;
-  font-size: 85%;
-  font-weight: initial;
-  padding-top: 3px;
-  padding-bottom: 5px;
-  padding-left: 5px;
-  padding-right: 5px;
-  border-top-color: #FFFFFF;
-  border-top-width: 0;
-}
-
-#eewjyrodbz .gt_heading {
-  background-color: #FFFFFF;
-  text-align: center;
-  border-bottom-color: #FFFFFF;
-  border-left-style: none;
-  border-left-width: 1px;
-  border-left-color: #D3D3D3;
-  border-right-style: none;
-  border-right-width: 1px;
-  border-right-color: #D3D3D3;
-}
-
-#eewjyrodbz .gt_bottom_border {
-  border-bottom-style: solid;
-  border-bottom-width: 2px;
-  border-bottom-color: #D3D3D3;
-}
-
-#eewjyrodbz .gt_col_headings {
-  border-top-style: solid;
-  border-top-width: 2px;
-  border-top-color: #D3D3D3;
-  border-bottom-style: solid;
-  border-bottom-width: 2px;
-  border-bottom-color: #D3D3D3;
-  border-left-style: none;
-  border-left-width: 1px;
-  border-left-color: #D3D3D3;
-  border-right-style: none;
-  border-right-width: 1px;
-  border-right-color: #D3D3D3;
-}
-
-#eewjyrodbz .gt_col_heading {
-  color: #333333;
-  background-color: #FFFFFF;
-  font-size: 100%;
-  font-weight: normal;
-  text-transform: inherit;
-  border-left-style: none;
-  border-left-width: 1px;
-  border-left-color: #D3D3D3;
-  border-right-style: none;
-  border-right-width: 1px;
-  border-right-color: #D3D3D3;
-  vertical-align: bottom;
-  padding-top: 5px;
-  padding-bottom: 6px;
-  padding-left: 5px;
-  padding-right: 5px;
-  overflow-x: hidden;
-}
-
-#eewjyrodbz .gt_column_spanner_outer {
-  color: #333333;
-  background-color: #FFFFFF;
-  font-size: 100%;
-  font-weight: normal;
-  text-transform: inherit;
-  padding-top: 0;
-  padding-bottom: 0;
-  padding-left: 4px;
-  padding-right: 4px;
-}
-
-#eewjyrodbz .gt_column_spanner_outer:first-child {
-  padding-left: 0;
-}
-
-#eewjyrodbz .gt_column_spanner_outer:last-child {
-  padding-right: 0;
-}
-
-#eewjyrodbz .gt_column_spanner {
-  border-bottom-style: solid;
-  border-bottom-width: 2px;
-  border-bottom-color: #D3D3D3;
-  vertical-align: bottom;
-  padding-top: 5px;
-  padding-bottom: 5px;
-  overflow-x: hidden;
-  display: inline-block;
-  width: 100%;
-}
-
-#eewjyrodbz .gt_spanner_row {
-  border-bottom-style: hidden;
-}
-
-#eewjyrodbz .gt_group_heading {
-  padding-top: 8px;
-  padding-bottom: 8px;
-  padding-left: 5px;
-  padding-right: 5px;
-  color: #333333;
-  background-color: #FFFFFF;
-  font-size: 100%;
-  font-weight: initial;
-  text-transform: inherit;
-  border-top-style: solid;
-  border-top-width: 2px;
-  border-top-color: #D3D3D3;
-  border-bottom-style: solid;
-  border-bottom-width: 2px;
-  border-bottom-color: #D3D3D3;
-  border-left-style: none;
-  border-left-width: 1px;
-  border-left-color: #D3D3D3;
-  border-right-style: none;
-  border-right-width: 1px;
-  border-right-color: #D3D3D3;
-  vertical-align: middle;
-  text-align: left;
-}
-
-#eewjyrodbz .gt_empty_group_heading {
-  padding: 0.5px;
-  color: #333333;
-  background-color: #FFFFFF;
-  font-size: 100%;
-  font-weight: initial;
-  border-top-style: solid;
-  border-top-width: 2px;
-  border-top-color: #D3D3D3;
-  border-bottom-style: solid;
-  border-bottom-width: 2px;
-  border-bottom-color: #D3D3D3;
-  vertical-align: middle;
-}
-
-#eewjyrodbz .gt_from_md > :first-child {
-  margin-top: 0;
-}
-
-#eewjyrodbz .gt_from_md > :last-child {
-  margin-bottom: 0;
-}
-
-#eewjyrodbz .gt_row {
-  padding-top: 8px;
-  padding-bottom: 8px;
-  padding-left: 5px;
-  padding-right: 5px;
-  margin: 10px;
-  border-top-style: solid;
-  border-top-width: 1px;
-  border-top-color: #D3D3D3;
-  border-left-style: none;
-  border-left-width: 1px;
-  border-left-color: #D3D3D3;
-  border-right-style: none;
-  border-right-width: 1px;
-  border-right-color: #D3D3D3;
-  vertical-align: middle;
-  overflow-x: hidden;
-}
-
-#eewjyrodbz .gt_stub {
-  color: #333333;
-  background-color: #FFFFFF;
-  font-size: 100%;
-  font-weight: initial;
-  text-transform: inherit;
-  border-right-style: solid;
-  border-right-width: 2px;
-  border-right-color: #D3D3D3;
-  padding-left: 5px;
-  padding-right: 5px;
-}
-
-#eewjyrodbz .gt_stub_row_group {
-  color: #333333;
-  background-color: #FFFFFF;
-  font-size: 100%;
-  font-weight: initial;
-  text-transform: inherit;
-  border-right-style: solid;
-  border-right-width: 2px;
-  border-right-color: #D3D3D3;
-  padding-left: 5px;
-  padding-right: 5px;
-  vertical-align: top;
-}
-
-#eewjyrodbz .gt_row_group_first td {
-  border-top-width: 2px;
-}
-
-#eewjyrodbz .gt_row_group_first th {
-  border-top-width: 2px;
-}
-
-#eewjyrodbz .gt_summary_row {
-  color: #333333;
-  background-color: #FFFFFF;
-  text-transform: inherit;
-  padding-top: 8px;
-  padding-bottom: 8px;
-  padding-left: 5px;
-  padding-right: 5px;
-}
-
-#eewjyrodbz .gt_first_summary_row {
-  border-top-style: solid;
-  border-top-color: #D3D3D3;
-}
-
-#eewjyrodbz .gt_first_summary_row.thick {
-  border-top-width: 2px;
-}
-
-#eewjyrodbz .gt_last_summary_row {
-  padding-top: 8px;
-  padding-bottom: 8px;
-  padding-left: 5px;
-  padding-right: 5px;
-  border-bottom-style: solid;
-  border-bottom-width: 2px;
-  border-bottom-color: #D3D3D3;
-}
-
-#eewjyrodbz .gt_grand_summary_row {
-  color: #333333;
-  background-color: #FFFFFF;
-  text-transform: inherit;
-  padding-top: 8px;
-  padding-bottom: 8px;
-  padding-left: 5px;
-  padding-right: 5px;
-}
-
-#eewjyrodbz .gt_first_grand_summary_row {
-  padding-top: 8px;
-  padding-bottom: 8px;
-  padding-left: 5px;
-  padding-right: 5px;
-  border-top-style: double;
-  border-top-width: 6px;
-  border-top-color: #D3D3D3;
-}
-
-#eewjyrodbz .gt_last_grand_summary_row_top {
-  padding-top: 8px;
-  padding-bottom: 8px;
-  padding-left: 5px;
-  padding-right: 5px;
-  border-bottom-style: double;
-  border-bottom-width: 6px;
-  border-bottom-color: #D3D3D3;
-}
-
-#eewjyrodbz .gt_striped {
-  background-color: rgba(128, 128, 128, 0.05);
-}
-
-#eewjyrodbz .gt_table_body {
-  border-top-style: solid;
-  border-top-width: 2px;
-  border-top-color: #D3D3D3;
-  border-bottom-style: solid;
-  border-bottom-width: 2px;
-  border-bottom-color: #D3D3D3;
-}
-
-#eewjyrodbz .gt_footnotes {
-  color: #333333;
-  background-color: #FFFFFF;
-  border-bottom-style: none;
-  border-bottom-width: 2px;
-  border-bottom-color: #D3D3D3;
-  border-left-style: none;
-  border-left-width: 2px;
-  border-left-color: #D3D3D3;
-  border-right-style: none;
-  border-right-width: 2px;
-  border-right-color: #D3D3D3;
-}
-
-#eewjyrodbz .gt_footnote {
-  margin: 0px;
-  font-size: 90%;
-  padding-top: 4px;
-  padding-bottom: 4px;
-  padding-left: 5px;
-  padding-right: 5px;
-}
-
-#eewjyrodbz .gt_sourcenotes {
-  color: #333333;
-  background-color: #FFFFFF;
-  border-bottom-style: none;
-  border-bottom-width: 2px;
-  border-bottom-color: #D3D3D3;
-  border-left-style: none;
-  border-left-width: 2px;
-  border-left-color: #D3D3D3;
-  border-right-style: none;
-  border-right-width: 2px;
-  border-right-color: #D3D3D3;
-}
-
-#eewjyrodbz .gt_sourcenote {
-  font-size: 90%;
-  padding-top: 4px;
-  padding-bottom: 4px;
-  padding-left: 5px;
-  padding-right: 5px;
-}
-
-#eewjyrodbz .gt_left {
-  text-align: left;
-}
-
-#eewjyrodbz .gt_center {
-  text-align: center;
-}
-
-#eewjyrodbz .gt_right {
-  text-align: right;
-  font-variant-numeric: tabular-nums;
-}
-
-#eewjyrodbz .gt_font_normal {
-  font-weight: normal;
-}
-
-#eewjyrodbz .gt_font_bold {
-  font-weight: bold;
-}
-
-#eewjyrodbz .gt_font_italic {
-  font-style: italic;
-}
-
-#eewjyrodbz .gt_super {
-  font-size: 65%;
-}
-
-#eewjyrodbz .gt_footnote_marks {
-  font-size: 75%;
-  vertical-align: 0.4em;
-  position: initial;
-}
-
-#eewjyrodbz .gt_asterisk {
-  font-size: 100%;
-  vertical-align: 0;
-}
-
-#eewjyrodbz .gt_indent_1 {
-  text-indent: 5px;
-}
-
-#eewjyrodbz .gt_indent_2 {
-  text-indent: 10px;
-}
-
-#eewjyrodbz .gt_indent_3 {
-  text-indent: 15px;
-}
-
-#eewjyrodbz .gt_indent_4 {
-  text-indent: 20px;
-}
-
-#eewjyrodbz .gt_indent_5 {
-  text-indent: 25px;
-}
-</style>
-<table class="gt_table" data-quarto-disable-processing="false" data-quarto-bootstrap="false">
-  <thead>
-    
-    <tr class="gt_col_headings">
-      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" scope="col" id="n">n</th>
-    </tr>
-  </thead>
-  <tbody class="gt_table_body">
-    <tr class="gt_group_heading_row">
-      <th colspan="1" class="gt_group_heading" scope="col" id="    Aaron   VAN CLEVE/VAN CLEAVE  ">    Aaron   VAN CLEVE/VAN CLEAVE  </th>
-    </tr>
-    <tr class="gt_row_group_first"><td headers="Aaron   VAN CLEVE/VAN CLEAVE    n" class="gt_row gt_right">1</td></tr>
-    <tr class="gt_group_heading_row">
-      <th colspan="1" class="gt_group_heading" scope="col" id="    Abraham  ANDERSON  ">    Abraham  ANDERSON  </th>
-    </tr>
-    <tr class="gt_row_group_first"><td headers="Abraham  ANDERSON    n" class="gt_row gt_right">1</td></tr>
-    <tr class="gt_group_heading_row">
-      <th colspan="1" class="gt_group_heading" scope="col" id="    Abraham  FORREST II ">    Abraham  FORREST II </th>
-    </tr>
-    <tr class="gt_row_group_first"><td headers="Abraham  FORREST II   n" class="gt_row gt_right">1</td></tr>
-    <tr class="gt_group_heading_row">
-      <th colspan="1" class="gt_group_heading" scope="col" id="    Absalom  WOOLARD  ">    Absalom  WOOLARD  </th>
-    </tr>
-    <tr class="gt_row_group_first"><td headers="Absalom  WOOLARD    n" class="gt_row gt_right">1</td></tr>
-    <tr class="gt_group_heading_row">
-      <th colspan="1" class="gt_group_heading" scope="col" id="    Archibald  ALLAN  ">    Archibald  ALLAN  </th>
-    </tr>
-    <tr class="gt_row_group_first"><td headers="Archibald  ALLAN    n" class="gt_row gt_right">1</td></tr>
-    <tr class="gt_group_heading_row">
-      <th colspan="1" class="gt_group_heading" scope="col" id="    Balzer  ROCKEL  ">    Balzer  ROCKEL  </th>
-    </tr>
-    <tr class="gt_row_group_first"><td headers="Balzer  ROCKEL    n" class="gt_row gt_right">1</td></tr>
-    <tr class="gt_group_heading_row">
-      <th colspan="1" class="gt_group_heading" scope="col" id="    Benjamin  HURT  ">    Benjamin  HURT  </th>
-    </tr>
-    <tr class="gt_row_group_first"><td headers="Benjamin  HURT    n" class="gt_row gt_right">1</td></tr>
-    <tr class="gt_group_heading_row">
-      <th colspan="1" class="gt_group_heading" scope="col" id="    Burgess  WALL  ">    Burgess  WALL  </th>
-    </tr>
-    <tr class="gt_row_group_first"><td headers="Burgess  WALL    n" class="gt_row gt_right">1</td></tr>
-    <tr class="gt_group_heading_row">
-      <th colspan="1" class="gt_group_heading" scope="col" id="    Christian  METZGER  ">    Christian  METZGER  </th>
-    </tr>
-    <tr class="gt_row_group_first"><td headers="Christian  METZGER    n" class="gt_row gt_right">1</td></tr>
-    <tr class="gt_group_heading_row">
-      <th colspan="1" class="gt_group_heading" scope="col" id="    Daniel   CHAPMAN  ">    Daniel   CHAPMAN  </th>
-    </tr>
-    <tr class="gt_row_group_first"><td headers="Daniel   CHAPMAN    n" class="gt_row gt_right">1</td></tr>
-    <tr class="gt_group_heading_row">
-      <th colspan="1" class="gt_group_heading" scope="col" id="    Daniel  HORLACHER  ">    Daniel  HORLACHER  </th>
-    </tr>
-    <tr class="gt_row_group_first"><td headers="Daniel  HORLACHER    n" class="gt_row gt_right">1</td></tr>
-    <tr class="gt_group_heading_row">
-      <th colspan="1" class="gt_group_heading" scope="col" id="    David   BUNDY  ">    David   BUNDY  </th>
-    </tr>
-    <tr class="gt_row_group_first"><td headers="David   BUNDY    n" class="gt_row gt_right">1</td></tr>
-    <tr class="gt_group_heading_row">
-      <th colspan="1" class="gt_group_heading" scope="col" id="    Ebenezer  FROST  ">    Ebenezer  FROST  </th>
-    </tr>
-    <tr class="gt_row_group_first"><td headers="Ebenezer  FROST    n" class="gt_row gt_right">1</td></tr>
-    <tr class="gt_group_heading_row">
-      <th colspan="1" class="gt_group_heading" scope="col" id="    Edward  LAURANCE Jr ">    Edward  LAURANCE Jr </th>
-    </tr>
-    <tr class="gt_row_group_first"><td headers="Edward  LAURANCE Jr   n" class="gt_row gt_right">1</td></tr>
-    <tr class="gt_group_heading_row">
-      <th colspan="1" class="gt_group_heading" scope="col" id="    Edward  LAURANCE/LAWRENCE Sr ">    Edward  LAURANCE/LAWRENCE Sr </th>
-    </tr>
-    <tr class="gt_row_group_first"><td headers="Edward  LAURANCE/LAWRENCE Sr   n" class="gt_row gt_right">1</td></tr>
-    <tr class="gt_group_heading_row">
-      <th colspan="1" class="gt_group_heading" scope="col" id="    Edward  MAXEY Sr ">    Edward  MAXEY Sr </th>
-    </tr>
-    <tr class="gt_row_group_first"><td headers="Edward  MAXEY Sr   n" class="gt_row gt_right">1</td></tr>
-    <tr class="gt_group_heading_row">
-      <th colspan="1" class="gt_group_heading" scope="col" id="    Elisha  CAIN  ">    Elisha  CAIN  </th>
-    </tr>
-    <tr class="gt_row_group_first"><td headers="Elisha  CAIN    n" class="gt_row gt_right">1</td></tr>
-    <tr class="gt_group_heading_row">
-      <th colspan="1" class="gt_group_heading" scope="col" id="    Elisha Moore WILSON  ">    Elisha Moore WILSON  </th>
-    </tr>
-    <tr class="gt_row_group_first"><td headers="Elisha Moore WILSON    n" class="gt_row gt_right">1</td></tr>
-    <tr class="gt_group_heading_row">
-      <th colspan="1" class="gt_group_heading" scope="col" id="    Friderick William NAGEL/NAGLE Jr ">    Friderick William NAGEL/NAGLE Jr </th>
-    </tr>
-    <tr class="gt_row_group_first"><td headers="Friderick William NAGEL/NAGLE Jr   n" class="gt_row gt_right">1</td></tr>
-    <tr class="gt_group_heading_row">
-      <th colspan="1" class="gt_group_heading" scope="col" id="    Friederich Wilhelm NAGEL/NAGLE  ">    Friederich Wilhelm NAGEL/NAGLE  </th>
-    </tr>
-    <tr class="gt_row_group_first"><td headers="Friederich Wilhelm NAGEL/NAGLE    n" class="gt_row gt_right">1</td></tr>
-    <tr class="gt_group_heading_row">
-      <th colspan="1" class="gt_group_heading" scope="col" id="    George  DIXON Sr ">    George  DIXON Sr </th>
-    </tr>
-    <tr class="gt_row_group_first"><td headers="George  DIXON Sr   n" class="gt_row gt_right">1</td></tr>
-    <tr class="gt_group_heading_row">
-      <th colspan="1" class="gt_group_heading" scope="col" id="    George  EMERSON  ">    George  EMERSON  </th>
-    </tr>
-    <tr class="gt_row_group_first"><td headers="George  EMERSON    n" class="gt_row gt_right">1</td></tr>
-    <tr class="gt_group_heading_row">
-      <th colspan="1" class="gt_group_heading" scope="col" id="    Gilbert  ATWOOD  ">    Gilbert  ATWOOD  </th>
-    </tr>
-    <tr class="gt_row_group_first"><td headers="Gilbert  ATWOOD    n" class="gt_row gt_right">1</td></tr>
-    <tr class="gt_group_heading_row">
-      <th colspan="1" class="gt_group_heading" scope="col" id="    Gotthard  MORY  ">    Gotthard  MORY  </th>
-    </tr>
-    <tr class="gt_row_group_first"><td headers="Gotthard  MORY    n" class="gt_row gt_right">1</td></tr>
-    <tr class="gt_group_heading_row">
-      <th colspan="1" class="gt_group_heading" scope="col" id="    Henry   BEASLEY Sr ">    Henry   BEASLEY Sr </th>
-    </tr>
-    <tr class="gt_row_group_first"><td headers="Henry   BEASLEY Sr   n" class="gt_row gt_right">1</td></tr>
-    <tr class="gt_group_heading_row">
-      <th colspan="1" class="gt_group_heading" scope="col" id="    Henry   WOODCOCK  ">    Henry   WOODCOCK  </th>
-    </tr>
-    <tr class="gt_row_group_first"><td headers="Henry   WOODCOCK    n" class="gt_row gt_right">1</td></tr>
-    <tr class="gt_group_heading_row">
-      <th colspan="1" class="gt_group_heading" scope="col" id="    Henry   YOUNG  ">    Henry   YOUNG  </th>
-    </tr>
-    <tr class="gt_row_group_first"><td headers="Henry   YOUNG    n" class="gt_row gt_right">1</td></tr>
-    <tr class="gt_group_heading_row">
-      <th colspan="1" class="gt_group_heading" scope="col" id="    Henry  BEASLEY Jr ">    Henry  BEASLEY Jr </th>
-    </tr>
-    <tr class="gt_row_group_first"><td headers="Henry  BEASLEY Jr   n" class="gt_row gt_right">1</td></tr>
-    <tr class="gt_group_heading_row">
-      <th colspan="1" class="gt_group_heading" scope="col" id="    Isaac  DORRIS  ">    Isaac  DORRIS  </th>
-    </tr>
-    <tr class="gt_row_group_first"><td headers="Isaac  DORRIS    n" class="gt_row gt_right">1</td></tr>
-    <tr class="gt_group_heading_row">
-      <th colspan="1" class="gt_group_heading" scope="col" id="    Isaac  FINCH  ">    Isaac  FINCH  </th>
-    </tr>
-    <tr class="gt_row_group_first"><td headers="Isaac  FINCH    n" class="gt_row gt_right">1</td></tr>
-    <tr class="gt_group_heading_row">
-      <th colspan="1" class="gt_group_heading" scope="col" id="    Jacob  SINKS  ">    Jacob  SINKS  </th>
-    </tr>
-    <tr class="gt_row_group_first"><td headers="Jacob  SINKS    n" class="gt_row gt_right">1</td></tr>
-    <tr class="gt_group_heading_row">
-      <th colspan="1" class="gt_group_heading" scope="col" id="    James  CULBERSON  ">    James  CULBERSON  </th>
-    </tr>
-    <tr class="gt_row_group_first"><td headers="James  CULBERSON    n" class="gt_row gt_right">1</td></tr>
-    <tr class="gt_group_heading_row">
-      <th colspan="1" class="gt_group_heading" scope="col" id="    James  HUDGENS Sr ">    James  HUDGENS Sr </th>
-    </tr>
-    <tr class="gt_row_group_first"><td headers="James  HUDGENS Sr   n" class="gt_row gt_right">1</td></tr>
-    <tr class="gt_group_heading_row">
-      <th colspan="1" class="gt_group_heading" scope="col" id="    James  KITCHENS/KITCHING  ">    James  KITCHENS/KITCHING  </th>
-    </tr>
-    <tr class="gt_row_group_first"><td headers="James  KITCHENS/KITCHING    n" class="gt_row gt_right">1</td></tr>
-    <tr class="gt_group_heading_row">
-      <th colspan="1" class="gt_group_heading" scope="col" id="    James  LIDDELL Sr ">    James  LIDDELL Sr </th>
-    </tr>
-    <tr class="gt_row_group_first"><td headers="James  LIDDELL Sr   n" class="gt_row gt_right">1</td></tr>
-    <tr class="gt_group_heading_row">
-      <th colspan="1" class="gt_group_heading" scope="col" id="    James  TURNER Sr ">    James  TURNER Sr </th>
-    </tr>
-    <tr class="gt_row_group_first"><td headers="James  TURNER Sr   n" class="gt_row gt_right">1</td></tr>
-    <tr class="gt_group_heading_row">
-      <th colspan="1" class="gt_group_heading" scope="col" id="    Jaques/James  FAURE/FORD Sr ">    Jaques/James  FAURE/FORD Sr </th>
-    </tr>
-    <tr class="gt_row_group_first"><td headers="Jaques/James  FAURE/FORD Sr   n" class="gt_row gt_right">1</td></tr>
-    <tr class="gt_group_heading_row">
-      <th colspan="1" class="gt_group_heading" scope="col" id="    Jeremiah  JACOB/JACOBS  ">    Jeremiah  JACOB/JACOBS  </th>
-    </tr>
-    <tr class="gt_row_group_first"><td headers="Jeremiah  JACOB/JACOBS    n" class="gt_row gt_right">1</td></tr>
-    <tr class="gt_group_heading_row">
-      <th colspan="1" class="gt_group_heading" scope="col" id="    Johann Nicholas MILDENBERGER  ">    Johann Nicholas MILDENBERGER  </th>
-    </tr>
-    <tr class="gt_row_group_first"><td headers="Johann Nicholas MILDENBERGER    n" class="gt_row gt_right">1</td></tr>
-    <tr class="gt_group_heading_row">
-      <th colspan="1" class="gt_group_heading" scope="col" id="    Johannes/John   ROCKEL  ">    Johannes/John   ROCKEL  </th>
-    </tr>
-    <tr class="gt_row_group_first"><td headers="Johannes/John   ROCKEL    n" class="gt_row gt_right">1</td></tr>
-    <tr class="gt_group_heading_row">
-      <th colspan="1" class="gt_group_heading" scope="col" id="    John   WILSON  ">    John   WILSON  </th>
-    </tr>
-    <tr class="gt_row_group_first"><td headers="John   WILSON    n" class="gt_row gt_right">1</td></tr>
-    <tr class="gt_group_heading_row">
-      <th colspan="1" class="gt_group_heading" scope="col" id="    John   WOOLARD   ">    John   WOOLARD   </th>
-    </tr>
-    <tr class="gt_row_group_first"><td headers="John   WOOLARD     n" class="gt_row gt_right">1</td></tr>
-    <tr class="gt_group_heading_row">
-      <th colspan="1" class="gt_group_heading" scope="col" id="    John  GAITHER  ">    John  GAITHER  </th>
-    </tr>
-    <tr class="gt_row_group_first"><td headers="John  GAITHER    n" class="gt_row gt_right">1</td></tr>
-    <tr class="gt_group_heading_row">
-      <th colspan="1" class="gt_group_heading" scope="col" id="    John  GOODALL/GOODALE  ">    John  GOODALL/GOODALE  </th>
-    </tr>
-    <tr class="gt_row_group_first"><td headers="John  GOODALL/GOODALE    n" class="gt_row gt_right">1</td></tr>
-    <tr class="gt_group_heading_row">
-      <th colspan="1" class="gt_group_heading" scope="col" id="    John  HATLEY  ">    John  HATLEY  </th>
-    </tr>
-    <tr class="gt_row_group_first"><td headers="John  HATLEY    n" class="gt_row gt_right">1</td></tr>
-    <tr class="gt_group_heading_row">
-      <th colspan="1" class="gt_group_heading" scope="col" id="    John  MAXEY  ">    John  MAXEY  </th>
-    </tr>
-    <tr class="gt_row_group_first"><td headers="John  MAXEY    n" class="gt_row gt_right">1</td></tr>
-    <tr class="gt_group_heading_row">
-      <th colspan="1" class="gt_group_heading" scope="col" id="    John  PHELPS  ">    John  PHELPS  </th>
-    </tr>
-    <tr class="gt_row_group_first"><td headers="John  PHELPS    n" class="gt_row gt_right">1</td></tr>
-    <tr class="gt_group_heading_row">
-      <th colspan="1" class="gt_group_heading" scope="col" id="    John  WEIR/WARE  ">    John  WEIR/WARE  </th>
-    </tr>
-    <tr class="gt_row_group_first"><td headers="John  WEIR/WARE    n" class="gt_row gt_right">1</td></tr>
-    <tr class="gt_group_heading_row">
-      <th colspan="1" class="gt_group_heading" scope="col" id="    John Philip BOOKER  ">    John Philip BOOKER  </th>
-    </tr>
-    <tr class="gt_row_group_first"><td headers="John Philip BOOKER    n" class="gt_row gt_right">1</td></tr>
-    <tr class="gt_group_heading_row">
-      <th colspan="1" class="gt_group_heading" scope="col" id="    Matthew  CLINTON  ">    Matthew  CLINTON  </th>
-    </tr>
-    <tr class="gt_row_group_first"><td headers="Matthew  CLINTON    n" class="gt_row gt_right">1</td></tr>
-    <tr class="gt_group_heading_row">
-      <th colspan="1" class="gt_group_heading" scope="col" id="    Moses   ALLEN  ">    Moses   ALLEN  </th>
-    </tr>
-    <tr class="gt_row_group_first"><td headers="Moses   ALLEN    n" class="gt_row gt_right">1</td></tr>
-    <tr class="gt_group_heading_row">
-      <th colspan="1" class="gt_group_heading" scope="col" id="    Moses  ODAM Sr ">    Moses  ODAM Sr </th>
-    </tr>
-    <tr class="gt_row_group_first"><td headers="Moses  ODAM Sr   n" class="gt_row gt_right">1</td></tr>
-    <tr class="gt_group_heading_row">
-      <th colspan="1" class="gt_group_heading" scope="col" id="    Moses  ODOM Jr ">    Moses  ODOM Jr </th>
-    </tr>
-    <tr class="gt_row_group_first"><td headers="Moses  ODOM Jr   n" class="gt_row gt_right">1</td></tr>
-    <tr class="gt_group_heading_row">
-      <th colspan="1" class="gt_group_heading" scope="col" id="    Nathaniel  BARKER  ">    Nathaniel  BARKER  </th>
-    </tr>
-    <tr class="gt_row_group_first"><td headers="Nathaniel  BARKER    n" class="gt_row gt_right">1</td></tr>
-    <tr class="gt_group_heading_row">
-      <th colspan="1" class="gt_group_heading" scope="col" id="    Peter  FOLLIS  ">    Peter  FOLLIS  </th>
-    </tr>
-    <tr class="gt_row_group_first"><td headers="Peter  FOLLIS    n" class="gt_row gt_right">1</td></tr>
-    <tr class="gt_group_heading_row">
-      <th colspan="1" class="gt_group_heading" scope="col" id="    Peter  MINNICH/MINNIG  ">    Peter  MINNICH/MINNIG  </th>
-    </tr>
-    <tr class="gt_row_group_first"><td headers="Peter  MINNICH/MINNIG    n" class="gt_row gt_right">1</td></tr>
-    <tr class="gt_group_heading_row">
-      <th colspan="1" class="gt_group_heading" scope="col" id="    Philip  BUCHER/POKER/BOOKER  ">    Philip  BUCHER/POKER/BOOKER  </th>
-    </tr>
-    <tr class="gt_row_group_first"><td headers="Philip  BUCHER/POKER/BOOKER    n" class="gt_row gt_right">1</td></tr>
-    <tr class="gt_group_heading_row">
-      <th colspan="1" class="gt_group_heading" scope="col" id="    Philip  WITMAN/WIEDEMAN  ">    Philip  WITMAN/WIEDEMAN  </th>
-    </tr>
-    <tr class="gt_row_group_first"><td headers="Philip  WITMAN/WIEDEMAN    n" class="gt_row gt_right">1</td></tr>
-    <tr class="gt_group_heading_row">
-      <th colspan="1" class="gt_group_heading" scope="col" id="    Richard   VEATCH/VEETCH  ">    Richard   VEATCH/VEETCH  </th>
-    </tr>
-    <tr class="gt_row_group_first"><td headers="Richard   VEATCH/VEETCH    n" class="gt_row gt_right">1</td></tr>
-    <tr class="gt_group_heading_row">
-      <th colspan="1" class="gt_group_heading" scope="col" id="    Robert  GREEN  ">    Robert  GREEN  </th>
-    </tr>
-    <tr class="gt_row_group_first"><td headers="Robert  GREEN    n" class="gt_row gt_right">1</td></tr>
-    <tr class="gt_group_heading_row">
-      <th colspan="1" class="gt_group_heading" scope="col" id="    Robert  HUDGENS  ">    Robert  HUDGENS  </th>
-    </tr>
-    <tr class="gt_row_group_first"><td headers="Robert  HUDGENS    n" class="gt_row gt_right">1</td></tr>
-    <tr class="gt_group_heading_row">
-      <th colspan="1" class="gt_group_heading" scope="col" id="    Samuel  MEREDITH Sr ">    Samuel  MEREDITH Sr </th>
-    </tr>
-    <tr class="gt_row_group_first"><td headers="Samuel  MEREDITH Sr   n" class="gt_row gt_right">1</td></tr>
-    <tr class="gt_group_heading_row">
-      <th colspan="1" class="gt_group_heading" scope="col" id="    Thomas   BALDWIN  ">    Thomas   BALDWIN  </th>
-    </tr>
-    <tr class="gt_row_group_first"><td headers="Thomas   BALDWIN    n" class="gt_row gt_right">1</td></tr>
-    <tr class="gt_group_heading_row">
-      <th colspan="1" class="gt_group_heading" scope="col" id="    William   BALDWIN  ">    William   BALDWIN  </th>
-    </tr>
-    <tr class="gt_row_group_first"><td headers="William   BALDWIN    n" class="gt_row gt_right">1</td></tr>
-    <tr class="gt_group_heading_row">
-      <th colspan="1" class="gt_group_heading" scope="col" id="    William   COX  ">    William   COX  </th>
-    </tr>
-    <tr class="gt_row_group_first"><td headers="William   COX    n" class="gt_row gt_right">1</td></tr>
-    <tr class="gt_group_heading_row">
-      <th colspan="1" class="gt_group_heading" scope="col" id="    William   VAN CLEVE/VANCLEAVE  ">    William   VAN CLEVE/VANCLEAVE  </th>
-    </tr>
-    <tr class="gt_row_group_first"><td headers="William   VAN CLEVE/VANCLEAVE    n" class="gt_row gt_right">1</td></tr>
-    <tr class="gt_group_heading_row">
-      <th colspan="1" class="gt_group_heading" scope="col" id="    William   WILLIS  ">    William   WILLIS  </th>
-    </tr>
-    <tr class="gt_row_group_first"><td headers="William   WILLIS    n" class="gt_row gt_right">1</td></tr>
-    <tr class="gt_group_heading_row">
-      <th colspan="1" class="gt_group_heading" scope="col" id="    William  DORRIS  ">    William  DORRIS  </th>
-    </tr>
-    <tr class="gt_row_group_first"><td headers="William  DORRIS    n" class="gt_row gt_right">1</td></tr>
-    <tr class="gt_group_heading_row">
-      <th colspan="1" class="gt_group_heading" scope="col" id="    William  HARRELL/HORRALL Jr ">    William  HARRELL/HORRALL Jr </th>
-    </tr>
-    <tr class="gt_row_group_first"><td headers="William  HARRELL/HORRALL Jr   n" class="gt_row gt_right">1</td></tr>
-    <tr class="gt_group_heading_row">
-      <th colspan="1" class="gt_group_heading" scope="col" id="    William  HORRALL Sr ">    William  HORRALL Sr </th>
-    </tr>
-    <tr class="gt_row_group_first"><td headers="William  HORRALL Sr   n" class="gt_row gt_right">1</td></tr>
-    <tr class="gt_group_heading_row">
-      <th colspan="1" class="gt_group_heading" scope="col" id="    William  HURT  ">    William  HURT  </th>
-    </tr>
-    <tr class="gt_row_group_first"><td headers="William  HURT    n" class="gt_row gt_right">1</td></tr>
-    <tr class="gt_group_heading_row">
-      <th colspan="1" class="gt_group_heading" scope="col" id="   Mrs Anna Maria ENGEL/NAGEL  ">   Mrs Anna Maria ENGEL/NAGEL  </th>
-    </tr>
-    <tr class="gt_row_group_first"><td headers="Mrs Anna Maria ENGEL/NAGEL    n" class="gt_row gt_right">1</td></tr>
-    <tr class="gt_group_heading_row">
-      <th colspan="1" class="gt_group_heading" scope="col" id="   Mrs Elizabeth  YOUNG  ">   Mrs Elizabeth  YOUNG  </th>
-    </tr>
-    <tr class="gt_row_group_first"><td headers="Mrs Elizabeth  YOUNG    n" class="gt_row gt_right">1</td></tr>
-    <tr class="gt_group_heading_row">
-      <th colspan="1" class="gt_group_heading" scope="col" id="   Mrs Ruth  JENNINGS/BUNDY  ">   Mrs Ruth  JENNINGS/BUNDY  </th>
-    </tr>
-    <tr class="gt_row_group_first"><td headers="Mrs Ruth  JENNINGS/BUNDY    n" class="gt_row gt_right">1</td></tr>
-  </tbody>
-  
-  
-</table>
-</div>
 </div>
 </div>
 <p>I’m going to continue with the data frame.</p>
@@ -1843,7 +358,7 @@ The following object is masked from 'package:readr':
 </div>
 </div>
 <p>I admit, I spent a fair bit of trial and error to figure this out. First note- using <code>str_split()</code> from stringr is not the way to go. I got a bit hyperfocused on stringr functions since I was using the package so heavily. It creates a matrix of results in your data frame, and not new columns of data. Use <code>separate()</code> from tidyr instead.</p>
-<p>I decided to do this stepwise. So the <code>remove = FALSE</code> flag needs to be set in <code>separate()</code>. First, I got the first names by splitting on the pattern of space and then two or more capital letters. The two or more is necessary because of names like Friderick William. This gives the complete first name(s) and an incomplete last name, because the separator is discarded. So you end up with AGEL/NAGLE, which I dumped in a column named trash. Here, I immediately deleted it, but it was very useful for troubleshooting. There is also a first name with two variations separated with a /, which I’m deferring handling for now.</p>
+<p>I decided to do this stepwise. So the <code>remove = FALSE</code> flag needs to be set in <code>separate()</code>. First, I got the first names by splitting on the pattern of space and then two or more capital letters. The two or more is necessary because of names like Friderick William. This gives the complete first name(s) and an incomplete last name, because the separator is discarded. So you end up with AGEL/NAGLE, which I dumped in a column named trash. Here, I immediately deleted it, but it was very useful for troubleshooting.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb28"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a><span class="co">#so now I separate out the last name per. My pattern is a space followed by a </span></span>
 <span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a><span class="co">#capital letter. But this isn't a separator- I'll lose the first letter if it is.</span></span>
@@ -1959,12 +474,1054 @@ The following object is masked from 'package:readr':
 <p>My plan was match on the first variation, then for those that failed to match, match on the second variation, and so on. I was mildly hopeful that the first variation was the variation that my father used in his excel table. So I did a quick check using an inner join. My father had mentioned that there wouldn’t be many matches- maybe 5 or 6, because he hadn’t found most of the graves yet.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb39"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a><span class="co">#first round matching</span></span>
-<span id="cb39-2"><a href="#cb39-2" aria-hidden="true" tabindex="-1"></a><span class="co"># rev_war_test &lt;- rev_war_test %&gt;%</span></span>
-<span id="cb39-3"><a href="#cb39-3" aria-hidden="true" tabindex="-1"></a><span class="co">#   mutate(match_1 = paste0(V1, " ", first_name))</span></span>
-<span id="cb39-4"><a href="#cb39-4" aria-hidden="true" tabindex="-1"></a><span class="co"># </span></span>
-<span id="cb39-5"><a href="#cb39-5" aria-hidden="true" tabindex="-1"></a><span class="co"># matched_records &lt;- rev_war_test %&gt;% inner_join(tombstones, by = c("match_1" = "full_name"))</span></span>
-<span id="cb39-6"><a href="#cb39-6" aria-hidden="true" tabindex="-1"></a><span class="co"># </span></span>
-<span id="cb39-7"><a href="#cb39-7" aria-hidden="true" tabindex="-1"></a><span class="co"># matched_records %&gt;% select(name_unclean, Surname, First.Name, Middle.Name, DOB, DOD )</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb39-2"><a href="#cb39-2" aria-hidden="true" tabindex="-1"></a>rev_war_test <span class="ot">&lt;-</span> rev_war_test <span class="sc">%&gt;%</span></span>
+<span id="cb39-3"><a href="#cb39-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">match_1 =</span> <span class="fu">paste0</span>(V1, <span class="st">" "</span>, first_name))</span>
+<span id="cb39-4"><a href="#cb39-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-5"><a href="#cb39-5" aria-hidden="true" tabindex="-1"></a>matched_records <span class="ot">&lt;-</span> rev_war_test <span class="sc">%&gt;%</span> <span class="fu">inner_join</span>(data_file, <span class="at">by =</span> <span class="fu">c</span>(<span class="st">"match_1"</span> <span class="ot">=</span> <span class="st">"full_name"</span>))</span>
+<span id="cb39-6"><a href="#cb39-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-7"><a href="#cb39-7" aria-hidden="true" tabindex="-1"></a>dob_filter <span class="ot">&lt;-</span> matched_records <span class="sc">%&gt;%</span> <span class="fu">select</span>(name_unclean, Surname, First.Name, Middle.Name, DOB_date, DOD_date ) <span class="sc">%&gt;%</span> <span class="fu">filter</span>(<span class="fu">is.na</span>(DOB_date) <span class="sc">==</span> <span class="cn">FALSE</span>) <span class="sc">%&gt;%</span> <span class="fu">filter</span>(<span class="fu">year</span>(DOB_date) <span class="sc">&lt;</span> <span class="dv">1784</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Filter on DOB</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb40"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a>dob_filter <span class="ot">&lt;-</span></span>
+<span id="cb40-2"><a href="#cb40-2" aria-hidden="true" tabindex="-1"></a>  matched_records <span class="sc">%&gt;%</span></span>
+<span id="cb40-3"><a href="#cb40-3" aria-hidden="true" tabindex="-1"></a>  <span class="co"># select(name_unclean,</span></span>
+<span id="cb40-4"><a href="#cb40-4" aria-hidden="true" tabindex="-1"></a>  <span class="co">#        Surname,</span></span>
+<span id="cb40-5"><a href="#cb40-5" aria-hidden="true" tabindex="-1"></a>  <span class="co">#        First.Name,</span></span>
+<span id="cb40-6"><a href="#cb40-6" aria-hidden="true" tabindex="-1"></a>  <span class="co">#        Middle.Name,</span></span>
+<span id="cb40-7"><a href="#cb40-7" aria-hidden="true" tabindex="-1"></a>  <span class="co">#        DOB_date,</span></span>
+<span id="cb40-8"><a href="#cb40-8" aria-hidden="true" tabindex="-1"></a>  <span class="co">#        DOD_date) %&gt;%</span></span>
+<span id="cb40-9"><a href="#cb40-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="fu">is.na</span>(DOB_date) <span class="sc">==</span> <span class="cn">FALSE</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb40-10"><a href="#cb40-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="fu">year</span>(DOB_date) <span class="sc">&lt;</span> <span class="dv">1784</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Now DOD</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb41"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a>dod_filter <span class="ot">&lt;-</span></span>
+<span id="cb41-2"><a href="#cb41-2" aria-hidden="true" tabindex="-1"></a>  matched_records <span class="sc">%&gt;%</span></span>
+<span id="cb41-3"><a href="#cb41-3" aria-hidden="true" tabindex="-1"></a>  <span class="co"># select(name_unclean,</span></span>
+<span id="cb41-4"><a href="#cb41-4" aria-hidden="true" tabindex="-1"></a>  <span class="co">#        Surname,</span></span>
+<span id="cb41-5"><a href="#cb41-5" aria-hidden="true" tabindex="-1"></a>  <span class="co">#        First.Name,</span></span>
+<span id="cb41-6"><a href="#cb41-6" aria-hidden="true" tabindex="-1"></a>  <span class="co">#        Middle.Name,</span></span>
+<span id="cb41-7"><a href="#cb41-7" aria-hidden="true" tabindex="-1"></a>  <span class="co">#        DOB_date,</span></span>
+<span id="cb41-8"><a href="#cb41-8" aria-hidden="true" tabindex="-1"></a>  <span class="co">#        DOD_date) %&gt;%</span></span>
+<span id="cb41-9"><a href="#cb41-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="fu">is.na</span>(DOD_date) <span class="sc">==</span> <span class="cn">FALSE</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb41-10"><a href="#cb41-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="fu">year</span>(DOD_date) <span class="sc">&lt;</span> <span class="dv">1866</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Now full join the two sets</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb42"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a>all_matches <span class="ot">&lt;-</span> dob_filter <span class="sc">%&gt;%</span> <span class="fu">full_join</span>(dod_filter)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Joining with `by = join_by(name_unclean, first_name, V1, V2, V3, suffix, url,
+SAR_ID, match_1, photos_Matched_Round1, Surname, First.Name, Middle.Name,
+`Maiden/Title`, Cemetery, City, State, DOB, DOD, Age, N, W, X13, X14, X15,
+N_degree, N_minute, N_second, lat, W_degree, W_minute, W_second, long,
+DOB_date, DOD_date, Extra_First_Name, Extra_Middle_Name1, Extra_Middle_Name2,
+full_name_MI, full_name_MI_no_space, photos_Matched_Round2,
+photos_Matched_Round3, photos_Matched_Round4, photo_list, complete_name,
+cemetery_name)`</code></pre>
+</div>
+</div>
+<p>Final results</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb44"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a>all_matches <span class="sc">%&gt;%</span> <span class="fu">select</span>(name_unclean) <span class="sc">%&gt;%</span> <span class="fu">gt</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+
+<div id="caqkpowfjt" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>#caqkpowfjt table {
+  font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#caqkpowfjt thead, #caqkpowfjt tbody, #caqkpowfjt tfoot, #caqkpowfjt tr, #caqkpowfjt td, #caqkpowfjt th {
+  border-style: none;
+}
+
+#caqkpowfjt p {
+  margin: 0;
+  padding: 0;
+}
+
+#caqkpowfjt .gt_table {
+  display: table;
+  border-collapse: collapse;
+  line-height: normal;
+  margin-left: auto;
+  margin-right: auto;
+  color: #333333;
+  font-size: 16px;
+  font-weight: normal;
+  font-style: normal;
+  background-color: #FFFFFF;
+  width: auto;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #A8A8A8;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #A8A8A8;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+}
+
+#caqkpowfjt .gt_caption {
+  padding-top: 4px;
+  padding-bottom: 4px;
+}
+
+#caqkpowfjt .gt_title {
+  color: #333333;
+  font-size: 125%;
+  font-weight: initial;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-color: #FFFFFF;
+  border-bottom-width: 0;
+}
+
+#caqkpowfjt .gt_subtitle {
+  color: #333333;
+  font-size: 85%;
+  font-weight: initial;
+  padding-top: 3px;
+  padding-bottom: 5px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-color: #FFFFFF;
+  border-top-width: 0;
+}
+
+#caqkpowfjt .gt_heading {
+  background-color: #FFFFFF;
+  text-align: center;
+  border-bottom-color: #FFFFFF;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#caqkpowfjt .gt_bottom_border {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#caqkpowfjt .gt_col_headings {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#caqkpowfjt .gt_col_heading {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 6px;
+  padding-left: 5px;
+  padding-right: 5px;
+  overflow-x: hidden;
+}
+
+#caqkpowfjt .gt_column_spanner_outer {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  padding-top: 0;
+  padding-bottom: 0;
+  padding-left: 4px;
+  padding-right: 4px;
+}
+
+#caqkpowfjt .gt_column_spanner_outer:first-child {
+  padding-left: 0;
+}
+
+#caqkpowfjt .gt_column_spanner_outer:last-child {
+  padding-right: 0;
+}
+
+#caqkpowfjt .gt_column_spanner {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  overflow-x: hidden;
+  display: inline-block;
+  width: 100%;
+}
+
+#caqkpowfjt .gt_spanner_row {
+  border-bottom-style: hidden;
+}
+
+#caqkpowfjt .gt_group_heading {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+  text-align: left;
+}
+
+#caqkpowfjt .gt_empty_group_heading {
+  padding: 0.5px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: middle;
+}
+
+#caqkpowfjt .gt_from_md > :first-child {
+  margin-top: 0;
+}
+
+#caqkpowfjt .gt_from_md > :last-child {
+  margin-bottom: 0;
+}
+
+#caqkpowfjt .gt_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  margin: 10px;
+  border-top-style: solid;
+  border-top-width: 1px;
+  border-top-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+  overflow-x: hidden;
+}
+
+#caqkpowfjt .gt_stub {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: solid;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#caqkpowfjt .gt_stub_row_group {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: solid;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  padding-left: 5px;
+  padding-right: 5px;
+  vertical-align: top;
+}
+
+#caqkpowfjt .gt_row_group_first td {
+  border-top-width: 2px;
+}
+
+#caqkpowfjt .gt_row_group_first th {
+  border-top-width: 2px;
+}
+
+#caqkpowfjt .gt_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#caqkpowfjt .gt_first_summary_row {
+  border-top-style: solid;
+  border-top-color: #D3D3D3;
+}
+
+#caqkpowfjt .gt_first_summary_row.thick {
+  border-top-width: 2px;
+}
+
+#caqkpowfjt .gt_last_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#caqkpowfjt .gt_grand_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#caqkpowfjt .gt_first_grand_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-style: double;
+  border-top-width: 6px;
+  border-top-color: #D3D3D3;
+}
+
+#caqkpowfjt .gt_last_grand_summary_row_top {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-style: double;
+  border-bottom-width: 6px;
+  border-bottom-color: #D3D3D3;
+}
+
+#caqkpowfjt .gt_striped {
+  background-color: rgba(128, 128, 128, 0.05);
+}
+
+#caqkpowfjt .gt_table_body {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#caqkpowfjt .gt_footnotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#caqkpowfjt .gt_footnote {
+  margin: 0px;
+  font-size: 90%;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#caqkpowfjt .gt_sourcenotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#caqkpowfjt .gt_sourcenote {
+  font-size: 90%;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#caqkpowfjt .gt_left {
+  text-align: left;
+}
+
+#caqkpowfjt .gt_center {
+  text-align: center;
+}
+
+#caqkpowfjt .gt_right {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+#caqkpowfjt .gt_font_normal {
+  font-weight: normal;
+}
+
+#caqkpowfjt .gt_font_bold {
+  font-weight: bold;
+}
+
+#caqkpowfjt .gt_font_italic {
+  font-style: italic;
+}
+
+#caqkpowfjt .gt_super {
+  font-size: 65%;
+}
+
+#caqkpowfjt .gt_footnote_marks {
+  font-size: 75%;
+  vertical-align: 0.4em;
+  position: initial;
+}
+
+#caqkpowfjt .gt_asterisk {
+  font-size: 100%;
+  vertical-align: 0;
+}
+
+#caqkpowfjt .gt_indent_1 {
+  text-indent: 5px;
+}
+
+#caqkpowfjt .gt_indent_2 {
+  text-indent: 10px;
+}
+
+#caqkpowfjt .gt_indent_3 {
+  text-indent: 15px;
+}
+
+#caqkpowfjt .gt_indent_4 {
+  text-indent: 20px;
+}
+
+#caqkpowfjt .gt_indent_5 {
+  text-indent: 25px;
+}
+</style>
+<table class="gt_table" data-quarto-disable-processing="false" data-quarto-bootstrap="false">
+  <thead>
+    
+    <tr class="gt_col_headings">
+      <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1" scope="col" id="name_unclean">name_unclean</th>
+    </tr>
+  </thead>
+  <tbody class="gt_table_body">
+    <tr><td headers="name_unclean" class="gt_row gt_left">    Gotthard  MORY  </td></tr>
+    <tr><td headers="name_unclean" class="gt_row gt_left">    Daniel  HORLACHER  </td></tr>
+    <tr><td headers="name_unclean" class="gt_row gt_left">    Balzer  ROCKEL  </td></tr>
+    <tr><td headers="name_unclean" class="gt_row gt_left">    Abraham  ANDERSON  </td></tr>
+    <tr><td headers="name_unclean" class="gt_row gt_left">    Isaac  FINCH  </td></tr>
+    <tr><td headers="name_unclean" class="gt_row gt_left">    Samuel  MEREDITH Sr </td></tr>
+    <tr><td headers="name_unclean" class="gt_row gt_left">    William  DORRIS  </td></tr>
+  </tbody>
+  
+  
+</table>
+</div>
+</div>
+</div>
+<p>Let’s see who didn’t match because there were not DOB or DOD</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb45"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a>na_filter1 <span class="ot">&lt;-</span></span>
+<span id="cb45-2"><a href="#cb45-2" aria-hidden="true" tabindex="-1"></a>  matched_records <span class="sc">%&gt;%</span></span>
+<span id="cb45-3"><a href="#cb45-3" aria-hidden="true" tabindex="-1"></a>  <span class="co"># select(name_unclean,</span></span>
+<span id="cb45-4"><a href="#cb45-4" aria-hidden="true" tabindex="-1"></a>  <span class="co">#        Surname,</span></span>
+<span id="cb45-5"><a href="#cb45-5" aria-hidden="true" tabindex="-1"></a>  <span class="co">#        First.Name,</span></span>
+<span id="cb45-6"><a href="#cb45-6" aria-hidden="true" tabindex="-1"></a>  <span class="co">#        Middle.Name,</span></span>
+<span id="cb45-7"><a href="#cb45-7" aria-hidden="true" tabindex="-1"></a>  <span class="co">#        DOB_date,</span></span>
+<span id="cb45-8"><a href="#cb45-8" aria-hidden="true" tabindex="-1"></a>  <span class="co">#        DOD_date) %&gt;%</span></span>
+<span id="cb45-9"><a href="#cb45-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="fu">is.na</span>(DOD_date) <span class="sc">==</span> <span class="cn">TRUE</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb45-10"><a href="#cb45-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="fu">is.na</span>(DOB_date) <span class="sc">==</span> <span class="cn">TRUE</span>) </span>
+<span id="cb45-11"><a href="#cb45-11" aria-hidden="true" tabindex="-1"></a>na_filter1 <span class="sc">%&gt;%</span> <span class="fu">select</span>(name_unclean)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 6 × 1
+  name_unclean              
+  &lt;chr&gt;                     
+1 "    Daniel   CHAPMAN  "  
+2 "    William  HORRALL Sr "
+3 "    William   BALDWIN  " 
+4 "    Ebenezer  FROST  "   
+5 "    William  DORRIS  "   
+6 "    William  DORRIS  "   </code></pre>
+</div>
+</div>
+<p>Now DOB</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb47"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb47-1"><a href="#cb47-1" aria-hidden="true" tabindex="-1"></a>na_filter2 <span class="ot">&lt;-</span></span>
+<span id="cb47-2"><a href="#cb47-2" aria-hidden="true" tabindex="-1"></a>  matched_records <span class="sc">%&gt;%</span></span>
+<span id="cb47-3"><a href="#cb47-3" aria-hidden="true" tabindex="-1"></a>  <span class="co"># select(name_unclean,</span></span>
+<span id="cb47-4"><a href="#cb47-4" aria-hidden="true" tabindex="-1"></a>  <span class="co">#        Surname,</span></span>
+<span id="cb47-5"><a href="#cb47-5" aria-hidden="true" tabindex="-1"></a>  <span class="co">#        First.Name,</span></span>
+<span id="cb47-6"><a href="#cb47-6" aria-hidden="true" tabindex="-1"></a>  <span class="co">#        Middle.Name,</span></span>
+<span id="cb47-7"><a href="#cb47-7" aria-hidden="true" tabindex="-1"></a>  <span class="co">#        DOB_date,</span></span>
+<span id="cb47-8"><a href="#cb47-8" aria-hidden="true" tabindex="-1"></a>  <span class="co">#        DOD_date) %&gt;%</span></span>
+<span id="cb47-9"><a href="#cb47-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="fu">is.na</span>(DOD_date) <span class="sc">==</span> <span class="cn">TRUE</span>) </span>
+<span id="cb47-10"><a href="#cb47-10" aria-hidden="true" tabindex="-1"></a>na_filter2 </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 7 × 46
+  name_unclean          first_name V1    V2    V3    suffix url   SAR_ID match_1
+  &lt;chr&gt;                 &lt;chr&gt;      &lt;chr&gt; &lt;chr&gt; &lt;chr&gt; &lt;chr&gt;  &lt;chr&gt; &lt;chr&gt;  &lt;chr&gt;  
+1 "    Daniel   CHAPMA… Daniel     Chap… ""    ""    ""     http… P-131… Chapma…
+2 "    Daniel   CHAPMA… Daniel     Chap… ""    ""    ""     http… P-131… Chapma…
+3 "    William  HORRAL… William    Horr… ""    ""    "Sr"   http… P-335… Horral…
+4 "    William   BALDW… William    Bald… ""    ""    ""     http… P-107… Baldwi…
+5 "    Ebenezer  FROST… Ebenezer   Frost ""    ""    ""     http… P-162… Frost …
+6 "    William  DORRIS… William    Dorr… ""    ""    ""     http… P-335… Dorris…
+7 "    William  DORRIS… William    Dorr… ""    ""    ""     http… P-335… Dorris…
+# ℹ 37 more variables: photos_Matched_Round1 &lt;chr&gt;, Surname &lt;chr&gt;,
+#   First.Name &lt;chr&gt;, Middle.Name &lt;chr&gt;, `Maiden/Title` &lt;chr&gt;, Cemetery &lt;chr&gt;,
+#   City &lt;chr&gt;, State &lt;chr&gt;, DOB &lt;chr&gt;, DOD &lt;chr&gt;, Age &lt;chr&gt;, N &lt;chr&gt;, W &lt;chr&gt;,
+#   X13 &lt;chr&gt;, X14 &lt;chr&gt;, X15 &lt;chr&gt;, N_degree &lt;dbl&gt;, N_minute &lt;dbl&gt;,
+#   N_second &lt;dbl&gt;, lat &lt;dbl&gt;, W_degree &lt;dbl&gt;, W_minute &lt;dbl&gt;, W_second &lt;dbl&gt;,
+#   long &lt;dbl&gt;, DOB_date &lt;date&gt;, DOD_date &lt;date&gt;, Extra_First_Name &lt;chr&gt;,
+#   Extra_Middle_Name1 &lt;chr&gt;, Extra_Middle_Name2 &lt;chr&gt;, full_name_MI &lt;chr&gt;, …</code></pre>
+</div>
+</div>
+<p>And join them</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb49"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb49-1"><a href="#cb49-1" aria-hidden="true" tabindex="-1"></a>na_matches <span class="ot">&lt;-</span> na_filter1 <span class="sc">%&gt;%</span> <span class="fu">full_join</span>(na_filter2)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Joining with `by = join_by(name_unclean, first_name, V1, V2, V3, suffix, url,
+SAR_ID, match_1, photos_Matched_Round1, Surname, First.Name, Middle.Name,
+`Maiden/Title`, Cemetery, City, State, DOB, DOD, Age, N, W, X13, X14, X15,
+N_degree, N_minute, N_second, lat, W_degree, W_minute, W_second, long,
+DOB_date, DOD_date, Extra_First_Name, Extra_Middle_Name1, Extra_Middle_Name2,
+full_name_MI, full_name_MI_no_space, photos_Matched_Round2,
+photos_Matched_Round3, photos_Matched_Round4, photo_list, complete_name,
+cemetery_name)`</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb51"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb51-1"><a href="#cb51-1" aria-hidden="true" tabindex="-1"></a>na_matches <span class="sc">%&gt;%</span> <span class="fu">select</span>(name_unclean) <span class="sc">%&gt;%</span> <span class="fu">gt</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+
+<div id="zeasdvlchu" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>#zeasdvlchu table {
+  font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#zeasdvlchu thead, #zeasdvlchu tbody, #zeasdvlchu tfoot, #zeasdvlchu tr, #zeasdvlchu td, #zeasdvlchu th {
+  border-style: none;
+}
+
+#zeasdvlchu p {
+  margin: 0;
+  padding: 0;
+}
+
+#zeasdvlchu .gt_table {
+  display: table;
+  border-collapse: collapse;
+  line-height: normal;
+  margin-left: auto;
+  margin-right: auto;
+  color: #333333;
+  font-size: 16px;
+  font-weight: normal;
+  font-style: normal;
+  background-color: #FFFFFF;
+  width: auto;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #A8A8A8;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #A8A8A8;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+}
+
+#zeasdvlchu .gt_caption {
+  padding-top: 4px;
+  padding-bottom: 4px;
+}
+
+#zeasdvlchu .gt_title {
+  color: #333333;
+  font-size: 125%;
+  font-weight: initial;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-color: #FFFFFF;
+  border-bottom-width: 0;
+}
+
+#zeasdvlchu .gt_subtitle {
+  color: #333333;
+  font-size: 85%;
+  font-weight: initial;
+  padding-top: 3px;
+  padding-bottom: 5px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-color: #FFFFFF;
+  border-top-width: 0;
+}
+
+#zeasdvlchu .gt_heading {
+  background-color: #FFFFFF;
+  text-align: center;
+  border-bottom-color: #FFFFFF;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#zeasdvlchu .gt_bottom_border {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#zeasdvlchu .gt_col_headings {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#zeasdvlchu .gt_col_heading {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 6px;
+  padding-left: 5px;
+  padding-right: 5px;
+  overflow-x: hidden;
+}
+
+#zeasdvlchu .gt_column_spanner_outer {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  padding-top: 0;
+  padding-bottom: 0;
+  padding-left: 4px;
+  padding-right: 4px;
+}
+
+#zeasdvlchu .gt_column_spanner_outer:first-child {
+  padding-left: 0;
+}
+
+#zeasdvlchu .gt_column_spanner_outer:last-child {
+  padding-right: 0;
+}
+
+#zeasdvlchu .gt_column_spanner {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  overflow-x: hidden;
+  display: inline-block;
+  width: 100%;
+}
+
+#zeasdvlchu .gt_spanner_row {
+  border-bottom-style: hidden;
+}
+
+#zeasdvlchu .gt_group_heading {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+  text-align: left;
+}
+
+#zeasdvlchu .gt_empty_group_heading {
+  padding: 0.5px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: middle;
+}
+
+#zeasdvlchu .gt_from_md > :first-child {
+  margin-top: 0;
+}
+
+#zeasdvlchu .gt_from_md > :last-child {
+  margin-bottom: 0;
+}
+
+#zeasdvlchu .gt_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  margin: 10px;
+  border-top-style: solid;
+  border-top-width: 1px;
+  border-top-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+  overflow-x: hidden;
+}
+
+#zeasdvlchu .gt_stub {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: solid;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#zeasdvlchu .gt_stub_row_group {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: solid;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  padding-left: 5px;
+  padding-right: 5px;
+  vertical-align: top;
+}
+
+#zeasdvlchu .gt_row_group_first td {
+  border-top-width: 2px;
+}
+
+#zeasdvlchu .gt_row_group_first th {
+  border-top-width: 2px;
+}
+
+#zeasdvlchu .gt_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#zeasdvlchu .gt_first_summary_row {
+  border-top-style: solid;
+  border-top-color: #D3D3D3;
+}
+
+#zeasdvlchu .gt_first_summary_row.thick {
+  border-top-width: 2px;
+}
+
+#zeasdvlchu .gt_last_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#zeasdvlchu .gt_grand_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#zeasdvlchu .gt_first_grand_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-style: double;
+  border-top-width: 6px;
+  border-top-color: #D3D3D3;
+}
+
+#zeasdvlchu .gt_last_grand_summary_row_top {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-style: double;
+  border-bottom-width: 6px;
+  border-bottom-color: #D3D3D3;
+}
+
+#zeasdvlchu .gt_striped {
+  background-color: rgba(128, 128, 128, 0.05);
+}
+
+#zeasdvlchu .gt_table_body {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#zeasdvlchu .gt_footnotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#zeasdvlchu .gt_footnote {
+  margin: 0px;
+  font-size: 90%;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#zeasdvlchu .gt_sourcenotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#zeasdvlchu .gt_sourcenote {
+  font-size: 90%;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#zeasdvlchu .gt_left {
+  text-align: left;
+}
+
+#zeasdvlchu .gt_center {
+  text-align: center;
+}
+
+#zeasdvlchu .gt_right {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+#zeasdvlchu .gt_font_normal {
+  font-weight: normal;
+}
+
+#zeasdvlchu .gt_font_bold {
+  font-weight: bold;
+}
+
+#zeasdvlchu .gt_font_italic {
+  font-style: italic;
+}
+
+#zeasdvlchu .gt_super {
+  font-size: 65%;
+}
+
+#zeasdvlchu .gt_footnote_marks {
+  font-size: 75%;
+  vertical-align: 0.4em;
+  position: initial;
+}
+
+#zeasdvlchu .gt_asterisk {
+  font-size: 100%;
+  vertical-align: 0;
+}
+
+#zeasdvlchu .gt_indent_1 {
+  text-indent: 5px;
+}
+
+#zeasdvlchu .gt_indent_2 {
+  text-indent: 10px;
+}
+
+#zeasdvlchu .gt_indent_3 {
+  text-indent: 15px;
+}
+
+#zeasdvlchu .gt_indent_4 {
+  text-indent: 20px;
+}
+
+#zeasdvlchu .gt_indent_5 {
+  text-indent: 25px;
+}
+</style>
+<table class="gt_table" data-quarto-disable-processing="false" data-quarto-bootstrap="false">
+  <thead>
+    
+    <tr class="gt_col_headings">
+      <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1" scope="col" id="name_unclean">name_unclean</th>
+    </tr>
+  </thead>
+  <tbody class="gt_table_body">
+    <tr><td headers="name_unclean" class="gt_row gt_left">    Daniel   CHAPMAN  </td></tr>
+    <tr><td headers="name_unclean" class="gt_row gt_left">    William  HORRALL Sr </td></tr>
+    <tr><td headers="name_unclean" class="gt_row gt_left">    William   BALDWIN  </td></tr>
+    <tr><td headers="name_unclean" class="gt_row gt_left">    Ebenezer  FROST  </td></tr>
+    <tr><td headers="name_unclean" class="gt_row gt_left">    William  DORRIS  </td></tr>
+    <tr><td headers="name_unclean" class="gt_row gt_left">    William  DORRIS  </td></tr>
+    <tr><td headers="name_unclean" class="gt_row gt_left">    Daniel   CHAPMAN  </td></tr>
+  </tbody>
+  
+  
+</table>
+</div>
+</div>
 </div>
 <p>What we see is that many names are reused in the family and so the name from the SAR records match people who were born well after the end of the Revolutionary war. I could try to clean up by date of birth or death, though that information isn’t available for all matches. The SAR records don’t have the middle names in the title probably easier just to ask. Jr/Sr is not consistently encoded in my father’s spreadsheet (which is why I didn’t use that when generating match_1). At this point, subject matter expertise is needed to solve the problem.</p>
 </section>
@@ -2022,15 +1579,15 @@ The following object is masked from 'package:readr':
 <p>Does this run? No, of course not! First, this is a terrible example anyway because none of the strings can be split into two parts based on that regex. (‘A A A’ or ‘a B a’ or something like that would be a much better choice.) You certainly won’t get the output that Bard predicts. Remember, the separator gets discarded. For row one, the separator is “&nbsp; A” and there is no part 1 and no part two. Same with row 2. C should be the prefix and the letter should be NA. There is no separator in this case. Lots of warnings are going to be generated by this…</p>
 <p>I’m not sure where the extra r in <code>sep = r"\s+[A-Z]"</code> came from. You can fix that and get it to run.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb40"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a>data <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
-<span id="cb40-2"><a href="#cb40-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb40-3"><a href="#cb40-3" aria-hidden="true" tabindex="-1"></a><span class="at">text =</span> <span class="fu">c</span>(<span class="st">"  A"</span>, <span class="st">"   B"</span>, <span class="st">"C"</span>),</span>
-<span id="cb40-4"><a href="#cb40-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb40-5"><a href="#cb40-5" aria-hidden="true" tabindex="-1"></a><span class="at">stringsAsFactors =</span> <span class="cn">FALSE</span></span>
-<span id="cb40-6"><a href="#cb40-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb40-7"><a href="#cb40-7" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb40-8"><a href="#cb40-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb40-9"><a href="#cb40-9" aria-hidden="true" tabindex="-1"></a>data <span class="sc">%&gt;%</span> <span class="fu">separate</span>(text, <span class="at">into =</span> <span class="fu">c</span>(<span class="st">"prefix"</span>, <span class="st">"letter"</span>), <span class="at">sep =</span> <span class="st">"</span><span class="sc">\\</span><span class="st">s+[A-Z]"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb52"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb52-1"><a href="#cb52-1" aria-hidden="true" tabindex="-1"></a>data <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
+<span id="cb52-2"><a href="#cb52-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-3"><a href="#cb52-3" aria-hidden="true" tabindex="-1"></a><span class="at">text =</span> <span class="fu">c</span>(<span class="st">"  A"</span>, <span class="st">"   B"</span>, <span class="st">"C"</span>),</span>
+<span id="cb52-4"><a href="#cb52-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-5"><a href="#cb52-5" aria-hidden="true" tabindex="-1"></a><span class="at">stringsAsFactors =</span> <span class="cn">FALSE</span></span>
+<span id="cb52-6"><a href="#cb52-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-7"><a href="#cb52-7" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb52-8"><a href="#cb52-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-9"><a href="#cb52-9" aria-hidden="true" tabindex="-1"></a>data <span class="sc">%&gt;%</span> <span class="fu">separate</span>(text, <span class="at">into =</span> <span class="fu">c</span>(<span class="st">"prefix"</span>, <span class="st">"letter"</span>), <span class="at">sep =</span> <span class="st">"</span><span class="sc">\\</span><span class="st">s+[A-Z]"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stderr">
 <pre><code>Warning: Expected 2 pieces. Missing pieces filled with `NA` in 1 rows [3].</code></pre>
 </div>
@@ -2049,12 +1606,12 @@ The following object is masked from 'package:readr':
 <div id="quarto-appendix" class="default"><section class="quarto-appendix-contents"><h2 class="anchored quarto-appendix-heading">Citation</h2><div><div class="quarto-appendix-secondary-label">BibTeX citation:</div><pre class="sourceCode code-with-copy quarto-appendix-bibtex"><code class="sourceCode bibtex">@online{e. sinks2023,
   author = {E. Sinks, Louise},
   title = {Web-Scraping},
-  date = {2023-06-29},
+  date = {2023-08-16},
   url = {https://lsinks.github.io/posts/2023-06-29-tidytuesday-US-populated-places-leaflet/arlington-neighborhoods-leaflet},
   langid = {en}
 }
 </code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre><div class="quarto-appendix-secondary-label">For attribution, please cite this work as:</div><div id="ref-e. sinks2023" class="csl-entry quarto-appendix-citeas" role="listitem">
-E. Sinks, Louise. 2023. <span>“Web-Scraping.”</span> June 29, 2023. <a href="https://lsinks.github.io/posts/2023-06-29-tidytuesday-US-populated-places-leaflet/arlington-neighborhoods-leaflet">https://lsinks.github.io/posts/2023-06-29-tidytuesday-US-populated-places-leaflet/arlington-neighborhoods-leaflet</a>.
+E. Sinks, Louise. 2023. <span>“Web-Scraping.”</span> August 16, 2023. <a href="https://lsinks.github.io/posts/2023-06-29-tidytuesday-US-populated-places-leaflet/arlington-neighborhoods-leaflet">https://lsinks.github.io/posts/2023-06-29-tidytuesday-US-populated-places-leaflet/arlington-neighborhoods-leaflet</a>.
 </div></div></section></div></main>
 <!-- /main column -->
 <script id="quarto-html-after-body" type="application/javascript">

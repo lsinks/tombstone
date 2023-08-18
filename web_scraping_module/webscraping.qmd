@@ -6,7 +6,7 @@ twitter-card:
 author:
   - name: Louise E. Sinks
     url: https://lsinks.github.io/
-date: 06-29-2023
+date: 08-16-2023
 categories: [R, TidyTuesday, R-code, Data-Viz, sf, leaflet] # self-defined categories
 citation:
   url: https://lsinks.github.io/posts/2023-06-29-tidytuesday-US-populated-places-leaflet/arlington-neighborhoods-leaflet
@@ -14,9 +14,13 @@ image: "thumbnail.png"
 draft: false # setting this to `true` will prevent your post from appearing on your listing page until you're ready!
 ---
 
-I really enjoyed making leaflet maps for TidyTuesday and wanted to play around with them some more. My father is interested in family history and has been documenting the gravesites of our ancestors. He takes nice photos with a camera and records the gps with a garmin device. I thought it would be nice to combine the data into a leaflet map for him. I wanted to add some other information as well. He is a member of the Sons of the American Revolution, a society of men who can trace their lineage back to someone who served in the American Revolutionary War. Some of the application material is available on their website. So, I wanted to add those links as well.
+# **Project Overview**
 
-This blog post deals with scraping the data from the website, wrangling it into a format where it could be matched against my father's spreadsheet and then looking for matches. I'll show you a bunch of things that didn't work as well, including some code from Google Bard. This project deals with a fairly small set of data, about 400 photos, 500 entries in the spreadsheet, and 74 entries from the website. It is likely easier to clean things up by hand, but that isn't scalable. So, whenever possible, I am doing things programatically. (Not that this project needs to scale, but it is good practice for larger datasets.)
+I'm working on a project for my father that will culminate in a website for his genealogy research. [There are a couple of different parts](https://lsinks.github.io/currentprojects.html) that I'm working on independently. In a [previous part of the project](https://lsinks.github.io/posts/2023-08-04-data-cleaning-tombstone/tombstones_data_cleaning.html), I matched an excel sheet with GPS coordinates and some biographic data with photos of various tombstones. I then used that data to make a l[eaflet map of various family grave sites](https://lsinks.github.io/posts/2023-08-14-mapping-tombstone/tombstone_mapping_leaflet.html).
+
+I wanted to add more information beyond the information on the tombstone. He suggested that I add information from applications he submitted for membership into the SAR. SAR, Sons of the American Revolution, is a society of men who can trace their lineage back to someone who served in the American Revolutionary War. Some of the application material is available on their website. He indicated that adding the links to his spreadsheet would be a lot of typing for him. I looked and saw this material was openly available on the SAR website, so I thought this would be an ideal task to solve with web scraping. (It turns out that there aren't that many links after all, but it was useful as a learning exercise.
+
+This blog post deals with scraping the data from the website, wrangling it into a format where it could be matched against my father's spreadsheet and then looking for matches. (Every part of this series has ended up being more data wrangling and cleaning than I could have possibly envisioned with just a touch of whatever neat thing I actually wanted to do.) I'll also talk a bit about including some code from Google Bard.
 
 # Loading Libraries and Data
 
@@ -27,31 +31,55 @@ library(here)
 library(rvest)
 library(gt)
 library(openxlsx)
+library(xml2)
 ```
 
-This is my father's spreadsheet after some clean-up.
+**This is my father's spreadsheet after some clean-up.**
 
 ```{r}
 #| label: loading-spreadsheet
 
-data_file <- "Tombstone Data.xlsx"
- tombstones_raw <-
-   read.xlsx(here("leaflet_module", data_file),
-     sheet = 1
-   )
+# data_file <- "Tombstone Data.xlsx"
+#  tombstones_raw <-
+#    read.xlsx(here("leaflet_module", data_file),
+#      sheet = 1
+#    )
 
+
+
+data_file <- readRDS(here("data_cleaning", "tombstones_matched_final.RDS"))
 ```
+
+# Conceptual Overview of Webscraping
+
+You want to find the HTML elements that correspond to the data you wish to obtain. There are a few ways to do this. One is to right click on the webpage in your browser and chose "inspect" to find out what elements you want to use (choose the elements tab). Many items may have the same elements, so you probably need to construct sets of elements to get to the right items.
+
+Another way is to use the [SelectorGadget](https://rvest.tidyverse.org/articles/selectorgadget.html). The SelectorGadget is iterative. You need to keep clicking on
+
+# Ethics and Legality of Web Scraping
 
 # Webscraping with rvest
 
-I decided to use the rvest package for webscraping. I was introduced to it through TidyTuesday. For politeness sake, I am working on a downloaded copy of the webpage.
+I decided to use the [rvest package](https://CRAN.R-project.org/package=rvest) for webscraping. I was introduced to it through [TidyTuesday](https://github.com/rfordatascience/tidytuesday). rvest is a tidyverse package and is installed with installation of tidyverse. However, it is not [a core tidyverse package](https://www.tidyverse.org/packages/) and does need to be loaded separately with a call to `library()`.
 
-There is an overview of [webscraping using rvest](https://rvest.tidyverse.org/articles/rvest.html) on the package website. Basically, you want to right click on the webpage in your browser and chose "inspect" to find out what elements you want to use. In my case, the information was formatted as a table, so I pull out the children of the table element. There is an html_table() function, but it only extracts the text elements from the table, not the links. If you are only interested in the text, then this is a great option. To get the links that I wanted, I found an [example on Stack Overflow](https://stackoverflow.com/questions/63093926/retrieve-link-from-html-table-with-rvest).
+For politeness sake, I am working on a downloaded copy of the webpage. The function `read_html()` can also take a url to read directly from a website.
+
+There is an overview of [webscraping using rvest](https://rvest.tidyverse.org/articles/rvest.html) on the package website.
+
+In my case, the information was formatted as a table, so I pull out the children of the table element. There is an html_table() function, but it only extracts the text elements from the table, not the links. **And produces a list.** If you are only interested in the text, then this is a great option. To get the links that I wanted, I found an [example on Stack Overflow](https://stackoverflow.com/questions/63093926/retrieve-link-from-html-table-with-rvest).
 
 ```{r}
 #| label: loading-webpage
 sar <- read_html( "Display Member - 121743 - John Douglas Sinks Ph.D..html")
 
+#xml_structure(sar)
+
+
+```
+
+blah
+
+```{r}
 link_nodes <- sar %>% html_nodes(xpath = "//table//a")  
 link_text  <- link_nodes %>% html_text()
 text_df = as.data.frame(link_text)
@@ -60,6 +88,13 @@ index <- 1
 for (index in seq(1:nrow(text_df))) {
   text_df$url[index] <- link_nodes[index] %>%  html_attr("href")
 }
+```
+
+alternate method
+
+```{r}
+link_nodes2 <- sar %>% html_nodes("table a")  
+link_text2  <- link_nodes2 %>% html_text()
 ```
 
 There are actually three sets of links- one with the name, one with the application, and one to purchase the detailed application. I only want the one that goes to the application. So I take every third link, starting with the first.
@@ -234,7 +269,7 @@ My plan was match on the first variation, then for those that failed to match, m
 rev_war_test <- rev_war_test %>%
   mutate(match_1 = paste0(V1, " ", first_name))
 
-matched_records <- rev_war_test %>% inner_join(tombstones2, by = c("match_1" = "full_name"))
+matched_records <- rev_war_test %>% inner_join(data_file, by = c("match_1" = "full_name"))
 
 dob_filter <- matched_records %>% select(name_unclean, Surname, First.Name, Middle.Name, DOB_date, DOD_date ) %>% filter(is.na(DOB_date) == FALSE) %>% filter(year(DOB_date) < 1784)
 ```
