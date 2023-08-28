@@ -59,16 +59,16 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </style>
 
 
-<script src="webscraping_files/libs/clipboard/clipboard.min.js"></script>
-<script src="webscraping_files/libs/quarto-html/quarto.js"></script>
-<script src="webscraping_files/libs/quarto-html/popper.min.js"></script>
-<script src="webscraping_files/libs/quarto-html/tippy.umd.min.js"></script>
-<script src="webscraping_files/libs/quarto-html/anchor.min.js"></script>
-<link href="webscraping_files/libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="webscraping_files/libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
-<script src="webscraping_files/libs/bootstrap/bootstrap.min.js"></script>
-<link href="webscraping_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="webscraping_files/libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+<script src="web-scraping-grammarly_files/libs/clipboard/clipboard.min.js"></script>
+<script src="web-scraping-grammarly_files/libs/quarto-html/quarto.js"></script>
+<script src="web-scraping-grammarly_files/libs/quarto-html/popper.min.js"></script>
+<script src="web-scraping-grammarly_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="web-scraping-grammarly_files/libs/quarto-html/anchor.min.js"></script>
+<link href="web-scraping-grammarly_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="web-scraping-grammarly_files/libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="web-scraping-grammarly_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="web-scraping-grammarly_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="web-scraping-grammarly_files/libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
 
 
 </head>
@@ -118,9 +118,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 <section id="project-overview" class="level1">
 <h1><strong>Project Overview</strong></h1>
-<p>I’m working on a project for my father that will culminate in a website for his genealogy research. <a href="https://lsinks.github.io/currentprojects.html">There are a couple of different parts</a> that I’m working on independently. In a <a href="https://lsinks.github.io/posts/2023-08-04-data-cleaning-tombstone/tombstones_data_cleaning.html">previous part of the project</a>, I matched an excel sheet with GPS coordinates and some biographic data with photos of various tombstones. I then used that data to make a l<a href="https://lsinks.github.io/posts/2023-08-14-mapping-tombstone/tombstone_mapping_leaflet.html">eaflet map of various family grave sites</a>.</p>
-<p>I wanted to add more information beyond the information on the tombstone. He suggested that I add information from applications he submitted for membership into the SAR. SAR, Sons of the American Revolution, is a society of men who can trace their lineage back to someone who served in the American Revolutionary War. Some of the application material is available on their website. He indicated that adding the links to his spreadsheet would be a lot of typing for him. I looked and saw this material was openly available on the SAR website, so I thought this would be an ideal task to solve with web scraping. (It turns out that there aren’t that many links after all, but it was useful as a learning exercise.</p>
-<p>This blog post deals with scraping the data from the website, wrangling it into a format where it could be matched against my father’s spreadsheet and then looking for matches. (Every part of this series has ended up being more data wrangling and cleaning than I could have possibly envisioned with just a touch of whatever neat thing I actually wanted to do.) I’ll also talk a bit about including some code from Google Bard.</p>
+<p>I’m working on a project for my father that will culminate in a website for his genealogy research. <a href="https://lsinks.github.io/currentprojects.html">There are a couple of different parts</a> that I’m working on independently. In a <a href="https://lsinks.github.io/posts/2023-08-04-data-cleaning-tombstone/tombstones_data_cleaning.html">previous part of the project</a>, I matched an Excel sheet with GPS coordinates and some biographic data with photos of various tombstones. I then used that data to make a l<a href="https://lsinks.github.io/posts/2023-08-14-mapping-tombstone/tombstone_mapping_leaflet.html">eaflet map of various family grave sites</a>.</p>
+<p>I wanted to add more information beyond the information on the tombstone. My father suggested that I add information from applications he submitted for membership into the SAR. SAR, Sons of the American Revolution, is a society of men who can trace their lineage back to someone who served in the American Revolutionary War. Some of the application material is available on their website. He indicated that adding the links to his spreadsheet would be a lot of typing. I saw this material was openly available on the SAR website, so this would be an ideal task to solve with web scraping. (It turns out that there aren’t that many links after all, but it was helpful as a learning exercise.</p>
+<p>This blog post deals with scraping the data from the website, wrangling it into a format where it could be matched against my father’s spreadsheet, and then looking for matches. (Every part of this series has ended up being more data wrangling and cleaning than I could have envisioned with just a touch of whatever neat thing I actually wanted to do.) I’ll also talk a bit about including some code from Google Bard.</p>
 </section>
 <section id="loading-libraries-and-data" class="level1">
 <h1>Loading Libraries and Data</h1>
@@ -160,9 +160,9 @@ The following object is masked from 'package:readr':
 <div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>data_file <span class="ot">&lt;-</span> <span class="fu">readRDS</span>(<span class="fu">here</span>(<span class="st">"data_cleaning"</span>, <span class="st">"tombstones_matched_final.RDS"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
-<section id="conceptual-overview-of-webscraping" class="level1">
-<h1>Conceptual Overview of Webscraping</h1>
-<p>You want to find the HTML elements that correspond to the data you wish to obtain. There are a few ways to do this. One is to right click on the webpage in your browser and chose “inspect” to find out what elements you want to use (choose the elements tab). Many items may have the same elements, so you probably need to construct sets of elements to get to the right items.</p>
+<section id="conceptual-overview-of-web-scraping" class="level1">
+<h1>Conceptual Overview of Web Scraping</h1>
+<p>You want to find the HTML elements corresponding to the data you wish to obtain. There are a few ways to do this. One is to right-click on the webpage in your browser and choose “inspect” to find out what elements you want to use (select the elements tab). Many items may have the same elements, so you probably need to construct sets of elements to get to the right things.</p>
 <p>Another way is to use the <a href="https://rvest.tidyverse.org/articles/selectorgadget.html">SelectorGadget</a>. The SelectorGadget is iterative. You need to keep clicking on</p>
 </section>
 <section id="ethics-and-legality-of-web-scraping" class="level1">
@@ -170,10 +170,10 @@ The following object is masked from 'package:readr':
 </section>
 <section id="webscraping-with-rvest" class="level1">
 <h1>Webscraping with rvest</h1>
-<p>I decided to use the <a href="https://CRAN.R-project.org/package=rvest">rvest package</a> for webscraping. I was introduced to it through <a href="https://github.com/rfordatascience/tidytuesday">TidyTuesday</a>. rvest is a tidyverse package and is installed with installation of tidyverse. However, it is not <a href="https://www.tidyverse.org/packages/">a core tidyverse package</a> and does need to be loaded separately with a call to <code>library()</code>.</p>
-<p>For politeness sake, I am working on a downloaded copy of the webpage. The function <code>read_html()</code> can also take a url to read directly from a website.</p>
+<p>I decided to use the <a href="https://CRAN.R-project.org/package=rvest">rvest package</a> for web scraping. I was introduced to it through <a href="https://github.com/rfordatascience/tidytuesday">TidyTuesday</a>. rvest is a tidyverse package and is installed with the installation of tidyverse. However, it is not <a href="https://www.tidyverse.org/packages/">a core tidyverse package</a> and does need to be loaded separately with a call to <code>library()</code>.</p>
+<p>For politeness’s sake, I am working on a downloaded copy of the webpage. The function <code>read_html()</code> can also take a URL to read directly from a website.</p>
 <p>There is an overview of <a href="https://rvest.tidyverse.org/articles/rvest.html">webscraping using rvest</a> on the package website.</p>
-<p>In my case, the information was formatted as a table, so I pull out the children of the table element. There is an html_table() function, but it only extracts the text elements from the table, not the links. <strong>And produces a list.</strong> If you are only interested in the text, then this is a great option. To get the links that I wanted, I found an <a href="https://stackoverflow.com/questions/63093926/retrieve-link-from-html-table-with-rvest">example on Stack Overflow</a>.</p>
+<p>In my case, the information was formatted as a table, so I pulled out the children of the table element. There is an html_table() function, but it only extracts the text elements from the table, not the links. <strong>And produces a list.</strong> If you are only interested in the text, then this is a great option. To get the links that I wanted, I found an <a href="https://stackoverflow.com/questions/63093926/retrieve-link-from-html-table-with-rvest">example on Stack Overflow</a>.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>sar <span class="ot">&lt;-</span> <span class="fu">read_html</span>( <span class="st">"Display Member - 121743 - John Douglas Sinks Ph.D..html"</span>)</span>
 <span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a></span>
@@ -195,7 +195,7 @@ The following object is masked from 'package:readr':
 <div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>link_nodes2 <span class="ot">&lt;-</span> sar <span class="sc">%&gt;%</span> <span class="fu">html_nodes</span>(<span class="st">"table a"</span>)  </span>
 <span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>link_text2  <span class="ot">&lt;-</span> link_nodes2 <span class="sc">%&gt;%</span> <span class="fu">html_text</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p>There are actually three sets of links- one with the name, one with the application, and one to purchase the detailed application. I only want the one that goes to the application. So I take every third link, starting with the first.</p>
+<p>There are actually three sets of links- one with the name, one with the application, and one to purchase the detailed application. I only want the one that goes to the application. So, I take every third link, starting with the first.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>raw_data <span class="ot">&lt;-</span> text_df[<span class="fu">seq</span>(<span class="dv">1</span>, <span class="fu">nrow</span>(text_df), <span class="dv">3</span>),]</span>
 <span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(raw_data)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
@@ -219,21 +219,21 @@ The following object is masked from 'package:readr':
 </section>
 <section id="reformat-the-data" class="level1">
 <h1>Reformat the Data</h1>
-<p>Now to wrangle the text data into a usable form. The link_text contains the name and an ID number, like John PHELPS (P-335209). This can be split into two components using <code>(</code> as a separator. Remember that special characters like <code>(</code> need to be escaped (more on that later). So the actual separator is <code>" \\("</code> I took the space also. Then I removed the other parenthesis with <code>str_replace()</code>. I used transmute do the final mutation and select the columns I wanted moving forward.</p>
+<p>Now to wrangle the text data into a usable form. The link_text contains the name and an ID number, like John PHELPS (P-335209). This can be split into two components using <code>(</code> as a separator. Remember that special characters like <code>(</code> need to be escaped (more on that later). So the actual separator is <code>" \\("</code> I took the space also. Then I removed the other parenthesis with <code>str_replace()</code>. I used transmute to do the final mutation and select the columns I wanted moving forward.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="co"># first clean up the names</span></span>
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="co"># first, clean up the names</span></span>
 <span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>rev_war <span class="ot">&lt;-</span> raw_data <span class="sc">%&gt;%</span></span>
 <span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">separate</span>(link_text, <span class="at">sep =</span> <span class="st">" </span><span class="sc">\\</span><span class="st">("</span>, <span class="at">into =</span> <span class="fu">c</span>(<span class="st">"name_unclean"</span>, <span class="st">"id_unclean"</span>) ) </span>
 <span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a><span class="co">#clean up the id number</span></span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Clean up the ID number</span></span>
 <span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a>rev_war <span class="ot">&lt;-</span> rev_war <span class="sc">%&gt;%</span></span>
 <span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">transmute</span>(name_unclean, url, <span class="at">SAR_ID =</span> <span class="fu">str_replace</span>(id_unclean, <span class="st">"</span><span class="sc">\\</span><span class="st">)"</span>, <span class="st">""</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 <section id="dataframes-arent-tibbles" class="level1">
 <h1>Dataframes aren’t Tibbles!</h1>
-<p>R keeps the indexing of the raw_data, so the row numbers are by 3s. However, indexing is as normal, by position. So rev_war$name_unclean[3] returns the name associated with the row number 7. This is annoying and makes it difficult to pull out test cases. So, this should be fixed. This issue will pop up when you use data frames, but not when you use tibbles. The tidyverse doesn’t approve of row names or numbers, so they aren’t used. If you look at a tibble in RStudio viewer, you will get row numbers and the tibble will have them correctly numbered. Tibbles and data frames are usually completely interchangeable, but sometimes you do run into the differences.</p>
+<p>R keeps the indexing of the raw_data, so the row numbers are by 3s. However, indexing is as usual, by position. So rev_war$name_unclean[3] returns the name associated with the row number 7. This is annoying and makes it difficult to pull out test cases. So, this should be fixed. This issue will pop up when you use data frames but not when you use tibbles. The tidyverse doesn’t approve of row names or numbers, so they aren’t used. If you look at a tibble in RStudio viewer, you will get row numbers and the tibble will have them correctly numbered. Tibbles and data frames are usually entirely interchangeable, but sometimes you do run into the differences.</p>
 <p>So, two ways to fix this:</p>
 <ol type="1">
 <li>Convert to a tibble.</li>
@@ -303,21 +303,21 @@ The following object is masked from 'package:readr':
 </section>
 <section id="cleaning-text-data" class="level1">
 <h1>Cleaning Text Data</h1>
-<p>Now the names are a mess. Women have “Mrs” prepended. The last names are in all caps and sometimes have multiple variations separated by a /. There are also Jr and Sr at the end of some. There are different numbers of leading and trailing spaces on the names.</p>
-<p>The whitespace, Jr/Sr, and Mrs issue are easy to deal with using tools from the stringr package. The “Mrs” is not useful at all, so I’m just going to replace it with “” via <code>str_replace()</code>. I’m going to remove the whitespace using <code>str_trim()</code>. I generally like to keep the original data so I can check the transformations, so these operations are in a new column name. I also make a suffix column for Jr/Sr and remove that info from the name column. I’m not changing the names to title case now, because I’m going to use the fact that the last names are in upper case as part of my pattern matching.</p>
+<p>The names are a mess. Women have “Mrs” prepended. The last names are in all caps and sometimes have multiple variations separated by a /. There are also Jr and Sr at the end of some. There are different numbers of leading and trailing spaces on the names.</p>
+<p>The whitespace, Jr/Sr, and Mrs issues are easy to deal with using tools from the stringr package. The “Mrs” is not useful at all, so I’m just going to replace it with “” via <code>str_replace()</code>. I’m going to remove the whitespace using <code>str_trim()</code>. I generally like to keep the original data so I can check the transformations, so these operations are in a new column name. I also made a suffix column for Jr/Sr and removed that info from the name column. I’m not changing the names to title case now because I’m going to use the fact that the last names are in upper case as part of my pattern matching.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb23"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a>rev_war <span class="ot">&lt;-</span> rev_war <span class="sc">%&gt;%</span></span>
 <span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">name =</span></span>
 <span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">str_replace</span>(name_unclean, <span class="st">"Mrs"</span>, <span class="st">""</span>)</span>
 <span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
 <span id="cb23-5"><a href="#cb23-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb23-6"><a href="#cb23-6" aria-hidden="true" tabindex="-1"></a><span class="co"># there appear to be leading and tailing strings on the name</span></span>
+<span id="cb23-6"><a href="#cb23-6" aria-hidden="true" tabindex="-1"></a><span class="co"># There appear to be leading and tailing strings on the name</span></span>
 <span id="cb23-7"><a href="#cb23-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">name =</span></span>
 <span id="cb23-8"><a href="#cb23-8" aria-hidden="true" tabindex="-1"></a>           <span class="fu">str_trim</span>(name, <span class="at">side =</span> <span class="fu">c</span>(<span class="st">"both"</span>))</span>
 <span id="cb23-9"><a href="#cb23-9" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
 <span id="cb23-10"><a href="#cb23-10" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb23-11"><a href="#cb23-11" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb23-12"><a href="#cb23-12" aria-hidden="true" tabindex="-1"></a><span class="co"># deal with Jr/Sr first</span></span>
+<span id="cb23-12"><a href="#cb23-12" aria-hidden="true" tabindex="-1"></a><span class="co"># Deal with Jr/Sr first</span></span>
 <span id="cb23-13"><a href="#cb23-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">suffix =</span></span>
 <span id="cb23-14"><a href="#cb23-14" aria-hidden="true" tabindex="-1"></a>           <span class="fu">case_when</span>(</span>
 <span id="cb23-15"><a href="#cb23-15" aria-hidden="true" tabindex="-1"></a>             <span class="fu">str_detect</span>(name, <span class="st">"Jr"</span>) <span class="sc">==</span> <span class="cn">TRUE</span> <span class="sc">~</span> <span class="st">"Jr"</span>,</span>
@@ -326,7 +326,7 @@ The following object is masked from 'package:readr':
 <span id="cb23-18"><a href="#cb23-18" aria-hidden="true" tabindex="-1"></a>           )</span>
 <span id="cb23-19"><a href="#cb23-19" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
 <span id="cb23-20"><a href="#cb23-20" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb23-21"><a href="#cb23-21" aria-hidden="true" tabindex="-1"></a><span class="co"># now remove the Jr and sr from the name</span></span>
+<span id="cb23-21"><a href="#cb23-21" aria-hidden="true" tabindex="-1"></a><span class="co"># Now remove the Jr and Sr from the name</span></span>
 <span id="cb23-22"><a href="#cb23-22" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">name =</span></span>
 <span id="cb23-23"><a href="#cb23-23" aria-hidden="true" tabindex="-1"></a>           <span class="fu">str_replace</span>(name, <span class="st">"Jr"</span>, <span class="st">""</span>)</span>
 <span id="cb23-24"><a href="#cb23-24" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
@@ -339,7 +339,7 @@ The following object is masked from 'package:readr':
 <span id="cb23-31"><a href="#cb23-31" aria-hidden="true" tabindex="-1"></a>           <span class="fu">str_trim</span>(name, <span class="at">side =</span> <span class="fu">c</span>(<span class="st">"both"</span>))</span>
 <span id="cb23-32"><a href="#cb23-32" aria-hidden="true" tabindex="-1"></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p>That is all pretty straightforward. Now how do we break this up?</p>
+<p>That is all pretty straightforward. Now, how do we break this up?</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>rev_war<span class="sc">$</span>name[<span class="dv">3</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
@@ -353,14 +353,14 @@ The following object is masked from 'package:readr':
 <pre><code>[1] "Friderick William NAGEL/NAGLE"</code></pre>
 </div>
 </div>
-<p>I admit, I spent a fair bit of trial and error to figure this out. First note- using <code>str_split()</code> from stringr is not the way to go. I got a bit hyperfocused on stringr functions since I was using the package so heavily. It creates a matrix of results in your data frame, and not new columns of data. Use <code>separate()</code> from tidyr instead.</p>
-<p>I decided to do this stepwise. So the <code>remove = FALSE</code> flag needs to be set in <code>separate()</code>. First, I got the first names by splitting on the pattern of space and then two or more capital letters. The two or more is necessary because of names like Friderick William. This gives the complete first name(s) and an incomplete last name, because the separator is discarded. So you end up with AGEL/NAGLE, which I dumped in a column named trash. Here, I immediately deleted it, but it was very useful for troubleshooting.</p>
+<p>I admit I used trial and error to figure this out. First note- using <code>str_split()</code> from stringr is not the way to go. I got hyperfocused on stringr functions since I was using the package so heavily. It creates a matrix of results in your data frame and not new columns of data. Use <code>separate()</code> from tidyr instead.</p>
+<p>I decided to do this stepwise. So the <code>remove = FALSE</code> flag needs to be set in <code>separate()</code>. First, I got the first names by splitting on the pattern of space and then two or more capital letters. The two or more is necessary because of names like Friderick William. This gives the complete first name(s) and an incomplete last name because the separator is discarded. So you end up with AGEL/NAGLE, which I dumped in a column named trash. Here, I immediately deleted it, but it was handy for troubleshooting.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb28"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a><span class="co">#so now I separate out the last name per. My pattern is a space followed by a </span></span>
+<div class="sourceCode cell-code" id="cb28"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a><span class="co"># So now I separate out the last name per. My pattern is a space followed by a </span></span>
 <span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a><span class="co">#capital letter. But this isn't a separator- I'll lose the first letter if it is.</span></span>
 <span id="cb28-3"><a href="#cb28-3" aria-hidden="true" tabindex="-1"></a><span class="co">#that will actually get me the first name.</span></span>
 <span id="cb28-4"><a href="#cb28-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb28-5"><a href="#cb28-5" aria-hidden="true" tabindex="-1"></a><span class="co">#bard gave me a hint to get the regex!</span></span>
+<span id="cb28-5"><a href="#cb28-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Bard gave me a hint to get the regex!</span></span>
 <span id="cb28-6"><a href="#cb28-6" aria-hidden="true" tabindex="-1"></a>rev_war <span class="ot">&lt;-</span> rev_war <span class="sc">%&gt;%</span></span>
 <span id="cb28-7"><a href="#cb28-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">separate</span>(name, <span class="at">into =</span> <span class="fu">c</span>(<span class="st">"first_name"</span>, <span class="st">"trash"</span>), <span class="at">remove =</span> <span class="cn">FALSE</span>, <span class="at">sep =</span> <span class="st">"</span><span class="sc">\\</span><span class="st">s+[A-Z]{2,}"</span>) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stderr">
@@ -390,11 +390,11 @@ The following object is masked from 'package:readr':
 5 William   VAN CLEVE/VANCLEAVE    William                
 6       Richard   VEATCH/VEETCH    Richard  /VEETCH       </code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb32"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a><span class="co">#delete the trash columns</span></span>
+<div class="sourceCode cell-code" id="cb32"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Delete the trash columns</span></span>
 <span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a>rev_war <span class="ot">&lt;-</span> rev_war <span class="sc">%&gt;%</span></span>
 <span id="cb32-3"><a href="#cb32-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="sc">-</span>trash)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p>Getting the last name was trickier, because any separator I could think of would also catch the multiple first name people. Back to stringr to use str_extract(). Basically any chunk of text with two or more capital letters in a row followed by any number of any other type of character is extracted.</p>
+<p>Getting the last name was trickier because any separator I could think of would also catch the multiple first-name people. Back to stringr to use str_extract(). Basically, any chunk of text with two or more capital letters in a row followed by any number of any other type of character is extracted.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb33"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a>rev_war <span class="ot">&lt;-</span> rev_war <span class="sc">%&gt;%</span></span>
 <span id="cb33-2"><a href="#cb33-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">Last_name =</span> <span class="fu">str_extract</span>(name, <span class="st">"[A-Z]{2,}.+"</span>))</span>
@@ -424,16 +424,20 @@ The following object is masked from 'package:readr':
 6       Richard   VEATCH/VEETCH    Richard               VEATCH/VEETCH</code></pre>
 </div>
 </div>
-<p>Now to split on /. In this dataset, we can have 1-3 possible last names. <code>Separate_wider_delim()</code> requires that you know how many parts you are splitting into and that you have named columns for them. It will kick up an error if you don’t have the right number of parts and fail to execute. However, you can run it in debug mode, and it will perform the splits and then tell you on a row by row basis if there were the right number of parts. I exploited this and then threw away the debugging info, removed the NAs, and changed the last names to title case. (Note that the first name column should be handled the same way to split apart Johannes/John)</p>
+<p>Now to split on /. In this dataset, we can have 1-3 possible last names. <code>Separate_wider_delim()</code> requires that you know how many parts you are splitting into and that you have named columns for them. It will kick up an error if you don’t have the right number of parts and fail to execute. However, you can run it in debug mode, and it will perform the splits and then tell you on a row-by-row basis if there were the right number of parts. I exploited this and then threw away the debugging info, removed the NAs, and changed the last names to title case. (Note that the first name column should be handled the same way to split apart Johannes/John.)</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb35"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Now we need to split the names with /</span></span>
 <span id="cb35-2"><a href="#cb35-2" aria-hidden="true" tabindex="-1"></a>rev_war_test <span class="ot">&lt;-</span> rev_war <span class="sc">%&gt;%</span></span>
 <span id="cb35-3"><a href="#cb35-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">separate_wider_delim</span>(</span>
 <span id="cb35-4"><a href="#cb35-4" aria-hidden="true" tabindex="-1"></a>    Last_name,</span>
-<span id="cb35-5"><a href="#cb35-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">names =</span> <span class="fu">c</span>(</span>
-<span id="cb35-6"><a href="#cb35-6" aria-hidden="true" tabindex="-1"></a>      <span class="st">"V1"</span>,</span>
-<span id="cb35-7"><a href="#cb35-7" aria-hidden="true" tabindex="-1"></a>      <span class="st">"V2"</span>,</span>
-<span id="cb35-8"><a href="#cb35-8" aria-hidden="true" tabindex="-1"></a>      <span class="st">"V3"</span>), <span class="at">delim =</span> <span class="st">"/"</span>,<span class="at">too_few =</span> <span class="fu">c</span>(<span class="st">"debug"</span>), <span class="at">too_many =</span> <span class="fu">c</span>(<span class="st">"debug"</span>), <span class="at">cols_remove =</span> <span class="cn">FALSE</span> )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb35-5"><a href="#cb35-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">names =</span> <span class="fu">c</span>(<span class="st">"V1"</span>,</span>
+<span id="cb35-6"><a href="#cb35-6" aria-hidden="true" tabindex="-1"></a>              <span class="st">"V2"</span>,</span>
+<span id="cb35-7"><a href="#cb35-7" aria-hidden="true" tabindex="-1"></a>              <span class="st">"V3"</span>),</span>
+<span id="cb35-8"><a href="#cb35-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">delim =</span> <span class="st">"/"</span>,</span>
+<span id="cb35-9"><a href="#cb35-9" aria-hidden="true" tabindex="-1"></a>    <span class="at">too_few =</span> <span class="fu">c</span>(<span class="st">"debug"</span>),</span>
+<span id="cb35-10"><a href="#cb35-10" aria-hidden="true" tabindex="-1"></a>    <span class="at">too_many =</span> <span class="fu">c</span>(<span class="st">"debug"</span>),</span>
+<span id="cb35-11"><a href="#cb35-11" aria-hidden="true" tabindex="-1"></a>    <span class="at">cols_remove =</span> <span class="cn">FALSE</span></span>
+<span id="cb35-12"><a href="#cb35-12" aria-hidden="true" tabindex="-1"></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stderr">
 <pre><code>Warning: Debug mode activated: adding variables `Last_name_ok`, `Last_name_pieces`, and
 `Last_name_remainder`.</code></pre>
@@ -467,15 +471,24 @@ The following object is masked from 'package:readr':
 # ℹ 64 more rows</code></pre>
 </div>
 </div>
-<p>My plan was match on the first variation, then for those that failed to match, match on the second variation, and so on. I was mildly hopeful that the first variation was the variation that my father used in his excel table. So I did a quick check using an inner join. My father had mentioned that there wouldn’t be many matches- maybe 5 or 6, because he hadn’t found most of the graves yet.</p>
+<p>My plan was to match on the first variation, then for those that failed to match, match on the second variation, and so on. I was mildly hopeful that the first variation was the variation that my father used in his Excel table. So, I did a quick check using an inner join. My father had mentioned that there wouldn’t be many matches- maybe 5 or 6, because he hadn’t found most of the graves yet.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb39"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a><span class="co">#first round matching</span></span>
 <span id="cb39-2"><a href="#cb39-2" aria-hidden="true" tabindex="-1"></a>rev_war_test <span class="ot">&lt;-</span> rev_war_test <span class="sc">%&gt;%</span></span>
 <span id="cb39-3"><a href="#cb39-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">match_1 =</span> <span class="fu">paste0</span>(V1, <span class="st">" "</span>, first_name))</span>
 <span id="cb39-4"><a href="#cb39-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb39-5"><a href="#cb39-5" aria-hidden="true" tabindex="-1"></a>matched_records <span class="ot">&lt;-</span> rev_war_test <span class="sc">%&gt;%</span> <span class="fu">inner_join</span>(data_file, <span class="at">by =</span> <span class="fu">c</span>(<span class="st">"match_1"</span> <span class="ot">=</span> <span class="st">"full_name"</span>))</span>
-<span id="cb39-6"><a href="#cb39-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb39-7"><a href="#cb39-7" aria-hidden="true" tabindex="-1"></a>dob_filter <span class="ot">&lt;-</span> matched_records <span class="sc">%&gt;%</span> <span class="fu">select</span>(name_unclean, Surname, First.Name, Middle.Name, DOB_date, DOD_date ) <span class="sc">%&gt;%</span> <span class="fu">filter</span>(<span class="fu">is.na</span>(DOB_date) <span class="sc">==</span> <span class="cn">FALSE</span>) <span class="sc">%&gt;%</span> <span class="fu">filter</span>(<span class="fu">year</span>(DOB_date) <span class="sc">&lt;</span> <span class="dv">1784</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb39-5"><a href="#cb39-5" aria-hidden="true" tabindex="-1"></a>matched_records <span class="ot">&lt;-</span> rev_war_test <span class="sc">%&gt;%</span> </span>
+<span id="cb39-6"><a href="#cb39-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">inner_join</span>(data_file, <span class="at">by =</span> <span class="fu">c</span>(<span class="st">"match_1"</span> <span class="ot">=</span> <span class="st">"full_name"</span>))</span>
+<span id="cb39-7"><a href="#cb39-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-8"><a href="#cb39-8" aria-hidden="true" tabindex="-1"></a>dob_filter <span class="ot">&lt;-</span> matched_records <span class="sc">%&gt;%</span></span>
+<span id="cb39-9"><a href="#cb39-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(name_unclean,</span>
+<span id="cb39-10"><a href="#cb39-10" aria-hidden="true" tabindex="-1"></a>         Surname,</span>
+<span id="cb39-11"><a href="#cb39-11" aria-hidden="true" tabindex="-1"></a>         First.Name,</span>
+<span id="cb39-12"><a href="#cb39-12" aria-hidden="true" tabindex="-1"></a>         Middle.Name,</span>
+<span id="cb39-13"><a href="#cb39-13" aria-hidden="true" tabindex="-1"></a>         DOB_date,</span>
+<span id="cb39-14"><a href="#cb39-14" aria-hidden="true" tabindex="-1"></a>         DOD_date) <span class="sc">%&gt;%</span> </span>
+<span id="cb39-15"><a href="#cb39-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="fu">is.na</span>(DOB_date) <span class="sc">==</span> <span class="cn">FALSE</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb39-16"><a href="#cb39-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="fu">year</span>(DOB_date) <span class="sc">&lt;</span> <span class="dv">1784</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Filter on DOB</p>
 <div class="cell">
@@ -503,9 +516,10 @@ The following object is masked from 'package:readr':
 <span id="cb41-9"><a href="#cb41-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="fu">is.na</span>(DOD_date) <span class="sc">==</span> <span class="cn">FALSE</span>) <span class="sc">%&gt;%</span></span>
 <span id="cb41-10"><a href="#cb41-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="fu">year</span>(DOD_date) <span class="sc">&lt;</span> <span class="dv">1866</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p>Now full join the two sets</p>
+<p>Now full join the two sets.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb42"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a>all_matches <span class="ot">&lt;-</span> dob_filter <span class="sc">%&gt;%</span> <span class="fu">full_join</span>(dod_filter)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb42"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a>all_matches <span class="ot">&lt;-</span> dob_filter <span class="sc">%&gt;%</span></span>
+<span id="cb42-2"><a href="#cb42-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">full_join</span>(dod_filter)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stderr">
 <pre><code>Joining with `by = join_by(name_unclean, first_name, V1, V2, V3, suffix, url,
 SAR_ID, match_1, photos_Matched_Round1, Surname, First.Name, Middle.Name,
@@ -519,26 +533,28 @@ cemetery_name)`</code></pre>
 </div>
 <p>Final results</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb44"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a>all_matches <span class="sc">%&gt;%</span> <span class="fu">select</span>(name_unclean) <span class="sc">%&gt;%</span> <span class="fu">gt</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb44"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a>all_matches <span class="sc">%&gt;%</span> </span>
+<span id="cb44-2"><a href="#cb44-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(name_unclean) <span class="sc">%&gt;%</span></span>
+<span id="cb44-3"><a href="#cb44-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">gt</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 
-<div id="qparajcqrk" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
-<style>#qparajcqrk table {
+<div id="bcefvdtqzo" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>#bcefvdtqzo table {
   font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-#qparajcqrk thead, #qparajcqrk tbody, #qparajcqrk tfoot, #qparajcqrk tr, #qparajcqrk td, #qparajcqrk th {
+#bcefvdtqzo thead, #bcefvdtqzo tbody, #bcefvdtqzo tfoot, #bcefvdtqzo tr, #bcefvdtqzo td, #bcefvdtqzo th {
   border-style: none;
 }
 
-#qparajcqrk p {
+#bcefvdtqzo p {
   margin: 0;
   padding: 0;
 }
 
-#qparajcqrk .gt_table {
+#bcefvdtqzo .gt_table {
   display: table;
   border-collapse: collapse;
   line-height: normal;
@@ -564,12 +580,12 @@ cemetery_name)`</code></pre>
   border-left-color: #D3D3D3;
 }
 
-#qparajcqrk .gt_caption {
+#bcefvdtqzo .gt_caption {
   padding-top: 4px;
   padding-bottom: 4px;
 }
 
-#qparajcqrk .gt_title {
+#bcefvdtqzo .gt_title {
   color: #333333;
   font-size: 125%;
   font-weight: initial;
@@ -581,7 +597,7 @@ cemetery_name)`</code></pre>
   border-bottom-width: 0;
 }
 
-#qparajcqrk .gt_subtitle {
+#bcefvdtqzo .gt_subtitle {
   color: #333333;
   font-size: 85%;
   font-weight: initial;
@@ -593,7 +609,7 @@ cemetery_name)`</code></pre>
   border-top-width: 0;
 }
 
-#qparajcqrk .gt_heading {
+#bcefvdtqzo .gt_heading {
   background-color: #FFFFFF;
   text-align: center;
   border-bottom-color: #FFFFFF;
@@ -605,13 +621,13 @@ cemetery_name)`</code></pre>
   border-right-color: #D3D3D3;
 }
 
-#qparajcqrk .gt_bottom_border {
+#bcefvdtqzo .gt_bottom_border {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
 }
 
-#qparajcqrk .gt_col_headings {
+#bcefvdtqzo .gt_col_headings {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -626,7 +642,7 @@ cemetery_name)`</code></pre>
   border-right-color: #D3D3D3;
 }
 
-#qparajcqrk .gt_col_heading {
+#bcefvdtqzo .gt_col_heading {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -646,7 +662,7 @@ cemetery_name)`</code></pre>
   overflow-x: hidden;
 }
 
-#qparajcqrk .gt_column_spanner_outer {
+#bcefvdtqzo .gt_column_spanner_outer {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -658,15 +674,15 @@ cemetery_name)`</code></pre>
   padding-right: 4px;
 }
 
-#qparajcqrk .gt_column_spanner_outer:first-child {
+#bcefvdtqzo .gt_column_spanner_outer:first-child {
   padding-left: 0;
 }
 
-#qparajcqrk .gt_column_spanner_outer:last-child {
+#bcefvdtqzo .gt_column_spanner_outer:last-child {
   padding-right: 0;
 }
 
-#qparajcqrk .gt_column_spanner {
+#bcefvdtqzo .gt_column_spanner {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
@@ -678,11 +694,11 @@ cemetery_name)`</code></pre>
   width: 100%;
 }
 
-#qparajcqrk .gt_spanner_row {
+#bcefvdtqzo .gt_spanner_row {
   border-bottom-style: hidden;
 }
 
-#qparajcqrk .gt_group_heading {
+#bcefvdtqzo .gt_group_heading {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -708,7 +724,7 @@ cemetery_name)`</code></pre>
   text-align: left;
 }
 
-#qparajcqrk .gt_empty_group_heading {
+#bcefvdtqzo .gt_empty_group_heading {
   padding: 0.5px;
   color: #333333;
   background-color: #FFFFFF;
@@ -723,15 +739,15 @@ cemetery_name)`</code></pre>
   vertical-align: middle;
 }
 
-#qparajcqrk .gt_from_md > :first-child {
+#bcefvdtqzo .gt_from_md > :first-child {
   margin-top: 0;
 }
 
-#qparajcqrk .gt_from_md > :last-child {
+#bcefvdtqzo .gt_from_md > :last-child {
   margin-bottom: 0;
 }
 
-#qparajcqrk .gt_row {
+#bcefvdtqzo .gt_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -750,7 +766,7 @@ cemetery_name)`</code></pre>
   overflow-x: hidden;
 }
 
-#qparajcqrk .gt_stub {
+#bcefvdtqzo .gt_stub {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -763,7 +779,7 @@ cemetery_name)`</code></pre>
   padding-right: 5px;
 }
 
-#qparajcqrk .gt_stub_row_group {
+#bcefvdtqzo .gt_stub_row_group {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -777,15 +793,15 @@ cemetery_name)`</code></pre>
   vertical-align: top;
 }
 
-#qparajcqrk .gt_row_group_first td {
+#bcefvdtqzo .gt_row_group_first td {
   border-top-width: 2px;
 }
 
-#qparajcqrk .gt_row_group_first th {
+#bcefvdtqzo .gt_row_group_first th {
   border-top-width: 2px;
 }
 
-#qparajcqrk .gt_summary_row {
+#bcefvdtqzo .gt_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -795,16 +811,16 @@ cemetery_name)`</code></pre>
   padding-right: 5px;
 }
 
-#qparajcqrk .gt_first_summary_row {
+#bcefvdtqzo .gt_first_summary_row {
   border-top-style: solid;
   border-top-color: #D3D3D3;
 }
 
-#qparajcqrk .gt_first_summary_row.thick {
+#bcefvdtqzo .gt_first_summary_row.thick {
   border-top-width: 2px;
 }
 
-#qparajcqrk .gt_last_summary_row {
+#bcefvdtqzo .gt_last_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -814,7 +830,7 @@ cemetery_name)`</code></pre>
   border-bottom-color: #D3D3D3;
 }
 
-#qparajcqrk .gt_grand_summary_row {
+#bcefvdtqzo .gt_grand_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -824,7 +840,7 @@ cemetery_name)`</code></pre>
   padding-right: 5px;
 }
 
-#qparajcqrk .gt_first_grand_summary_row {
+#bcefvdtqzo .gt_first_grand_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -834,7 +850,7 @@ cemetery_name)`</code></pre>
   border-top-color: #D3D3D3;
 }
 
-#qparajcqrk .gt_last_grand_summary_row_top {
+#bcefvdtqzo .gt_last_grand_summary_row_top {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -844,11 +860,11 @@ cemetery_name)`</code></pre>
   border-bottom-color: #D3D3D3;
 }
 
-#qparajcqrk .gt_striped {
+#bcefvdtqzo .gt_striped {
   background-color: rgba(128, 128, 128, 0.05);
 }
 
-#qparajcqrk .gt_table_body {
+#bcefvdtqzo .gt_table_body {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -857,7 +873,7 @@ cemetery_name)`</code></pre>
   border-bottom-color: #D3D3D3;
 }
 
-#qparajcqrk .gt_footnotes {
+#bcefvdtqzo .gt_footnotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -871,7 +887,7 @@ cemetery_name)`</code></pre>
   border-right-color: #D3D3D3;
 }
 
-#qparajcqrk .gt_footnote {
+#bcefvdtqzo .gt_footnote {
   margin: 0px;
   font-size: 90%;
   padding-top: 4px;
@@ -880,7 +896,7 @@ cemetery_name)`</code></pre>
   padding-right: 5px;
 }
 
-#qparajcqrk .gt_sourcenotes {
+#bcefvdtqzo .gt_sourcenotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -894,7 +910,7 @@ cemetery_name)`</code></pre>
   border-right-color: #D3D3D3;
 }
 
-#qparajcqrk .gt_sourcenote {
+#bcefvdtqzo .gt_sourcenote {
   font-size: 90%;
   padding-top: 4px;
   padding-bottom: 4px;
@@ -902,63 +918,63 @@ cemetery_name)`</code></pre>
   padding-right: 5px;
 }
 
-#qparajcqrk .gt_left {
+#bcefvdtqzo .gt_left {
   text-align: left;
 }
 
-#qparajcqrk .gt_center {
+#bcefvdtqzo .gt_center {
   text-align: center;
 }
 
-#qparajcqrk .gt_right {
+#bcefvdtqzo .gt_right {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
-#qparajcqrk .gt_font_normal {
+#bcefvdtqzo .gt_font_normal {
   font-weight: normal;
 }
 
-#qparajcqrk .gt_font_bold {
+#bcefvdtqzo .gt_font_bold {
   font-weight: bold;
 }
 
-#qparajcqrk .gt_font_italic {
+#bcefvdtqzo .gt_font_italic {
   font-style: italic;
 }
 
-#qparajcqrk .gt_super {
+#bcefvdtqzo .gt_super {
   font-size: 65%;
 }
 
-#qparajcqrk .gt_footnote_marks {
+#bcefvdtqzo .gt_footnote_marks {
   font-size: 75%;
   vertical-align: 0.4em;
   position: initial;
 }
 
-#qparajcqrk .gt_asterisk {
+#bcefvdtqzo .gt_asterisk {
   font-size: 100%;
   vertical-align: 0;
 }
 
-#qparajcqrk .gt_indent_1 {
+#bcefvdtqzo .gt_indent_1 {
   text-indent: 5px;
 }
 
-#qparajcqrk .gt_indent_2 {
+#bcefvdtqzo .gt_indent_2 {
   text-indent: 10px;
 }
 
-#qparajcqrk .gt_indent_3 {
+#bcefvdtqzo .gt_indent_3 {
   text-indent: 15px;
 }
 
-#qparajcqrk .gt_indent_4 {
+#bcefvdtqzo .gt_indent_4 {
   text-indent: 20px;
 }
 
-#qparajcqrk .gt_indent_5 {
+#bcefvdtqzo .gt_indent_5 {
   text-indent: 25px;
 }
 </style>
@@ -984,7 +1000,7 @@ cemetery_name)`</code></pre>
 </div>
 </div>
 </div>
-<p>Let’s see who didn’t match because there were not DOB or DOD</p>
+<p>Let’s see who didn’t match because there were no DOB or DOD.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb45"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a>na_filter1 <span class="ot">&lt;-</span></span>
 <span id="cb45-2"><a href="#cb45-2" aria-hidden="true" tabindex="-1"></a>  matched_records <span class="sc">%&gt;%</span></span>
@@ -1057,23 +1073,23 @@ cemetery_name)`</code></pre>
 <div class="sourceCode cell-code" id="cb51"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb51-1"><a href="#cb51-1" aria-hidden="true" tabindex="-1"></a>na_matches <span class="sc">%&gt;%</span> <span class="fu">select</span>(name_unclean) <span class="sc">%&gt;%</span> <span class="fu">gt</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 
-<div id="daenivsjga" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
-<style>#daenivsjga table {
+<div id="urdkaktixb" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>#urdkaktixb table {
   font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-#daenivsjga thead, #daenivsjga tbody, #daenivsjga tfoot, #daenivsjga tr, #daenivsjga td, #daenivsjga th {
+#urdkaktixb thead, #urdkaktixb tbody, #urdkaktixb tfoot, #urdkaktixb tr, #urdkaktixb td, #urdkaktixb th {
   border-style: none;
 }
 
-#daenivsjga p {
+#urdkaktixb p {
   margin: 0;
   padding: 0;
 }
 
-#daenivsjga .gt_table {
+#urdkaktixb .gt_table {
   display: table;
   border-collapse: collapse;
   line-height: normal;
@@ -1099,12 +1115,12 @@ cemetery_name)`</code></pre>
   border-left-color: #D3D3D3;
 }
 
-#daenivsjga .gt_caption {
+#urdkaktixb .gt_caption {
   padding-top: 4px;
   padding-bottom: 4px;
 }
 
-#daenivsjga .gt_title {
+#urdkaktixb .gt_title {
   color: #333333;
   font-size: 125%;
   font-weight: initial;
@@ -1116,7 +1132,7 @@ cemetery_name)`</code></pre>
   border-bottom-width: 0;
 }
 
-#daenivsjga .gt_subtitle {
+#urdkaktixb .gt_subtitle {
   color: #333333;
   font-size: 85%;
   font-weight: initial;
@@ -1128,7 +1144,7 @@ cemetery_name)`</code></pre>
   border-top-width: 0;
 }
 
-#daenivsjga .gt_heading {
+#urdkaktixb .gt_heading {
   background-color: #FFFFFF;
   text-align: center;
   border-bottom-color: #FFFFFF;
@@ -1140,13 +1156,13 @@ cemetery_name)`</code></pre>
   border-right-color: #D3D3D3;
 }
 
-#daenivsjga .gt_bottom_border {
+#urdkaktixb .gt_bottom_border {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
 }
 
-#daenivsjga .gt_col_headings {
+#urdkaktixb .gt_col_headings {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -1161,7 +1177,7 @@ cemetery_name)`</code></pre>
   border-right-color: #D3D3D3;
 }
 
-#daenivsjga .gt_col_heading {
+#urdkaktixb .gt_col_heading {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1181,7 +1197,7 @@ cemetery_name)`</code></pre>
   overflow-x: hidden;
 }
 
-#daenivsjga .gt_column_spanner_outer {
+#urdkaktixb .gt_column_spanner_outer {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1193,15 +1209,15 @@ cemetery_name)`</code></pre>
   padding-right: 4px;
 }
 
-#daenivsjga .gt_column_spanner_outer:first-child {
+#urdkaktixb .gt_column_spanner_outer:first-child {
   padding-left: 0;
 }
 
-#daenivsjga .gt_column_spanner_outer:last-child {
+#urdkaktixb .gt_column_spanner_outer:last-child {
   padding-right: 0;
 }
 
-#daenivsjga .gt_column_spanner {
+#urdkaktixb .gt_column_spanner {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
@@ -1213,11 +1229,11 @@ cemetery_name)`</code></pre>
   width: 100%;
 }
 
-#daenivsjga .gt_spanner_row {
+#urdkaktixb .gt_spanner_row {
   border-bottom-style: hidden;
 }
 
-#daenivsjga .gt_group_heading {
+#urdkaktixb .gt_group_heading {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1243,7 +1259,7 @@ cemetery_name)`</code></pre>
   text-align: left;
 }
 
-#daenivsjga .gt_empty_group_heading {
+#urdkaktixb .gt_empty_group_heading {
   padding: 0.5px;
   color: #333333;
   background-color: #FFFFFF;
@@ -1258,15 +1274,15 @@ cemetery_name)`</code></pre>
   vertical-align: middle;
 }
 
-#daenivsjga .gt_from_md > :first-child {
+#urdkaktixb .gt_from_md > :first-child {
   margin-top: 0;
 }
 
-#daenivsjga .gt_from_md > :last-child {
+#urdkaktixb .gt_from_md > :last-child {
   margin-bottom: 0;
 }
 
-#daenivsjga .gt_row {
+#urdkaktixb .gt_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1285,7 +1301,7 @@ cemetery_name)`</code></pre>
   overflow-x: hidden;
 }
 
-#daenivsjga .gt_stub {
+#urdkaktixb .gt_stub {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1298,7 +1314,7 @@ cemetery_name)`</code></pre>
   padding-right: 5px;
 }
 
-#daenivsjga .gt_stub_row_group {
+#urdkaktixb .gt_stub_row_group {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1312,15 +1328,15 @@ cemetery_name)`</code></pre>
   vertical-align: top;
 }
 
-#daenivsjga .gt_row_group_first td {
+#urdkaktixb .gt_row_group_first td {
   border-top-width: 2px;
 }
 
-#daenivsjga .gt_row_group_first th {
+#urdkaktixb .gt_row_group_first th {
   border-top-width: 2px;
 }
 
-#daenivsjga .gt_summary_row {
+#urdkaktixb .gt_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -1330,16 +1346,16 @@ cemetery_name)`</code></pre>
   padding-right: 5px;
 }
 
-#daenivsjga .gt_first_summary_row {
+#urdkaktixb .gt_first_summary_row {
   border-top-style: solid;
   border-top-color: #D3D3D3;
 }
 
-#daenivsjga .gt_first_summary_row.thick {
+#urdkaktixb .gt_first_summary_row.thick {
   border-top-width: 2px;
 }
 
-#daenivsjga .gt_last_summary_row {
+#urdkaktixb .gt_last_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1349,7 +1365,7 @@ cemetery_name)`</code></pre>
   border-bottom-color: #D3D3D3;
 }
 
-#daenivsjga .gt_grand_summary_row {
+#urdkaktixb .gt_grand_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -1359,7 +1375,7 @@ cemetery_name)`</code></pre>
   padding-right: 5px;
 }
 
-#daenivsjga .gt_first_grand_summary_row {
+#urdkaktixb .gt_first_grand_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1369,7 +1385,7 @@ cemetery_name)`</code></pre>
   border-top-color: #D3D3D3;
 }
 
-#daenivsjga .gt_last_grand_summary_row_top {
+#urdkaktixb .gt_last_grand_summary_row_top {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1379,11 +1395,11 @@ cemetery_name)`</code></pre>
   border-bottom-color: #D3D3D3;
 }
 
-#daenivsjga .gt_striped {
+#urdkaktixb .gt_striped {
   background-color: rgba(128, 128, 128, 0.05);
 }
 
-#daenivsjga .gt_table_body {
+#urdkaktixb .gt_table_body {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -1392,7 +1408,7 @@ cemetery_name)`</code></pre>
   border-bottom-color: #D3D3D3;
 }
 
-#daenivsjga .gt_footnotes {
+#urdkaktixb .gt_footnotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -1406,7 +1422,7 @@ cemetery_name)`</code></pre>
   border-right-color: #D3D3D3;
 }
 
-#daenivsjga .gt_footnote {
+#urdkaktixb .gt_footnote {
   margin: 0px;
   font-size: 90%;
   padding-top: 4px;
@@ -1415,7 +1431,7 @@ cemetery_name)`</code></pre>
   padding-right: 5px;
 }
 
-#daenivsjga .gt_sourcenotes {
+#urdkaktixb .gt_sourcenotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -1429,7 +1445,7 @@ cemetery_name)`</code></pre>
   border-right-color: #D3D3D3;
 }
 
-#daenivsjga .gt_sourcenote {
+#urdkaktixb .gt_sourcenote {
   font-size: 90%;
   padding-top: 4px;
   padding-bottom: 4px;
@@ -1437,63 +1453,63 @@ cemetery_name)`</code></pre>
   padding-right: 5px;
 }
 
-#daenivsjga .gt_left {
+#urdkaktixb .gt_left {
   text-align: left;
 }
 
-#daenivsjga .gt_center {
+#urdkaktixb .gt_center {
   text-align: center;
 }
 
-#daenivsjga .gt_right {
+#urdkaktixb .gt_right {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
-#daenivsjga .gt_font_normal {
+#urdkaktixb .gt_font_normal {
   font-weight: normal;
 }
 
-#daenivsjga .gt_font_bold {
+#urdkaktixb .gt_font_bold {
   font-weight: bold;
 }
 
-#daenivsjga .gt_font_italic {
+#urdkaktixb .gt_font_italic {
   font-style: italic;
 }
 
-#daenivsjga .gt_super {
+#urdkaktixb .gt_super {
   font-size: 65%;
 }
 
-#daenivsjga .gt_footnote_marks {
+#urdkaktixb .gt_footnote_marks {
   font-size: 75%;
   vertical-align: 0.4em;
   position: initial;
 }
 
-#daenivsjga .gt_asterisk {
+#urdkaktixb .gt_asterisk {
   font-size: 100%;
   vertical-align: 0;
 }
 
-#daenivsjga .gt_indent_1 {
+#urdkaktixb .gt_indent_1 {
   text-indent: 5px;
 }
 
-#daenivsjga .gt_indent_2 {
+#urdkaktixb .gt_indent_2 {
   text-indent: 10px;
 }
 
-#daenivsjga .gt_indent_3 {
+#urdkaktixb .gt_indent_3 {
   text-indent: 15px;
 }
 
-#daenivsjga .gt_indent_4 {
+#urdkaktixb .gt_indent_4 {
   text-indent: 20px;
 }
 
-#daenivsjga .gt_indent_5 {
+#urdkaktixb .gt_indent_5 {
   text-indent: 25px;
 }
 </style>
@@ -1519,13 +1535,13 @@ cemetery_name)`</code></pre>
 </div>
 </div>
 </div>
-<p>What we see is that many names are reused in the family and so the name from the SAR records match people who were born well after the end of the Revolutionary war. I could try to clean up by date of birth or death, though that information isn’t available for all matches. The SAR records don’t have the middle names in the title probably easier just to ask. Jr/Sr is not consistently encoded in my father’s spreadsheet (which is why I didn’t use that when generating match_1). At this point, subject matter expertise is needed to solve the problem.</p>
+<p>What we see is that many names are reused in the family, and so the names from the SAR records match people who were born well after the end of the Revolutionary War. I could try to clean up by date of birth or death, though that information isn’t available for all matches. The SAR records don’t have the middle names in the title; it’s probably easier just to ask. Jr/Sr is not consistently encoded in my father’s spreadsheet (which is why I didn’t use that when generating match_1). At this point, subject matter expertise is needed to solve the problem.</p>
 </section>
 <section id="coding-with-ai" class="level1">
 <h1>Coding with AI</h1>
-<p>Large Language Models (LLM) like ChatGPT and Google Bard are extremely popular right now. I’ve seen a lot of people say that these AI models can be used to increase productivelty across a variety of domains. All sorts of tools and services now have AI bonus features. Datacamp has AI in their workspaces and also for some of the course coding exercises. I haven’t been too impressed. Generally, syntax errors are caught and corrected and explained, but deeper problems aren’t. I also found that the results often hyperfocus on syntax that is technically correct, but not necessarily best or common practice. For example, in a dpylr join you don’t need to specify the columns to join on if they have the same name in both dataframes. But the AI would insist that not specifying the columns in the code was the problem.</p>
-<p>I’ve played around with Google Bard as well for writing and summarizing writing and the results ranged from generic to ridiculous. Google Bard also will save the output to your google docs, which was useful. Though it wouldn’t do so yesterday.</p>
-<p>Anyway, as I was staring at by stringr cheatsheet trying to figure out the regex for the pattern space and then a capital letter, I thought that this might be the perfect use case for Bard.</p>
+<p>Large Language Models (LLM) like ChatGPT and Google Bard are trendy right now. I’ve seen a lot of people say that these AI models can be used to increase productivity across a variety of domains. All sorts of tools and services now have AI bonus features. Datacamp has AI in their workspaces and also for some of the course coding exercises. I haven’t been too impressed. Generally, syntax errors are caught, corrected, and explained, but deeper problems aren’t. I also found that the results often hyperfocus on syntax that is technically correct but not necessarily best or common practice. For example, in a dpylr join, you don’t need to specify the columns to join on if they have the same name in both dataframes. However, the AI would insist that not specifying the columns in the code was the problem.</p>
+<p>I’ve also played around with Google Bard for writing and summarizing writing, and the results ranged from generic to ridiculous. Google Bard also saves the output to your Google Docs, which was useful. However, it wouldn’t do so yesterday.</p>
+<p>Anyway, as I was staring at the stringr cheatsheet trying to figure out the regex for the pattern space and then a capital letter, I thought that this might be the perfect use case for Bard.</p>
 <p>So:</p>
 <blockquote class="blockquote">
 <p>hi I need the regular expression for one or more spaces followed by a capital letter</p>
@@ -1572,7 +1588,7 @@ cemetery_name)`</code></pre>
 <p>The output of the code is a data frame with three rows and two columns. The prefix column contains the string that precedes the capital letter, and the letter column contains the capital letter.</p>
 <p>I hope this helps! Let me know if you have any other questions.</p>
 </blockquote>
-<p>Does this run? No, of course not! First, this is a terrible example anyway because none of the strings can be split into two parts based on that regex. (‘A A A’ or ‘a B a’ or something like that would be a much better choice.) You certainly won’t get the output that Bard predicts. Remember, the separator gets discarded. For row one, the separator is “&nbsp; A” and there is no part 1 and no part two. Same with row 2. C should be the prefix and the letter should be NA. There is no separator in this case. Lots of warnings are going to be generated by this…</p>
+<p>Does this run? No, of course not! First, this is a terrible example anyway because none of the strings can be split into two parts based on that regex. (‘A A A’ or ‘a B a’ or something like that would be a much better choice.) You certainly won’t get the output that Bard predicts. Remember, the separator gets discarded. For row one, the separator is “&nbsp; A” and there is no part one and no part two. Same with row 2. C should be the prefix and the letter should be NA. There is no separator in this case. Lots of warnings are going to be generated by this…</p>
 <p>I’m not sure where the extra r in <code>sep = r"\s+[A-Z]"</code> came from. You can fix that and get it to run.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb52"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb52-1"><a href="#cb52-1" aria-hidden="true" tabindex="-1"></a>data <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>

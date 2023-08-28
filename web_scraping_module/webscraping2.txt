@@ -16,11 +16,11 @@ draft: false # setting this to `true` will prevent your post from appearing on y
 
 # **Project Overview**
 
-I'm working on a project for my father that will culminate in a website for his genealogy research. [There are a couple of different parts](https://lsinks.github.io/currentprojects.html) that I'm working on independently. In a [previous part of the project](https://lsinks.github.io/posts/2023-08-04-data-cleaning-tombstone/tombstones_data_cleaning.html), I matched an excel sheet with GPS coordinates and some biographic data with photos of various tombstones. I then used that data to make a l[eaflet map of various family grave sites](https://lsinks.github.io/posts/2023-08-14-mapping-tombstone/tombstone_mapping_leaflet.html).
+I'm working on a project for my father that will culminate in a website for his genealogy research. [There are a couple of different parts](https://lsinks.github.io/currentprojects.html) that I'm working on independently. In a [previous part of the project](https://lsinks.github.io/posts/2023-08-04-data-cleaning-tombstone/tombstones_data_cleaning.html), I matched an Excel sheet with GPS coordinates and some biographic data with photos of various tombstones. I then used that data to make a l[eaflet map of various family grave sites](https://lsinks.github.io/posts/2023-08-14-mapping-tombstone/tombstone_mapping_leaflet.html).
 
-I wanted to add more information beyond the information on the tombstone. He suggested that I add information from applications he submitted for membership into the SAR. SAR, Sons of the American Revolution, is a society of men who can trace their lineage back to someone who served in the American Revolutionary War. Some of the application material is available on their website. He indicated that adding the links to his spreadsheet would be a lot of typing for him. I looked and saw this material was openly available on the SAR website, so I thought this would be an ideal task to solve with web scraping. (It turns out that there aren't that many links after all, but it was useful as a learning exercise.
+I wanted to add more information beyond the information on the tombstone. He suggested that I add information from applications he submitted for membership into the SAR. SAR, Sons of the American Revolution, is a society of men who can trace their lineage back to someone who served in the American Revolutionary War. Some of the application material is available on their website. He indicated that adding the links to his spreadsheet would be a lot of typing. I saw this material was openly available on the SAR website, so I thought this would be an ideal task to solve with web scraping. (It turns out that there aren't that many links after all, but it was helpful as a learning exercise.
 
-This blog post deals with scraping the data from the website, wrangling it into a format where it could be matched against my father's spreadsheet and then looking for matches. (Every part of this series has ended up being more data wrangling and cleaning than I could have possibly envisioned with just a touch of whatever neat thing I actually wanted to do.) I'll also talk a bit about including some code from Google Bard.
+This blog post deals with scraping the data from the website, wrangling it into a format where it could be matched against my father's spreadsheet, and then looking for matches. (Every part of this series has ended up being more data wrangling and cleaning than I could have envisioned with just a touch of whatever neat thing I actually wanted to do.) I'll also talk a bit about including some code from Google Bard.
 
 # Loading Libraries and Data
 
@@ -42,9 +42,9 @@ library(xml2)
 data_file <- readRDS(here("data_cleaning", "tombstones_matched_final.RDS"))
 ```
 
-# Conceptual Overview of Webscraping
+# Conceptual Overview of Web scraping
 
-You want to find the HTML elements that correspond to the data you wish to obtain. There are a few ways to do this. One is to right click on the webpage in your browser and chose "inspect" to find out what elements you want to use (choose the elements tab). Many items may have the same elements, so you probably need to construct sets of elements to get to the right items.
+You want to find the HTML elements corresponding to the data you want to obtain. There are a few ways to do this. One is to right-click on the webpage in your browser and choose "inspect" to find out what elements you want to use (select the elements tab). Many items may have the same elements, so you probably need to construct sets of elements to get to the right things.
 
 Another way is to use the [SelectorGadget](https://rvest.tidyverse.org/articles/selectorgadget.html). The SelectorGadget is iterative. You need to keep clicking on
 
@@ -368,9 +368,9 @@ What we see is that many names are reused in the family and so the name from the
 
 Large Language Models (LLM) like ChatGPT and Google Bard are extremely popular right now. I've seen a lot of people say that these AI models can be used to increase productivelty across a variety of domains. All sorts of tools and services now have AI bonus features. Datacamp has AI in their workspaces and also for some of the course coding exercises. I haven't been too impressed. Generally, syntax errors are caught and corrected and explained, but deeper problems aren't. I also found that the results often hyperfocus on syntax that is technically correct, but not necessarily best or common practice. For example, in a dpylr join you don't need to specify the columns to join on if they have the same name in both dataframes. But the AI would insist that not specifying the columns in the code was the problem.
 
-I've played around with Google Bard as well for writing and summarizing writing and the results ranged from generic to ridiculous. Google Bard also will save the output to your google docs, which was useful. Though it wouldn't do so yesterday.
+I've also played around with Google Bard for writing and summarizing writing, and the results ranged from generic to ridiculous. Google Bard also saves the output to your Google Docs, which was useful. However, it wouldn't do so yesterday.
 
-Anyway, as I was staring at by stringr cheatsheet trying to figure out the regex for the pattern space and then a capital letter, I thought that this might be the perfect use case for Bard.
+Anyway, as I was staring at the stringr cheatsheet trying to figure out the regex for the pattern space and then a capital letter, I thought that this might be the perfect use case for Bard.
 
 So:
 
