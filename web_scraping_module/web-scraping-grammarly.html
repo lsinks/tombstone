@@ -69,6 +69,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <script src="web-scraping-grammarly_files/libs/bootstrap/bootstrap.min.js"></script>
 <link href="web-scraping-grammarly_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
 <link href="web-scraping-grammarly_files/libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+<script src="web-scraping-grammarly_files/libs/quarto-contrib/videojs/video.min.js"></script>
+<link href="web-scraping-grammarly_files/libs/quarto-contrib/videojs/video-js.css" rel="stylesheet">
 
 
 </head>
@@ -116,14 +118,14 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 </header>
 
-<section id="project-overview" class="level1">
-<h1><strong>Project Overview</strong></h1>
+<section id="tombstone-project-overview" class="level2">
+<h2 class="anchored" data-anchor-id="tombstone-project-overview"><strong>Tombstone Project Overview</strong></h2>
 <p>I’m working on a project for my father that will culminate in a website for his genealogy research. <a href="https://lsinks.github.io/currentprojects.html">There are a couple of different parts</a> that I’m working on independently. In a <a href="https://lsinks.github.io/posts/2023-08-04-data-cleaning-tombstone/tombstones_data_cleaning.html">previous part of the project</a>, I matched an Excel sheet with GPS coordinates and some biographic data with photos of various tombstones. I then used that data to make a l<a href="https://lsinks.github.io/posts/2023-08-14-mapping-tombstone/tombstone_mapping_leaflet.html">eaflet map of various family grave sites</a>.</p>
 <p>I wanted to add more information beyond the information on the tombstone. My father suggested that I add information from applications he submitted for membership into the SAR. SAR, Sons of the American Revolution, is a society of men who can trace their lineage back to someone who served in the American Revolutionary War. Some of the application material is available on their website. He indicated that adding the links to his spreadsheet would be a lot of typing. I saw this material was openly available on the SAR website, so this would be an ideal task to solve with web scraping. (It turns out that there aren’t that many links after all, but it was helpful as a learning exercise.</p>
 <p>This blog post deals with scraping the data from the website, wrangling it into a format where it could be matched against my father’s spreadsheet, and then looking for matches. (Every part of this series has ended up being more data wrangling and cleaning than I could have envisioned with just a touch of whatever neat thing I actually wanted to do.) I’ll also talk a bit about including some code from Google Bard.</p>
 </section>
-<section id="loading-libraries-and-data" class="level1">
-<h1>Loading Libraries and Data</h1>
+<section id="loading-libraries-and-data" class="level2">
+<h2 class="anchored" data-anchor-id="loading-libraries-and-data">Loading Libraries and Data</h2>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stderr">
@@ -155,50 +157,160 @@ The following object is masked from 'package:readr':
 <span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(openxlsx)</span>
 <span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(xml2)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p><strong>This is my father’s spreadsheet after some clean-up.</strong></p>
+<p>This is my father’s spreadsheet after some clean-up. I go into the process in detail <a href="https://lsinks.github.io/posts/2023-08-04-data-cleaning-tombstone/tombstones_data_cleaning.html">here</a>.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>data_file <span class="ot">&lt;-</span> <span class="fu">readRDS</span>(<span class="fu">here</span>(<span class="st">"data_cleaning"</span>, <span class="st">"tombstones_matched_final.RDS"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
-<section id="conceptual-overview-of-web-scraping" class="level1">
-<h1>Conceptual Overview of Web Scraping</h1>
-<p>You want to find the HTML elements corresponding to the data you wish to obtain. There are a few ways to do this. One is to right-click on the webpage in your browser and choose “inspect” to find out what elements you want to use (select the elements tab). Many items may have the same elements, so you probably need to construct sets of elements to get to the right things.</p>
-<p>Another way is to use the <a href="https://rvest.tidyverse.org/articles/selectorgadget.html">SelectorGadget</a>. The SelectorGadget is iterative. You need to keep clicking on</p>
+<section id="conceptual-overview-of-web-scraping" class="level2">
+<h2 class="anchored" data-anchor-id="conceptual-overview-of-web-scraping">Conceptual Overview of Web Scraping</h2>
+<p>Web scraping is extracting data from a website. If you know what web scraping is, you probably envision high-volume automated processes that extracts large quantities of data. This type of web scraping has some ethical and legal concerns which I’ll discuss in the next section. However, many of the tools and processes you need to understand to web scrape effectively can be practiced in a low-volume, non-automated way. This is the skill set I’m going to focus on in this tutorial.</p>
+<ol type="1">
+<li>Acquire the webpage</li>
+<li>Identify the HTML elements you wish to extract</li>
+<li>Clean and wrangle the data into a format you can work with</li>
+<li>Automate by looping through webpages to acquire additional information</li>
+</ol>
 </section>
-<section id="ethics-and-legality-of-web-scraping" class="level1">
-<h1>Ethics and Legality of Web Scraping</h1>
+<section id="ethics-and-legality-of-web-scraping" class="level2">
+<h2 class="anchored" data-anchor-id="ethics-and-legality-of-web-scraping">Ethics and Legality of Web Scraping</h2>
+<p>Web scraping is frequently against the terms of service of many websites. High-volume, high-speed web scraping is also frequently a problem as it can overload the website you are scraping.</p>
 </section>
-<section id="webscraping-with-rvest" class="level1">
-<h1>Webscraping with rvest</h1>
-<p>I decided to use the <a href="https://CRAN.R-project.org/package=rvest">rvest package</a> for web scraping. I was introduced to it through <a href="https://github.com/rfordatascience/tidytuesday">TidyTuesday</a>. rvest is a tidyverse package and is installed with the installation of tidyverse. However, it is not <a href="https://www.tidyverse.org/packages/">a core tidyverse package</a> and does need to be loaded separately with a call to <code>library()</code>.</p>
-<p>For politeness’s sake, I am working on a downloaded copy of the webpage. The function <code>read_html()</code> can also take a URL to read directly from a website.</p>
-<p>There is an overview of <a href="https://rvest.tidyverse.org/articles/rvest.html">webscraping using rvest</a> on the package website.</p>
-<p>In my case, the information was formatted as a table, so I pulled out the children of the table element. There is an html_table() function, but it only extracts the text elements from the table, not the links. <strong>And produces a list.</strong> If you are only interested in the text, then this is a great option. To get the links that I wanted, I found an <a href="https://stackoverflow.com/questions/63093926/retrieve-link-from-html-table-with-rvest">example on Stack Overflow</a>.</p>
+<section id="web-scraping-with-rvest" class="level2">
+<h2 class="anchored" data-anchor-id="web-scraping-with-rvest">Web Scraping with rvest</h2>
+<p>I decided to use the <a href="https://CRAN.R-project.org/package=rvest">rvest package</a> for web scraping. I was introduced to it through <a href="https://github.com/rfordatascience/tidytuesday">TidyTuesday</a>, specifically the <a href="https://github.com/rfordatascience/tidytuesday/blob/master/data/2023/2023-04-25/readme.md">London Marathon dataset</a>, which was drawn from the <a href="https://github.com/nrennie/LondonMarathon">London Marathon package</a>. The author of the package, Nicola Rennie, has a tutorial on how she used <a href="https://nrennie.rbind.io/blog/web-scraping-rvest-london-marathon/">web scraping to create the package</a>.</p>
+<p>rvest is a tidyverse package and is installed with the installation of tidyverse. However, it is not <a href="https://www.tidyverse.org/packages/">a core tidyverse package</a> and does need to be loaded separately with a call to <code>library()</code>.</p>
+<p>For politeness’s sake, I am working on a downloaded copy of the webpage. The function <code>read_html()</code> can also take a URL to read directly from a website. You don’t want to repeatedly be pulling the same data from a website as you are getting your code to work. So you can either work with a downloaded copy or use read_html once and then perform all your manipulations on a copy so you don’t have to pull the data again if you mess up your cleaning/wrangling.</p>
+<section id="reading-in-the-web-page" class="level3">
+<h3 class="anchored" data-anchor-id="reading-in-the-web-page">Reading in the Web Page</h3>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>sar <span class="ot">&lt;-</span> <span class="fu">read_html</span>( <span class="st">"Display Member - 121743 - John Douglas Sinks Ph.D..html"</span>)</span>
-<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a><span class="co">#xml_structure(sar)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>sar <span class="ot">&lt;-</span> <span class="fu">read_html</span>( <span class="st">"Display Member - 121743 - John Douglas Sinks Ph.D..html"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p>blah</p>
+<p>What I have now in sar is an xml document object. This seems like a simple list, but is it actually a very complicated object consisting of multiple nested lists.</p>
+</section>
+<section id="deciding-which-html-elements-to-extract" class="level3">
+<h3 class="anchored">Deciding which HTML elements to Extract</h3>
+<p>The next part is the part that I haven’t found a great tutorial on that I can refer you to. Nor do I have a great idea how to teach this- other than trial and error. This has been the main block to publishing this section of the project.</p>
+<p>There is a simple example on the <a href="https://rvest.tidyverse.org/articles/rvest.html">webscraping using rvest</a>. This vignette illustrates basic HMTL and CSS elements and shows you how to extract them. The rvest webpage recommends using the <a href="https://rvest.tidyverse.org/articles/selectorgadget.html">SelectorGadget</a> to identify the elements you want to extract. I didn’t use that, but the linked page does have a good explanation.</p>
+<p>You can view the source data for your webpage (usually by right clicking in the browser and clicking view source) and just look for the elements you want. This is what I did.</p>
+<p>This is what the webpage looks like. It doesn’t look particularly complicated. There are 74 rows in the table.</p>
+<div class="quarto-video"><video id="video_shortcode_videojs_video1" class="video-js vjs-default-skin vjs-fluid" controls="" preload="auto" data-setup="{}" title=""><source src="webpage.mp4"></video></div>
+<p>This is what the source looks like.</p>
+<div class="quarto-video"><video id="video_shortcode_videojs_video2" class="video-js vjs-default-skin vjs-fluid" controls="" preload="auto" data-setup="{}" title=""><source src="source.mp4"></video></div>
+<p>There are 2260 lines of code involved in making that webpage. I looked for the first name in the table PHELPS in the source code. It shows up at line 451. This is the entire line:</p>
+<blockquote class="blockquote">
+<p>&lt;td&gt;&lt;a href=“<a href="https://sarpatriots.sar.org/patriot/display/335209" class="uri">https://sarpatriots.sar.org/patriot/display/335209</a>”&gt;&lt;span style=“display:inline;color: #003366”&gt; &lt;span style=“color:#003366” class=“glyphicon glyphicon-user”&gt;&lt;/span&gt; John PHELPS &lt;small&gt; (P-335209)&lt;/small&gt;&lt;/span&gt;&lt;/a&gt; &lt;/td&gt;</p>
+</blockquote>
+<p>I see that it is wrapped in td tags. This means this item is being coded as a table cell element. That’s good news- if all the data is actually encoded as a table then it is much easier to extract. I can look up how a table should be formatted in html. I found a great resource at the W3Schools: here is <a href="https://www.w3schools.com/tags/tag_td.asp">their page on tables</a>.</p>
+<p>A table should be tagged as a table with</p>
+
+<p>. Each row should be tagged with</p><p>, and each cell with</p><table>
+
+<tbody><tr>
+
+<td>
+<p>.</p>
+<blockquote class="blockquote">
+<p>&lt;table&gt;<br>
+&nbsp;&nbsp;&lt;tr&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&lt;td&gt;Cell A&lt;/td&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&lt;td&gt;Cell B&lt;/td&gt;<br>
+&nbsp;&nbsp;&lt;/tr&gt;<br>
+&lt;/table&gt;</p>
+</blockquote>
+<p>Knowing this, I can now search the source code for table. Why do I need to do this? If there are multiple tables on the page, I want to make sure I extract the correct one. Luckily for me, there is only one table.</p>
+<p>HTML is hierachical, and the relationship between the elements is described in the language of families- parent elements, children elements, etc. I want to take the children elements of the table.</p>
+<p>I need to understand how the row is structured, so I can select the right element. A row contains 5 cells. The first row is a header row.</p>
+<p><img src="table_structure.png" class="img-fluid"></p>
+<p>The th tag is a child element of tr and represents table header elements. It should be used instead of td for the header elements. Again, looking at the source code and searching for that tag I can verify that is true. The header row could just be coded as regular table cells, in which case I would need to discard that information during the data cleaning. Again, I’m lucky, and the header is properly encoded with th tags.</p>
+<p>My goal is to extract the patriot name and the link associated with it. There are actually 3 columns with links:</p>
+<ol type="1">
+<li><p><strong>Patriot Name</strong>, which goes to another page with biographical information</p></li>
+<li><p><strong>View Application Detail</strong>, which goes to a page with an abbreviated genealogy.</p></li>
+<li><p><strong>Click to Purchase</strong>, which goes to a page allowing you to order the full application if you are a member</p></li>
+</ol>
+<p>For my purpose, the link under Patriot Name has the most interesting information and is the one I want. But I’m going to end up with all the links, so I could use any of them.</p>
+<p>Since I know I want a hyperlink, I need to understand how that type of element is encoded. Again, the <a href="https://www.w3schools.com/tags/tag_a.asp">W3Schools has a great explanation for hyperlinks</a>.</p>
+<p>A hyperlink uses the a tag. The a tag has two parts: the hyperlink (comes after href = ) and the text. The plain text part follows the URL and may also include styling. If we go back to the cell I initially extracted for PHELPS, the href = URL is clear. Then there are some codes for styling, and then the text John PHELPS, more styling, and then a number. The name and the number (P-335209) are both in the text of this element.</p>
+<blockquote class="blockquote">
+<p>&lt;td&gt;&lt;a href=“<a href="https://sarpatriots.sar.org/patriot/display/335209" class="uri">https://sarpatriots.sar.org/patriot/display/335209</a>”&gt;&lt;span style=“display:inline;color: #003366”&gt; &lt;span style=“color:#003366” class=“glyphicon glyphicon-user”&gt;&lt;/span&gt; John PHELPS &lt;small&gt; (P-335209)&lt;/small&gt;&lt;/span&gt;&lt;/a&gt; &lt;/td&gt;</p>
+</blockquote>
+<p>If you only cared about the text in a table, you could easily extract is with <code>html_table()</code>. I want the text and the links, so I need to use some lower level functions to extract them.</p>
+
+<section id="extracting-the-links-with-html_nodes" class="level3">
+<h3 class="anchored" data-anchor-id="extracting-the-links-with-html_nodes">Extracting the Links with html_nodes</h3>
+<p>To get the links that I wanted, I found an <a href="https://stackoverflow.com/questions/63093926/retrieve-link-from-html-table-with-rvest">example on Stack Overflow</a>. (As a side note, I just learned that you could <a href="https://quarto.org/docs/authoring/code-annotation.html">annotate code in Quarto</a>. If you like them much better than free form explanations of the code, please let me know in a comment.)</p>
+<p>I’ve been talking about HTML elements, but you can also extract elements using a notation called XPATH. That is what the Stack Overflow solution uses. I believe you can build much more complicated selectors using XPATH, but for something basic is probably overkill. Here is an <a href="https://www.scraperapi.com/blog/xpath-cheat-sheet/">overview/cheat sheet</a>. Datacamp also has a <a href="https://app.datacamp.com/learn/courses/web-scraping-in-r">course on web scraping in R</a> where they go through selecting with HTML/ CSS and XPATH, but I honestly found it very confusing. I took the course twice (and did the coding for this project in between) and still couldn’t solve many of the problems.</p>
+<p>Anyway, here we go:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>link_nodes <span class="ot">&lt;-</span> sar <span class="sc">%&gt;%</span> <span class="fu">html_nodes</span>(<span class="at">xpath =</span> <span class="st">"//table//a"</span>)  </span>
-<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>link_text  <span class="ot">&lt;-</span> link_nodes <span class="sc">%&gt;%</span> <span class="fu">html_text</span>()</span>
-<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>text_df <span class="ot">=</span> <span class="fu">as.data.frame</span>(link_text)</span>
-<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>index <span class="ot">&lt;-</span> <span class="dv">1</span></span>
-<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (index <span class="cf">in</span> <span class="fu">seq</span>(<span class="dv">1</span><span class="sc">:</span><span class="fu">nrow</span>(text_df))) {</span>
-<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>  text_df<span class="sc">$</span>url[index] <span class="ot">&lt;-</span> link_nodes[index] <span class="sc">%&gt;%</span>  <span class="fu">html_attr</span>(<span class="st">"href"</span>)</span>
-<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="annotated-cell-7"><pre class="sourceCode r code-annotation-code code-with-copy code-annotated"><code class="sourceCode r"><a class="code-annotation-anchor" data-target-cell="annotated-cell-7" data-target-annotation="1" onclick="event.preventDefault();" href="">1</a><span id="annotated-cell-7-1" class="code-annotation-target"><a href="#annotated-cell-7-1" aria-hidden="true" tabindex="-1"></a>link_nodes <span class="ot">&lt;-</span> sar <span class="sc">%&gt;%</span> <span class="fu">html_nodes</span>(<span class="at">xpath =</span> <span class="st">"//table//a"</span>)</span>
+<a class="code-annotation-anchor" data-target-cell="annotated-cell-7" data-target-annotation="2" onclick="event.preventDefault();" href="">2</a><span id="annotated-cell-7-2" class="code-annotation-target"><a href="#annotated-cell-7-2" aria-hidden="true" tabindex="-1"></a><span class="co">#link_nodes &lt;- sar %&gt;% html_nodes("table a")</span></span>
+<span id="annotated-cell-7-3"><a href="#annotated-cell-7-3" aria-hidden="true" tabindex="-1"></a></span>
+<a class="code-annotation-anchor" data-target-cell="annotated-cell-7" data-target-annotation="3" onclick="event.preventDefault();" href="">3</a><span id="annotated-cell-7-4" class="code-annotation-target"><a href="#annotated-cell-7-4" aria-hidden="true" tabindex="-1"></a>link_text  <span class="ot">&lt;-</span> link_nodes <span class="sc">%&gt;%</span> <span class="fu">html_text</span>()</span>
+<a class="code-annotation-anchor" data-target-cell="annotated-cell-7" data-target-annotation="4" onclick="event.preventDefault();" href="">4</a><span id="annotated-cell-7-5" class="code-annotation-target"><a href="#annotated-cell-7-5" aria-hidden="true" tabindex="-1"></a>text_df <span class="ot">=</span> <span class="fu">as.data.frame</span>(link_text)</span>
+<span id="annotated-cell-7-6"><a href="#annotated-cell-7-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="annotated-cell-7-7"><a href="#annotated-cell-7-7" aria-hidden="true" tabindex="-1"></a>index <span class="ot">&lt;-</span> <span class="dv">1</span></span>
+<span id="annotated-cell-7-8"><a href="#annotated-cell-7-8" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (index <span class="cf">in</span> <span class="fu">seq</span>(<span class="dv">1</span><span class="sc">:</span><span class="fu">nrow</span>(text_df))) {</span>
+<span id="annotated-cell-7-9"><a href="#annotated-cell-7-9" aria-hidden="true" tabindex="-1"></a>  text_df<span class="sc">$</span>url[index] <span class="ot">&lt;-</span> link_nodes[index] <span class="sc">%&gt;%</span>  <span class="fu">html_attr</span>(<span class="st">"href"</span>)</span>
+<a class="code-annotation-anchor" data-target-cell="annotated-cell-7" data-target-annotation="5" onclick="event.preventDefault();" href="">5</a><span id="annotated-cell-7-10" class="code-annotation-target"><a href="#annotated-cell-7-10" aria-hidden="true" tabindex="-1"></a>}</span><div class="code-annotation-gutter-bg"></div><div class="code-annotation-gutter"></div></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-annotation">
+<dl class="code-annotation-container-grid">
+<dt data-target-cell="annotated-cell-7" data-target-annotation="1">1</dt>
+<dd>
+<span data-code-cell="annotated-cell-7" data-code-lines="1" data-code-annotation="1">Select the elements we want out of the HTML using html_nodes. The xpath code specifies that we want a tags that are children of the table. Store it in link_nodes.</span>
+</dd>
+<dt data-target-cell="annotated-cell-7" data-target-annotation="2">2</dt>
+<dd>
+<span data-code-cell="annotated-cell-7" data-code-lines="2" data-code-annotation="2">An alternate method is to use the more standard HTML/CSS selectors, but again, we want the a elements that are children of the table. Commented out here, but it produces identical results as 1.</span>
+</dd>
+<dt data-target-cell="annotated-cell-7" data-target-annotation="3">3</dt>
+<dd>
+<span data-code-cell="annotated-cell-7" data-code-lines="4" data-code-annotation="3">The link_node contains both the URL and the text. Here we extract the text. There are <a href="https://rvest.tidyverse.org/reference/html_text.html">two methods in the rvest package</a>: html_text() is faster, but might include formatting information relating to whitespace. html_text2() is slower, but produces cleaner output.</span>
+</dd>
+<dt data-target-cell="annotated-cell-7" data-target-annotation="4">4</dt>
+<dd>
+<span data-code-cell="annotated-cell-7" data-code-lines="5" data-code-annotation="4">Now we store the text in a dataframe.</span>
+</dd>
+<dt data-target-cell="annotated-cell-7" data-target-annotation="5">5</dt>
+<dd>
+<span data-code-cell="annotated-cell-7" data-code-lines="10" data-code-annotation="5">Now we loop through the text dataframe and add on the matching URL that we extract from link_nodes using html_attr(“href”).</span>
+</dd>
+</dl>
 </div>
-<p>alternate method</p>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>link_nodes2 <span class="ot">&lt;-</span> sar <span class="sc">%&gt;%</span> <span class="fu">html_nodes</span>(<span class="st">"table a"</span>)  </span>
-<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>link_text2  <span class="ot">&lt;-</span> link_nodes2 <span class="sc">%&gt;%</span> <span class="fu">html_text</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p>There are actually three sets of links- one with the name, one with the application, and one to purchase the detailed application. I only want the one that goes to the application. So, I take every third link, starting with the first.</p>
+<p>So now we have a dataframe with the text and the url stored separately.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>raw_data <span class="ot">&lt;-</span> text_df[<span class="fu">seq</span>(<span class="dv">1</span>, <span class="fu">nrow</span>(text_df), <span class="dv">3</span>),]</span>
-<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(raw_data)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(text_df)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>                                                    link_text
+1                                   John  PHELPS   (P-335209)
+2                                                            
+3 Click to Purchase\n\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t
+4                                  Moses   ALLEN   (P-102709)
+5                                                            
+6 Click to Purchase\n\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t
+                                                      url
+1      https://sarpatriots.sar.org/patriot/display/335209
+2  https://sarpatriots.sar.org/application/display/246742
+3 https://sarpatriots.sar.org/application/purchase/246742
+4      https://sarpatriots.sar.org/patriot/display/102709
+5  https://sarpatriots.sar.org/application/display/246757
+6 https://sarpatriots.sar.org/application/purchase/246757</code></pre>
+</div>
+</div>
+<p>Here we see that there is a bunch of whitespace information in some of the entries (new line and tab markers). We’ve also lost some of the structure that the table had. Each hyperlink is extracted into its own row in the text_df, but 3 of these text_df rows corresponds to one row in our webpage table. As I mentioned, I want the link associated with the Patriot name, so I can just take every third row of this text_df table and discard the rest. If I wanted a different link associated with the name, I could do that too.</p>
+<p>So I’m creating an index to subset my rows. (This doesn’t need to be a separated variable, I’m just doing that for clarity.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>subset_index <span class="ot">&lt;-</span> <span class="fu">seq</span>(<span class="dv">1</span>, <span class="fu">nrow</span>(text_df), <span class="dv">3</span>)</span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(subset_index)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1]  1  4  7 10 13 16</code></pre>
+</div>
+</div>
+<p>Now I am subsetting the dataframe using subset_index for the rows and taking all columns.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>raw_data <span class="ot">&lt;-</span> text_df[subset_index,]</span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(raw_data)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>                                        link_text
 1                       John  PHELPS   (P-335209)
@@ -217,138 +329,174 @@ The following object is masked from 'package:readr':
 </div>
 </div>
 </section>
-<section id="reformat-the-data" class="level1">
-<h1>Reformat the Data</h1>
-<p>Now to wrangle the text data into a usable form. The link_text contains the name and an ID number, like John PHELPS (P-335209). This can be split into two components using <code>(</code> as a separator. Remember that special characters like <code>(</code> need to be escaped (more on that later). So the actual separator is <code>" \\("</code> I took the space also. Then I removed the other parenthesis with <code>str_replace()</code>. I used transmute to do the final mutation and select the columns I wanted moving forward.</p>
+<section id="extracting-the-links-with-html_elements" class="level3">
+<h3 class="anchored" data-anchor-id="extracting-the-links-with-html_elements">Extracting the Links with html_elements</h3>
+<p>The <a href="https://rvest.tidyverse.org/reference/rename.html">html_nodes() function used above has been superseded</a> by <a href="https://rvest.tidyverse.org/reference/html_element.html">html_elements()</a>. They should function exactly the same, since the notes say that the function is merely renamed. It is generally best to use the most current version of the functions, so here is the above code updated.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="co"># first, clean up the names</span></span>
-<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>rev_war <span class="ot">&lt;-</span> raw_data <span class="sc">%&gt;%</span></span>
-<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">separate</span>(link_text, <span class="at">sep =</span> <span class="st">" </span><span class="sc">\\</span><span class="st">("</span>, <span class="at">into =</span> <span class="fu">c</span>(<span class="st">"name_unclean"</span>, <span class="st">"id_unclean"</span>) ) </span>
-<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Clean up the ID number</span></span>
-<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a>rev_war <span class="ot">&lt;-</span> rev_war <span class="sc">%&gt;%</span></span>
-<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">transmute</span>(name_unclean, url, <span class="at">SAR_ID =</span> <span class="fu">str_replace</span>(id_unclean, <span class="st">"</span><span class="sc">\\</span><span class="st">)"</span>, <span class="st">""</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="annotated-cell-11"><pre class="sourceCode r code-annotation-code code-with-copy"><code class="sourceCode r"><span id="annotated-cell-11-1"><a href="#annotated-cell-11-1" aria-hidden="true" tabindex="-1"></a>link_nodes2 <span class="ot">&lt;-</span> sar <span class="sc">%&gt;%</span> <span class="fu">html_elements</span>(<span class="st">"table a"</span>)  </span>
+<span id="annotated-cell-11-2"><a href="#annotated-cell-11-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="annotated-cell-11-3"><a href="#annotated-cell-11-3" aria-hidden="true" tabindex="-1"></a>link_text2  <span class="ot">&lt;-</span> link_nodes2 <span class="sc">%&gt;%</span> <span class="fu">html_text</span>()  </span>
+<span id="annotated-cell-11-4"><a href="#annotated-cell-11-4" aria-hidden="true" tabindex="-1"></a>text_df2 <span class="ot">=</span> <span class="fu">as.data.frame</span>(link_text2)        </span>
+<span id="annotated-cell-11-5"><a href="#annotated-cell-11-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="annotated-cell-11-6"><a href="#annotated-cell-11-6" aria-hidden="true" tabindex="-1"></a>index <span class="ot">&lt;-</span> <span class="dv">1</span></span>
+<span id="annotated-cell-11-7"><a href="#annotated-cell-11-7" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (index <span class="cf">in</span> <span class="fu">seq</span>(<span class="dv">1</span><span class="sc">:</span><span class="fu">nrow</span>(text_df2))) {</span>
+<span id="annotated-cell-11-8"><a href="#annotated-cell-11-8" aria-hidden="true" tabindex="-1"></a>  text_df2<span class="sc">$</span>url[index] <span class="ot">&lt;-</span> link_nodes2[index] <span class="sc">%&gt;%</span>  <span class="fu">html_attr</span>(<span class="st">"href"</span>)</span>
+<span id="annotated-cell-11-9"><a href="#annotated-cell-11-9" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="annotated-cell-11-10"><a href="#annotated-cell-11-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="annotated-cell-11-11"><a href="#annotated-cell-11-11" aria-hidden="true" tabindex="-1"></a>raw_data2 <span class="ot">&lt;-</span> text_df2[subset_index,]</span>
+<span id="annotated-cell-11-12"><a href="#annotated-cell-11-12" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(raw_data2)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>                                       link_text2
+1                       John  PHELPS   (P-335209)
+4                      Moses   ALLEN   (P-102709)
+7         William  HARRELL/HORRALL Jr  (P-185027)
+10      Aaron   VAN CLEVE/VAN CLEAVE   (P-310164)
+13     William   VAN CLEVE/VANCLEAVE   (P-309334)
+16           Richard   VEATCH/VEETCH   (P-310578)
+                                                  url
+1  https://sarpatriots.sar.org/patriot/display/335209
+4  https://sarpatriots.sar.org/patriot/display/102709
+7  https://sarpatriots.sar.org/patriot/display/185027
+10 https://sarpatriots.sar.org/patriot/display/310164
+13 https://sarpatriots.sar.org/patriot/display/309334
+16 https://sarpatriots.sar.org/patriot/display/310578</code></pre>
 </div>
+</div>
+<p>You can see it produces the same results.</p>
 </section>
-<section id="dataframes-arent-tibbles" class="level1">
-<h1>Dataframes aren’t Tibbles!</h1>
+
+<section id="dataframes-arent-tibbles" class="level2">
+<h2 class="anchored" data-anchor-id="dataframes-arent-tibbles">Dataframes aren’t Tibbles!</h2>
 <p>R keeps the indexing of the raw_data, so the row numbers are by 3s. However, indexing is as usual, by position. So rev_war$name_unclean[3] returns the name associated with the row number 7. This is annoying and makes it difficult to pull out test cases. So, this should be fixed. This issue will pop up when you use data frames but not when you use tibbles. The tidyverse doesn’t approve of row names or numbers, so they aren’t used. If you look at a tibble in RStudio viewer, you will get row numbers and the tibble will have them correctly numbered. Tibbles and data frames are usually entirely interchangeable, but sometimes you do run into the differences.</p>
 <p>So, two ways to fix this:</p>
 <ol type="1">
 <li>Convert to a tibble.</li>
 </ol>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>rev_war_tibble <span class="ot">&lt;-</span> <span class="fu">as.tibble</span>(rev_war)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>rev_war_tibble <span class="ot">&lt;-</span> <span class="fu">as.tibble</span>(raw_data)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stderr">
 <pre><code>Warning: `as.tibble()` was deprecated in tibble 2.0.0.
 ℹ Please use `as_tibble()` instead.
 ℹ The signature and semantics have changed, see `?as_tibble`.</code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(rev_war_tibble)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(rev_war_tibble)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code># A tibble: 6 × 3
-  name_unclean                          url                               SAR_ID
-  &lt;chr&gt;                                 &lt;chr&gt;                             &lt;chr&gt; 
-1 "    John  PHELPS  "                  https://sarpatriots.sar.org/patr… P-335…
-2 "    Moses   ALLEN  "                 https://sarpatriots.sar.org/patr… P-102…
-3 "    William  HARRELL/HORRALL Jr "    https://sarpatriots.sar.org/patr… P-185…
-4 "    Aaron   VAN CLEVE/VAN CLEAVE  "  https://sarpatriots.sar.org/patr… P-310…
-5 "    William   VAN CLEVE/VANCLEAVE  " https://sarpatriots.sar.org/patr… P-309…
-6 "    Richard   VEATCH/VEETCH  "       https://sarpatriots.sar.org/patr… P-310…</code></pre>
+<pre><code># A tibble: 6 × 2
+  link_text                                        url                          
+  &lt;chr&gt;                                            &lt;chr&gt;                        
+1 "    John  PHELPS   (P-335209)"                  https://sarpatriots.sar.org/…
+2 "    Moses   ALLEN   (P-102709)"                 https://sarpatriots.sar.org/…
+3 "    William  HARRELL/HORRALL Jr  (P-185027)"    https://sarpatriots.sar.org/…
+4 "    Aaron   VAN CLEVE/VAN CLEAVE   (P-310164)"  https://sarpatriots.sar.org/…
+5 "    William   VAN CLEVE/VANCLEAVE   (P-309334)" https://sarpatriots.sar.org/…
+6 "    Richard   VEATCH/VEETCH   (P-310578)"       https://sarpatriots.sar.org/…</code></pre>
 </div>
 </div>
 <ol start="2" type="1">
 <li>Reassign the indexing of the data frame.</li>
 </ol>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(rev_war)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(raw_data)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>                          name_unclean
-1                       John  PHELPS  
-4                      Moses   ALLEN  
-7         William  HARRELL/HORRALL Jr 
-10      Aaron   VAN CLEVE/VAN CLEAVE  
-13     William   VAN CLEVE/VANCLEAVE  
-16           Richard   VEATCH/VEETCH  
-                                                  url   SAR_ID
-1  https://sarpatriots.sar.org/patriot/display/335209 P-335209
-4  https://sarpatriots.sar.org/patriot/display/102709 P-102709
-7  https://sarpatriots.sar.org/patriot/display/185027 P-185027
-10 https://sarpatriots.sar.org/patriot/display/310164 P-310164
-13 https://sarpatriots.sar.org/patriot/display/309334 P-309334
-16 https://sarpatriots.sar.org/patriot/display/310578 P-310578</code></pre>
+<pre><code>                                        link_text
+1                       John  PHELPS   (P-335209)
+4                      Moses   ALLEN   (P-102709)
+7         William  HARRELL/HORRALL Jr  (P-185027)
+10      Aaron   VAN CLEVE/VAN CLEAVE   (P-310164)
+13     William   VAN CLEVE/VANCLEAVE   (P-309334)
+16           Richard   VEATCH/VEETCH   (P-310578)
+                                                  url
+1  https://sarpatriots.sar.org/patriot/display/335209
+4  https://sarpatriots.sar.org/patriot/display/102709
+7  https://sarpatriots.sar.org/patriot/display/185027
+10 https://sarpatriots.sar.org/patriot/display/310164
+13 https://sarpatriots.sar.org/patriot/display/309334
+16 https://sarpatriots.sar.org/patriot/display/310578</code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="fu">rownames</span>(rev_war) <span class="ot">=</span> <span class="fu">seq</span>(<span class="at">length =</span> <span class="fu">nrow</span>(rev_war))</span>
-<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(rev_war)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="fu">rownames</span>(raw_data) <span class="ot">=</span> <span class="fu">seq</span>(<span class="at">length =</span> <span class="fu">nrow</span>(raw_data))</span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(raw_data)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>                         name_unclean
-1                      John  PHELPS  
-2                     Moses   ALLEN  
-3        William  HARRELL/HORRALL Jr 
-4      Aaron   VAN CLEVE/VAN CLEAVE  
-5     William   VAN CLEVE/VANCLEAVE  
-6           Richard   VEATCH/VEETCH  
-                                                 url   SAR_ID
-1 https://sarpatriots.sar.org/patriot/display/335209 P-335209
-2 https://sarpatriots.sar.org/patriot/display/102709 P-102709
-3 https://sarpatriots.sar.org/patriot/display/185027 P-185027
-4 https://sarpatriots.sar.org/patriot/display/310164 P-310164
-5 https://sarpatriots.sar.org/patriot/display/309334 P-309334
-6 https://sarpatriots.sar.org/patriot/display/310578 P-310578</code></pre>
+<pre><code>                                       link_text
+1                      John  PHELPS   (P-335209)
+2                     Moses   ALLEN   (P-102709)
+3        William  HARRELL/HORRALL Jr  (P-185027)
+4      Aaron   VAN CLEVE/VAN CLEAVE   (P-310164)
+5     William   VAN CLEVE/VANCLEAVE   (P-309334)
+6           Richard   VEATCH/VEETCH   (P-310578)
+                                                 url
+1 https://sarpatriots.sar.org/patriot/display/335209
+2 https://sarpatriots.sar.org/patriot/display/102709
+3 https://sarpatriots.sar.org/patriot/display/185027
+4 https://sarpatriots.sar.org/patriot/display/310164
+5 https://sarpatriots.sar.org/patriot/display/309334
+6 https://sarpatriots.sar.org/patriot/display/310578</code></pre>
 </div>
 </div>
-<p>I’m going to continue with the data frame.</p>
+<p>I’m going to continue with the reindexed data frame.</p>
+</section>
+<section id="cleaning-and-reformating-the-data" class="level2">
+<h2 class="anchored" data-anchor-id="cleaning-and-reformating-the-data">Cleaning and Reformating the Data</h2>
+<p>Now to wrangle the text data into a usable form. The link_text contains the name and an ID number, like John PHELPS (P-335209). This can be split into two components using <code>(</code> as a separator. Remember that special characters like <code>(</code> need to be escaped (more on that later). So the actual separator is <code>" \\("</code> I took the space also. Then I removed the other parenthesis with <code>str_replace()</code>. I used transmute to do the final mutation and select the columns I wanted moving forward.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb25"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="co"># first, clean up the names</span></span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a>rev_war <span class="ot">&lt;-</span> raw_data <span class="sc">%&gt;%</span></span>
+<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">separate</span>(link_text, <span class="at">sep =</span> <span class="st">" </span><span class="sc">\\</span><span class="st">("</span>, <span class="at">into =</span> <span class="fu">c</span>(<span class="st">"name_unclean"</span>, <span class="st">"id_unclean"</span>) ) </span>
+<span id="cb25-4"><a href="#cb25-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-5"><a href="#cb25-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-6"><a href="#cb25-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Clean up the ID number</span></span>
+<span id="cb25-7"><a href="#cb25-7" aria-hidden="true" tabindex="-1"></a>rev_war <span class="ot">&lt;-</span> rev_war <span class="sc">%&gt;%</span></span>
+<span id="cb25-8"><a href="#cb25-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">transmute</span>(name_unclean, url, <span class="at">SAR_ID =</span> <span class="fu">str_replace</span>(id_unclean, <span class="st">"</span><span class="sc">\\</span><span class="st">)"</span>, <span class="st">""</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
 </section>
 <section id="cleaning-text-data" class="level1">
 <h1>Cleaning Text Data</h1>
 <p>The names are a mess. Women have “Mrs” prepended. The last names are in all caps and sometimes have multiple variations separated by a /. There are also Jr and Sr at the end of some. There are different numbers of leading and trailing spaces on the names.</p>
 <p>The whitespace, Jr/Sr, and Mrs issues are easy to deal with using tools from the stringr package. The “Mrs” is not useful at all, so I’m just going to replace it with “” via <code>str_replace()</code>. I’m going to remove the whitespace using <code>str_trim()</code>. I generally like to keep the original data so I can check the transformations, so these operations are in a new column name. I also made a suffix column for Jr/Sr and removed that info from the name column. I’m not changing the names to title case now because I’m going to use the fact that the last names are in upper case as part of my pattern matching.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a>rev_war <span class="ot">&lt;-</span> rev_war <span class="sc">%&gt;%</span></span>
-<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">name =</span></span>
-<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">str_replace</span>(name_unclean, <span class="st">"Mrs"</span>, <span class="st">""</span>)</span>
-<span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
-<span id="cb23-5"><a href="#cb23-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb23-6"><a href="#cb23-6" aria-hidden="true" tabindex="-1"></a><span class="co"># There appear to be leading and tailing strings on the name</span></span>
-<span id="cb23-7"><a href="#cb23-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">name =</span></span>
-<span id="cb23-8"><a href="#cb23-8" aria-hidden="true" tabindex="-1"></a>           <span class="fu">str_trim</span>(name, <span class="at">side =</span> <span class="fu">c</span>(<span class="st">"both"</span>))</span>
-<span id="cb23-9"><a href="#cb23-9" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
-<span id="cb23-10"><a href="#cb23-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb23-11"><a href="#cb23-11" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb23-12"><a href="#cb23-12" aria-hidden="true" tabindex="-1"></a><span class="co"># Deal with Jr/Sr first</span></span>
-<span id="cb23-13"><a href="#cb23-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">suffix =</span></span>
-<span id="cb23-14"><a href="#cb23-14" aria-hidden="true" tabindex="-1"></a>           <span class="fu">case_when</span>(</span>
-<span id="cb23-15"><a href="#cb23-15" aria-hidden="true" tabindex="-1"></a>             <span class="fu">str_detect</span>(name, <span class="st">"Jr"</span>) <span class="sc">==</span> <span class="cn">TRUE</span> <span class="sc">~</span> <span class="st">"Jr"</span>,</span>
-<span id="cb23-16"><a href="#cb23-16" aria-hidden="true" tabindex="-1"></a>             <span class="fu">str_detect</span>(name, <span class="st">"Sr"</span>) <span class="sc">==</span> <span class="cn">TRUE</span> <span class="sc">~</span> <span class="st">"Sr"</span>,</span>
-<span id="cb23-17"><a href="#cb23-17" aria-hidden="true" tabindex="-1"></a>             <span class="cn">TRUE</span> <span class="sc">~</span> <span class="st">""</span></span>
-<span id="cb23-18"><a href="#cb23-18" aria-hidden="true" tabindex="-1"></a>           )</span>
-<span id="cb23-19"><a href="#cb23-19" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
-<span id="cb23-20"><a href="#cb23-20" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb23-21"><a href="#cb23-21" aria-hidden="true" tabindex="-1"></a><span class="co"># Now remove the Jr and Sr from the name</span></span>
-<span id="cb23-22"><a href="#cb23-22" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">name =</span></span>
-<span id="cb23-23"><a href="#cb23-23" aria-hidden="true" tabindex="-1"></a>           <span class="fu">str_replace</span>(name, <span class="st">"Jr"</span>, <span class="st">""</span>)</span>
-<span id="cb23-24"><a href="#cb23-24" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
-<span id="cb23-25"><a href="#cb23-25" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">name =</span></span>
-<span id="cb23-26"><a href="#cb23-26" aria-hidden="true" tabindex="-1"></a>           <span class="fu">str_replace</span>(name, <span class="st">"Sr"</span>, <span class="st">""</span>)</span>
-<span id="cb23-27"><a href="#cb23-27" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
-<span id="cb23-28"><a href="#cb23-28" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb23-29"><a href="#cb23-29" aria-hidden="true" tabindex="-1"></a><span class="co">#double check the white space issue</span></span>
-<span id="cb23-30"><a href="#cb23-30" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">name =</span></span>
-<span id="cb23-31"><a href="#cb23-31" aria-hidden="true" tabindex="-1"></a>           <span class="fu">str_trim</span>(name, <span class="at">side =</span> <span class="fu">c</span>(<span class="st">"both"</span>))</span>
-<span id="cb23-32"><a href="#cb23-32" aria-hidden="true" tabindex="-1"></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb26"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a>rev_war <span class="ot">&lt;-</span> rev_war <span class="sc">%&gt;%</span></span>
+<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">name =</span></span>
+<span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">str_replace</span>(name_unclean, <span class="st">"Mrs"</span>, <span class="st">""</span>)</span>
+<span id="cb26-4"><a href="#cb26-4" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
+<span id="cb26-5"><a href="#cb26-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-6"><a href="#cb26-6" aria-hidden="true" tabindex="-1"></a><span class="co"># There appear to be leading and tailing strings on the name</span></span>
+<span id="cb26-7"><a href="#cb26-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">name =</span></span>
+<span id="cb26-8"><a href="#cb26-8" aria-hidden="true" tabindex="-1"></a>           <span class="fu">str_trim</span>(name, <span class="at">side =</span> <span class="fu">c</span>(<span class="st">"both"</span>))</span>
+<span id="cb26-9"><a href="#cb26-9" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
+<span id="cb26-10"><a href="#cb26-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-11"><a href="#cb26-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-12"><a href="#cb26-12" aria-hidden="true" tabindex="-1"></a><span class="co"># Deal with Jr/Sr first</span></span>
+<span id="cb26-13"><a href="#cb26-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">suffix =</span></span>
+<span id="cb26-14"><a href="#cb26-14" aria-hidden="true" tabindex="-1"></a>           <span class="fu">case_when</span>(</span>
+<span id="cb26-15"><a href="#cb26-15" aria-hidden="true" tabindex="-1"></a>             <span class="fu">str_detect</span>(name, <span class="st">"Jr"</span>) <span class="sc">==</span> <span class="cn">TRUE</span> <span class="sc">~</span> <span class="st">"Jr"</span>,</span>
+<span id="cb26-16"><a href="#cb26-16" aria-hidden="true" tabindex="-1"></a>             <span class="fu">str_detect</span>(name, <span class="st">"Sr"</span>) <span class="sc">==</span> <span class="cn">TRUE</span> <span class="sc">~</span> <span class="st">"Sr"</span>,</span>
+<span id="cb26-17"><a href="#cb26-17" aria-hidden="true" tabindex="-1"></a>             <span class="cn">TRUE</span> <span class="sc">~</span> <span class="st">""</span></span>
+<span id="cb26-18"><a href="#cb26-18" aria-hidden="true" tabindex="-1"></a>           )</span>
+<span id="cb26-19"><a href="#cb26-19" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
+<span id="cb26-20"><a href="#cb26-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-21"><a href="#cb26-21" aria-hidden="true" tabindex="-1"></a><span class="co"># Now remove the Jr and Sr from the name</span></span>
+<span id="cb26-22"><a href="#cb26-22" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">name =</span></span>
+<span id="cb26-23"><a href="#cb26-23" aria-hidden="true" tabindex="-1"></a>           <span class="fu">str_replace</span>(name, <span class="st">"Jr"</span>, <span class="st">""</span>)</span>
+<span id="cb26-24"><a href="#cb26-24" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
+<span id="cb26-25"><a href="#cb26-25" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">name =</span></span>
+<span id="cb26-26"><a href="#cb26-26" aria-hidden="true" tabindex="-1"></a>           <span class="fu">str_replace</span>(name, <span class="st">"Sr"</span>, <span class="st">""</span>)</span>
+<span id="cb26-27"><a href="#cb26-27" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
+<span id="cb26-28"><a href="#cb26-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-29"><a href="#cb26-29" aria-hidden="true" tabindex="-1"></a><span class="co">#double check the white space issue</span></span>
+<span id="cb26-30"><a href="#cb26-30" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">name =</span></span>
+<span id="cb26-31"><a href="#cb26-31" aria-hidden="true" tabindex="-1"></a>           <span class="fu">str_trim</span>(name, <span class="at">side =</span> <span class="fu">c</span>(<span class="st">"both"</span>))</span>
+<span id="cb26-32"><a href="#cb26-32" aria-hidden="true" tabindex="-1"></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>That is all pretty straightforward. Now, how do we break this up?</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>rev_war<span class="sc">$</span>name[<span class="dv">3</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb27"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a>rev_war<span class="sc">$</span>name[<span class="dv">3</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] "William  HARRELL/HORRALL"</code></pre>
 </div>
 </div>
 <p>The obvious choice would be to use the space(s) between the name to separate the string into two parts. This fails because of names like this:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb26"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a>rev_war<span class="sc">$</span>name[<span class="dv">27</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb29"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a>rev_war<span class="sc">$</span>name[<span class="dv">27</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] "Friderick William NAGEL/NAGLE"</code></pre>
 </div>
@@ -356,17 +504,17 @@ The following object is masked from 'package:readr':
 <p>I admit I used trial and error to figure this out. First note- using <code>str_split()</code> from stringr is not the way to go. I got hyperfocused on stringr functions since I was using the package so heavily. It creates a matrix of results in your data frame and not new columns of data. Use <code>separate()</code> from tidyr instead.</p>
 <p>I decided to do this stepwise. So the <code>remove = FALSE</code> flag needs to be set in <code>separate()</code>. First, I got the first names by splitting on the pattern of space and then two or more capital letters. The two or more is necessary because of names like Friderick William. This gives the complete first name(s) and an incomplete last name because the separator is discarded. So you end up with AGEL/NAGLE, which I dumped in a column named trash. Here, I immediately deleted it, but it was handy for troubleshooting.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb28"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a><span class="co"># So now I separate out the last name per. My pattern is a space followed by a </span></span>
-<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a><span class="co">#capital letter. But this isn't a separator- I'll lose the first letter if it is.</span></span>
-<span id="cb28-3"><a href="#cb28-3" aria-hidden="true" tabindex="-1"></a><span class="co">#that will actually get me the first name.</span></span>
-<span id="cb28-4"><a href="#cb28-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb28-5"><a href="#cb28-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Bard gave me a hint to get the regex!</span></span>
-<span id="cb28-6"><a href="#cb28-6" aria-hidden="true" tabindex="-1"></a>rev_war <span class="ot">&lt;-</span> rev_war <span class="sc">%&gt;%</span></span>
-<span id="cb28-7"><a href="#cb28-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">separate</span>(name, <span class="at">into =</span> <span class="fu">c</span>(<span class="st">"first_name"</span>, <span class="st">"trash"</span>), <span class="at">remove =</span> <span class="cn">FALSE</span>, <span class="at">sep =</span> <span class="st">"</span><span class="sc">\\</span><span class="st">s+[A-Z]{2,}"</span>) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb31"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a><span class="co"># So now I separate out the last name per. My pattern is a space followed by a </span></span>
+<span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a><span class="co">#capital letter. But this isn't a separator- I'll lose the first letter if it is.</span></span>
+<span id="cb31-3"><a href="#cb31-3" aria-hidden="true" tabindex="-1"></a><span class="co">#that will actually get me the first name.</span></span>
+<span id="cb31-4"><a href="#cb31-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb31-5"><a href="#cb31-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Bard gave me a hint to get the regex!</span></span>
+<span id="cb31-6"><a href="#cb31-6" aria-hidden="true" tabindex="-1"></a>rev_war <span class="ot">&lt;-</span> rev_war <span class="sc">%&gt;%</span></span>
+<span id="cb31-7"><a href="#cb31-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">separate</span>(name, <span class="at">into =</span> <span class="fu">c</span>(<span class="st">"first_name"</span>, <span class="st">"trash"</span>), <span class="at">remove =</span> <span class="cn">FALSE</span>, <span class="at">sep =</span> <span class="st">"</span><span class="sc">\\</span><span class="st">s+[A-Z]{2,}"</span>) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stderr">
 <pre><code>Warning: Expected 2 pieces. Additional pieces discarded in 3 rows [4, 5, 25].</code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb30"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(rev_war)  </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb33"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(rev_war)  </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>                         name_unclean
 1                      John  PHELPS  
@@ -390,16 +538,16 @@ The following object is masked from 'package:readr':
 5 William   VAN CLEVE/VANCLEAVE    William                
 6       Richard   VEATCH/VEETCH    Richard  /VEETCH       </code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb32"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Delete the trash columns</span></span>
-<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a>rev_war <span class="ot">&lt;-</span> rev_war <span class="sc">%&gt;%</span></span>
-<span id="cb32-3"><a href="#cb32-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="sc">-</span>trash)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb35"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Delete the trash columns</span></span>
+<span id="cb35-2"><a href="#cb35-2" aria-hidden="true" tabindex="-1"></a>rev_war <span class="ot">&lt;-</span> rev_war <span class="sc">%&gt;%</span></span>
+<span id="cb35-3"><a href="#cb35-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="sc">-</span>trash)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Getting the last name was trickier because any separator I could think of would also catch the multiple first-name people. Back to stringr to use str_extract(). Basically, any chunk of text with two or more capital letters in a row followed by any number of any other type of character is extracted.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb33"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a>rev_war <span class="ot">&lt;-</span> rev_war <span class="sc">%&gt;%</span></span>
-<span id="cb33-2"><a href="#cb33-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">Last_name =</span> <span class="fu">str_extract</span>(name, <span class="st">"[A-Z]{2,}.+"</span>))</span>
-<span id="cb33-3"><a href="#cb33-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb33-4"><a href="#cb33-4" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(rev_war)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb36"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a>rev_war <span class="ot">&lt;-</span> rev_war <span class="sc">%&gt;%</span></span>
+<span id="cb36-2"><a href="#cb36-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">Last_name =</span> <span class="fu">str_extract</span>(name, <span class="st">"[A-Z]{2,}.+"</span>))</span>
+<span id="cb36-3"><a href="#cb36-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb36-4"><a href="#cb36-4" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(rev_war)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>                         name_unclean
 1                      John  PHELPS  
@@ -426,34 +574,34 @@ The following object is masked from 'package:readr':
 </div>
 <p>Now to split on /. In this dataset, we can have 1-3 possible last names. <code>Separate_wider_delim()</code> requires that you know how many parts you are splitting into and that you have named columns for them. It will kick up an error if you don’t have the right number of parts and fail to execute. However, you can run it in debug mode, and it will perform the splits and then tell you on a row-by-row basis if there were the right number of parts. I exploited this and then threw away the debugging info, removed the NAs, and changed the last names to title case. (Note that the first name column should be handled the same way to split apart Johannes/John.)</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb35"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Now we need to split the names with /</span></span>
-<span id="cb35-2"><a href="#cb35-2" aria-hidden="true" tabindex="-1"></a>rev_war_test <span class="ot">&lt;-</span> rev_war <span class="sc">%&gt;%</span></span>
-<span id="cb35-3"><a href="#cb35-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">separate_wider_delim</span>(</span>
-<span id="cb35-4"><a href="#cb35-4" aria-hidden="true" tabindex="-1"></a>    Last_name,</span>
-<span id="cb35-5"><a href="#cb35-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">names =</span> <span class="fu">c</span>(<span class="st">"V1"</span>,</span>
-<span id="cb35-6"><a href="#cb35-6" aria-hidden="true" tabindex="-1"></a>              <span class="st">"V2"</span>,</span>
-<span id="cb35-7"><a href="#cb35-7" aria-hidden="true" tabindex="-1"></a>              <span class="st">"V3"</span>),</span>
-<span id="cb35-8"><a href="#cb35-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">delim =</span> <span class="st">"/"</span>,</span>
-<span id="cb35-9"><a href="#cb35-9" aria-hidden="true" tabindex="-1"></a>    <span class="at">too_few =</span> <span class="fu">c</span>(<span class="st">"debug"</span>),</span>
-<span id="cb35-10"><a href="#cb35-10" aria-hidden="true" tabindex="-1"></a>    <span class="at">too_many =</span> <span class="fu">c</span>(<span class="st">"debug"</span>),</span>
-<span id="cb35-11"><a href="#cb35-11" aria-hidden="true" tabindex="-1"></a>    <span class="at">cols_remove =</span> <span class="cn">FALSE</span></span>
-<span id="cb35-12"><a href="#cb35-12" aria-hidden="true" tabindex="-1"></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb38"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Now we need to split the names with /</span></span>
+<span id="cb38-2"><a href="#cb38-2" aria-hidden="true" tabindex="-1"></a>rev_war_test <span class="ot">&lt;-</span> rev_war <span class="sc">%&gt;%</span></span>
+<span id="cb38-3"><a href="#cb38-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">separate_wider_delim</span>(</span>
+<span id="cb38-4"><a href="#cb38-4" aria-hidden="true" tabindex="-1"></a>    Last_name,</span>
+<span id="cb38-5"><a href="#cb38-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">names =</span> <span class="fu">c</span>(<span class="st">"V1"</span>,</span>
+<span id="cb38-6"><a href="#cb38-6" aria-hidden="true" tabindex="-1"></a>              <span class="st">"V2"</span>,</span>
+<span id="cb38-7"><a href="#cb38-7" aria-hidden="true" tabindex="-1"></a>              <span class="st">"V3"</span>),</span>
+<span id="cb38-8"><a href="#cb38-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">delim =</span> <span class="st">"/"</span>,</span>
+<span id="cb38-9"><a href="#cb38-9" aria-hidden="true" tabindex="-1"></a>    <span class="at">too_few =</span> <span class="fu">c</span>(<span class="st">"debug"</span>),</span>
+<span id="cb38-10"><a href="#cb38-10" aria-hidden="true" tabindex="-1"></a>    <span class="at">too_many =</span> <span class="fu">c</span>(<span class="st">"debug"</span>),</span>
+<span id="cb38-11"><a href="#cb38-11" aria-hidden="true" tabindex="-1"></a>    <span class="at">cols_remove =</span> <span class="cn">FALSE</span></span>
+<span id="cb38-12"><a href="#cb38-12" aria-hidden="true" tabindex="-1"></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stderr">
 <pre><code>Warning: Debug mode activated: adding variables `Last_name_ok`, `Last_name_pieces`, and
 `Last_name_remainder`.</code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb37"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a>rev_war_test <span class="ot">&lt;-</span> rev_war_test <span class="sc">%&gt;%</span></span>
-<span id="cb37-2"><a href="#cb37-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(name_unclean, first_name, V1, V2, V3, suffix, url, SAR_ID)</span>
-<span id="cb37-3"><a href="#cb37-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb37-4"><a href="#cb37-4" aria-hidden="true" tabindex="-1"></a>rev_war_test <span class="ot">&lt;-</span> rev_war_test <span class="sc">%&gt;%</span></span>
-<span id="cb37-5"><a href="#cb37-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">V2 =</span> <span class="fu">ifelse</span>(<span class="fu">is.na</span>(V2), <span class="st">""</span>, V2),</span>
-<span id="cb37-6"><a href="#cb37-6" aria-hidden="true" tabindex="-1"></a>         <span class="at">V3 =</span> <span class="fu">ifelse</span>(<span class="fu">is.na</span>(V3), <span class="st">""</span>, V3),</span>
-<span id="cb37-7"><a href="#cb37-7" aria-hidden="true" tabindex="-1"></a>         <span class="at">V1 =</span> <span class="fu">str_to_title</span>(V1),</span>
-<span id="cb37-8"><a href="#cb37-8" aria-hidden="true" tabindex="-1"></a>         <span class="at">V2 =</span> <span class="fu">str_to_title</span>(V2),</span>
-<span id="cb37-9"><a href="#cb37-9" aria-hidden="true" tabindex="-1"></a>         <span class="at">V3 =</span> <span class="fu">str_to_title</span>(V3)</span>
-<span id="cb37-10"><a href="#cb37-10" aria-hidden="true" tabindex="-1"></a>         )</span>
-<span id="cb37-11"><a href="#cb37-11" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb37-12"><a href="#cb37-12" aria-hidden="true" tabindex="-1"></a>rev_war_test</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb40"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a>rev_war_test <span class="ot">&lt;-</span> rev_war_test <span class="sc">%&gt;%</span></span>
+<span id="cb40-2"><a href="#cb40-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(name_unclean, first_name, V1, V2, V3, suffix, url, SAR_ID)</span>
+<span id="cb40-3"><a href="#cb40-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb40-4"><a href="#cb40-4" aria-hidden="true" tabindex="-1"></a>rev_war_test <span class="ot">&lt;-</span> rev_war_test <span class="sc">%&gt;%</span></span>
+<span id="cb40-5"><a href="#cb40-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">V2 =</span> <span class="fu">ifelse</span>(<span class="fu">is.na</span>(V2), <span class="st">""</span>, V2),</span>
+<span id="cb40-6"><a href="#cb40-6" aria-hidden="true" tabindex="-1"></a>         <span class="at">V3 =</span> <span class="fu">ifelse</span>(<span class="fu">is.na</span>(V3), <span class="st">""</span>, V3),</span>
+<span id="cb40-7"><a href="#cb40-7" aria-hidden="true" tabindex="-1"></a>         <span class="at">V1 =</span> <span class="fu">str_to_title</span>(V1),</span>
+<span id="cb40-8"><a href="#cb40-8" aria-hidden="true" tabindex="-1"></a>         <span class="at">V2 =</span> <span class="fu">str_to_title</span>(V2),</span>
+<span id="cb40-9"><a href="#cb40-9" aria-hidden="true" tabindex="-1"></a>         <span class="at">V3 =</span> <span class="fu">str_to_title</span>(V3)</span>
+<span id="cb40-10"><a href="#cb40-10" aria-hidden="true" tabindex="-1"></a>         )</span>
+<span id="cb40-11"><a href="#cb40-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb40-12"><a href="#cb40-12" aria-hidden="true" tabindex="-1"></a>rev_war_test</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 74 × 8
    name_unclean                 first_name V1    V2    V3    suffix url   SAR_ID
@@ -473,53 +621,53 @@ The following object is masked from 'package:readr':
 </div>
 <p>My plan was to match on the first variation, then for those that failed to match, match on the second variation, and so on. I was mildly hopeful that the first variation was the variation that my father used in his Excel table. So, I did a quick check using an inner join. My father had mentioned that there wouldn’t be many matches- maybe 5 or 6, because he hadn’t found most of the graves yet.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb39"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a><span class="co">#first round matching</span></span>
-<span id="cb39-2"><a href="#cb39-2" aria-hidden="true" tabindex="-1"></a>rev_war_test <span class="ot">&lt;-</span> rev_war_test <span class="sc">%&gt;%</span></span>
-<span id="cb39-3"><a href="#cb39-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">match_1 =</span> <span class="fu">paste0</span>(V1, <span class="st">" "</span>, first_name))</span>
-<span id="cb39-4"><a href="#cb39-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb39-5"><a href="#cb39-5" aria-hidden="true" tabindex="-1"></a>matched_records <span class="ot">&lt;-</span> rev_war_test <span class="sc">%&gt;%</span> </span>
-<span id="cb39-6"><a href="#cb39-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">inner_join</span>(data_file, <span class="at">by =</span> <span class="fu">c</span>(<span class="st">"match_1"</span> <span class="ot">=</span> <span class="st">"full_name"</span>))</span>
-<span id="cb39-7"><a href="#cb39-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb39-8"><a href="#cb39-8" aria-hidden="true" tabindex="-1"></a>dob_filter <span class="ot">&lt;-</span> matched_records <span class="sc">%&gt;%</span></span>
-<span id="cb39-9"><a href="#cb39-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(name_unclean,</span>
-<span id="cb39-10"><a href="#cb39-10" aria-hidden="true" tabindex="-1"></a>         Surname,</span>
-<span id="cb39-11"><a href="#cb39-11" aria-hidden="true" tabindex="-1"></a>         First.Name,</span>
-<span id="cb39-12"><a href="#cb39-12" aria-hidden="true" tabindex="-1"></a>         Middle.Name,</span>
-<span id="cb39-13"><a href="#cb39-13" aria-hidden="true" tabindex="-1"></a>         DOB_date,</span>
-<span id="cb39-14"><a href="#cb39-14" aria-hidden="true" tabindex="-1"></a>         DOD_date) <span class="sc">%&gt;%</span> </span>
-<span id="cb39-15"><a href="#cb39-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="fu">is.na</span>(DOB_date) <span class="sc">==</span> <span class="cn">FALSE</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb39-16"><a href="#cb39-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="fu">year</span>(DOB_date) <span class="sc">&lt;</span> <span class="dv">1784</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb42"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a><span class="co">#first round matching</span></span>
+<span id="cb42-2"><a href="#cb42-2" aria-hidden="true" tabindex="-1"></a>rev_war_test <span class="ot">&lt;-</span> rev_war_test <span class="sc">%&gt;%</span></span>
+<span id="cb42-3"><a href="#cb42-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">match_1 =</span> <span class="fu">paste0</span>(V1, <span class="st">" "</span>, first_name))</span>
+<span id="cb42-4"><a href="#cb42-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb42-5"><a href="#cb42-5" aria-hidden="true" tabindex="-1"></a>matched_records <span class="ot">&lt;-</span> rev_war_test <span class="sc">%&gt;%</span> </span>
+<span id="cb42-6"><a href="#cb42-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">inner_join</span>(data_file, <span class="at">by =</span> <span class="fu">c</span>(<span class="st">"match_1"</span> <span class="ot">=</span> <span class="st">"full_name"</span>))</span>
+<span id="cb42-7"><a href="#cb42-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb42-8"><a href="#cb42-8" aria-hidden="true" tabindex="-1"></a>dob_filter <span class="ot">&lt;-</span> matched_records <span class="sc">%&gt;%</span></span>
+<span id="cb42-9"><a href="#cb42-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(name_unclean,</span>
+<span id="cb42-10"><a href="#cb42-10" aria-hidden="true" tabindex="-1"></a>         Surname,</span>
+<span id="cb42-11"><a href="#cb42-11" aria-hidden="true" tabindex="-1"></a>         First.Name,</span>
+<span id="cb42-12"><a href="#cb42-12" aria-hidden="true" tabindex="-1"></a>         Middle.Name,</span>
+<span id="cb42-13"><a href="#cb42-13" aria-hidden="true" tabindex="-1"></a>         DOB_date,</span>
+<span id="cb42-14"><a href="#cb42-14" aria-hidden="true" tabindex="-1"></a>         DOD_date) <span class="sc">%&gt;%</span> </span>
+<span id="cb42-15"><a href="#cb42-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="fu">is.na</span>(DOB_date) <span class="sc">==</span> <span class="cn">FALSE</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb42-16"><a href="#cb42-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="fu">year</span>(DOB_date) <span class="sc">&lt;</span> <span class="dv">1784</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Filter on DOB</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb40"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a>dob_filter <span class="ot">&lt;-</span></span>
-<span id="cb40-2"><a href="#cb40-2" aria-hidden="true" tabindex="-1"></a>  matched_records <span class="sc">%&gt;%</span></span>
-<span id="cb40-3"><a href="#cb40-3" aria-hidden="true" tabindex="-1"></a>  <span class="co"># select(name_unclean,</span></span>
-<span id="cb40-4"><a href="#cb40-4" aria-hidden="true" tabindex="-1"></a>  <span class="co">#        Surname,</span></span>
-<span id="cb40-5"><a href="#cb40-5" aria-hidden="true" tabindex="-1"></a>  <span class="co">#        First.Name,</span></span>
-<span id="cb40-6"><a href="#cb40-6" aria-hidden="true" tabindex="-1"></a>  <span class="co">#        Middle.Name,</span></span>
-<span id="cb40-7"><a href="#cb40-7" aria-hidden="true" tabindex="-1"></a>  <span class="co">#        DOB_date,</span></span>
-<span id="cb40-8"><a href="#cb40-8" aria-hidden="true" tabindex="-1"></a>  <span class="co">#        DOD_date) %&gt;%</span></span>
-<span id="cb40-9"><a href="#cb40-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="fu">is.na</span>(DOB_date) <span class="sc">==</span> <span class="cn">FALSE</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb40-10"><a href="#cb40-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="fu">year</span>(DOB_date) <span class="sc">&lt;</span> <span class="dv">1784</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb43"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a>dob_filter <span class="ot">&lt;-</span></span>
+<span id="cb43-2"><a href="#cb43-2" aria-hidden="true" tabindex="-1"></a>  matched_records <span class="sc">%&gt;%</span></span>
+<span id="cb43-3"><a href="#cb43-3" aria-hidden="true" tabindex="-1"></a>  <span class="co"># select(name_unclean,</span></span>
+<span id="cb43-4"><a href="#cb43-4" aria-hidden="true" tabindex="-1"></a>  <span class="co">#        Surname,</span></span>
+<span id="cb43-5"><a href="#cb43-5" aria-hidden="true" tabindex="-1"></a>  <span class="co">#        First.Name,</span></span>
+<span id="cb43-6"><a href="#cb43-6" aria-hidden="true" tabindex="-1"></a>  <span class="co">#        Middle.Name,</span></span>
+<span id="cb43-7"><a href="#cb43-7" aria-hidden="true" tabindex="-1"></a>  <span class="co">#        DOB_date,</span></span>
+<span id="cb43-8"><a href="#cb43-8" aria-hidden="true" tabindex="-1"></a>  <span class="co">#        DOD_date) %&gt;%</span></span>
+<span id="cb43-9"><a href="#cb43-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="fu">is.na</span>(DOB_date) <span class="sc">==</span> <span class="cn">FALSE</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb43-10"><a href="#cb43-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="fu">year</span>(DOB_date) <span class="sc">&lt;</span> <span class="dv">1784</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Now DOD</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb41"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a>dod_filter <span class="ot">&lt;-</span></span>
-<span id="cb41-2"><a href="#cb41-2" aria-hidden="true" tabindex="-1"></a>  matched_records <span class="sc">%&gt;%</span></span>
-<span id="cb41-3"><a href="#cb41-3" aria-hidden="true" tabindex="-1"></a>  <span class="co"># select(name_unclean,</span></span>
-<span id="cb41-4"><a href="#cb41-4" aria-hidden="true" tabindex="-1"></a>  <span class="co">#        Surname,</span></span>
-<span id="cb41-5"><a href="#cb41-5" aria-hidden="true" tabindex="-1"></a>  <span class="co">#        First.Name,</span></span>
-<span id="cb41-6"><a href="#cb41-6" aria-hidden="true" tabindex="-1"></a>  <span class="co">#        Middle.Name,</span></span>
-<span id="cb41-7"><a href="#cb41-7" aria-hidden="true" tabindex="-1"></a>  <span class="co">#        DOB_date,</span></span>
-<span id="cb41-8"><a href="#cb41-8" aria-hidden="true" tabindex="-1"></a>  <span class="co">#        DOD_date) %&gt;%</span></span>
-<span id="cb41-9"><a href="#cb41-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="fu">is.na</span>(DOD_date) <span class="sc">==</span> <span class="cn">FALSE</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb41-10"><a href="#cb41-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="fu">year</span>(DOD_date) <span class="sc">&lt;</span> <span class="dv">1866</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb44"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a>dod_filter <span class="ot">&lt;-</span></span>
+<span id="cb44-2"><a href="#cb44-2" aria-hidden="true" tabindex="-1"></a>  matched_records <span class="sc">%&gt;%</span></span>
+<span id="cb44-3"><a href="#cb44-3" aria-hidden="true" tabindex="-1"></a>  <span class="co"># select(name_unclean,</span></span>
+<span id="cb44-4"><a href="#cb44-4" aria-hidden="true" tabindex="-1"></a>  <span class="co">#        Surname,</span></span>
+<span id="cb44-5"><a href="#cb44-5" aria-hidden="true" tabindex="-1"></a>  <span class="co">#        First.Name,</span></span>
+<span id="cb44-6"><a href="#cb44-6" aria-hidden="true" tabindex="-1"></a>  <span class="co">#        Middle.Name,</span></span>
+<span id="cb44-7"><a href="#cb44-7" aria-hidden="true" tabindex="-1"></a>  <span class="co">#        DOB_date,</span></span>
+<span id="cb44-8"><a href="#cb44-8" aria-hidden="true" tabindex="-1"></a>  <span class="co">#        DOD_date) %&gt;%</span></span>
+<span id="cb44-9"><a href="#cb44-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="fu">is.na</span>(DOD_date) <span class="sc">==</span> <span class="cn">FALSE</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb44-10"><a href="#cb44-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="fu">year</span>(DOD_date) <span class="sc">&lt;</span> <span class="dv">1866</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Now full join the two sets.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb42"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a>all_matches <span class="ot">&lt;-</span> dob_filter <span class="sc">%&gt;%</span></span>
-<span id="cb42-2"><a href="#cb42-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">full_join</span>(dod_filter)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb45"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a>all_matches <span class="ot">&lt;-</span> dob_filter <span class="sc">%&gt;%</span></span>
+<span id="cb45-2"><a href="#cb45-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">full_join</span>(dod_filter)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stderr">
 <pre><code>Joining with `by = join_by(name_unclean, first_name, V1, V2, V3, suffix, url,
 SAR_ID, match_1, photos_Matched_Round1, Surname, First.Name, Middle.Name,
@@ -533,28 +681,28 @@ cemetery_name)`</code></pre>
 </div>
 <p>Final results</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb44"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a>all_matches <span class="sc">%&gt;%</span> </span>
-<span id="cb44-2"><a href="#cb44-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(name_unclean) <span class="sc">%&gt;%</span></span>
-<span id="cb44-3"><a href="#cb44-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">gt</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb47"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb47-1"><a href="#cb47-1" aria-hidden="true" tabindex="-1"></a>all_matches <span class="sc">%&gt;%</span> </span>
+<span id="cb47-2"><a href="#cb47-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(name_unclean) <span class="sc">%&gt;%</span></span>
+<span id="cb47-3"><a href="#cb47-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">gt</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 
-<div id="bcefvdtqzo" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
-<style>#bcefvdtqzo table {
+<div id="dogdtskxbf" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>#dogdtskxbf table {
   font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-#bcefvdtqzo thead, #bcefvdtqzo tbody, #bcefvdtqzo tfoot, #bcefvdtqzo tr, #bcefvdtqzo td, #bcefvdtqzo th {
+#dogdtskxbf thead, #dogdtskxbf tbody, #dogdtskxbf tfoot, #dogdtskxbf tr, #dogdtskxbf td, #dogdtskxbf th {
   border-style: none;
 }
 
-#bcefvdtqzo p {
+#dogdtskxbf p {
   margin: 0;
   padding: 0;
 }
 
-#bcefvdtqzo .gt_table {
+#dogdtskxbf .gt_table {
   display: table;
   border-collapse: collapse;
   line-height: normal;
@@ -580,12 +728,12 @@ cemetery_name)`</code></pre>
   border-left-color: #D3D3D3;
 }
 
-#bcefvdtqzo .gt_caption {
+#dogdtskxbf .gt_caption {
   padding-top: 4px;
   padding-bottom: 4px;
 }
 
-#bcefvdtqzo .gt_title {
+#dogdtskxbf .gt_title {
   color: #333333;
   font-size: 125%;
   font-weight: initial;
@@ -597,7 +745,7 @@ cemetery_name)`</code></pre>
   border-bottom-width: 0;
 }
 
-#bcefvdtqzo .gt_subtitle {
+#dogdtskxbf .gt_subtitle {
   color: #333333;
   font-size: 85%;
   font-weight: initial;
@@ -609,7 +757,7 @@ cemetery_name)`</code></pre>
   border-top-width: 0;
 }
 
-#bcefvdtqzo .gt_heading {
+#dogdtskxbf .gt_heading {
   background-color: #FFFFFF;
   text-align: center;
   border-bottom-color: #FFFFFF;
@@ -621,13 +769,13 @@ cemetery_name)`</code></pre>
   border-right-color: #D3D3D3;
 }
 
-#bcefvdtqzo .gt_bottom_border {
+#dogdtskxbf .gt_bottom_border {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
 }
 
-#bcefvdtqzo .gt_col_headings {
+#dogdtskxbf .gt_col_headings {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -642,7 +790,7 @@ cemetery_name)`</code></pre>
   border-right-color: #D3D3D3;
 }
 
-#bcefvdtqzo .gt_col_heading {
+#dogdtskxbf .gt_col_heading {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -662,7 +810,7 @@ cemetery_name)`</code></pre>
   overflow-x: hidden;
 }
 
-#bcefvdtqzo .gt_column_spanner_outer {
+#dogdtskxbf .gt_column_spanner_outer {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -674,15 +822,15 @@ cemetery_name)`</code></pre>
   padding-right: 4px;
 }
 
-#bcefvdtqzo .gt_column_spanner_outer:first-child {
+#dogdtskxbf .gt_column_spanner_outer:first-child {
   padding-left: 0;
 }
 
-#bcefvdtqzo .gt_column_spanner_outer:last-child {
+#dogdtskxbf .gt_column_spanner_outer:last-child {
   padding-right: 0;
 }
 
-#bcefvdtqzo .gt_column_spanner {
+#dogdtskxbf .gt_column_spanner {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
@@ -694,11 +842,11 @@ cemetery_name)`</code></pre>
   width: 100%;
 }
 
-#bcefvdtqzo .gt_spanner_row {
+#dogdtskxbf .gt_spanner_row {
   border-bottom-style: hidden;
 }
 
-#bcefvdtqzo .gt_group_heading {
+#dogdtskxbf .gt_group_heading {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -724,7 +872,7 @@ cemetery_name)`</code></pre>
   text-align: left;
 }
 
-#bcefvdtqzo .gt_empty_group_heading {
+#dogdtskxbf .gt_empty_group_heading {
   padding: 0.5px;
   color: #333333;
   background-color: #FFFFFF;
@@ -739,15 +887,15 @@ cemetery_name)`</code></pre>
   vertical-align: middle;
 }
 
-#bcefvdtqzo .gt_from_md > :first-child {
+#dogdtskxbf .gt_from_md > :first-child {
   margin-top: 0;
 }
 
-#bcefvdtqzo .gt_from_md > :last-child {
+#dogdtskxbf .gt_from_md > :last-child {
   margin-bottom: 0;
 }
 
-#bcefvdtqzo .gt_row {
+#dogdtskxbf .gt_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -766,7 +914,7 @@ cemetery_name)`</code></pre>
   overflow-x: hidden;
 }
 
-#bcefvdtqzo .gt_stub {
+#dogdtskxbf .gt_stub {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -779,7 +927,7 @@ cemetery_name)`</code></pre>
   padding-right: 5px;
 }
 
-#bcefvdtqzo .gt_stub_row_group {
+#dogdtskxbf .gt_stub_row_group {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -793,15 +941,15 @@ cemetery_name)`</code></pre>
   vertical-align: top;
 }
 
-#bcefvdtqzo .gt_row_group_first td {
+#dogdtskxbf .gt_row_group_first td {
   border-top-width: 2px;
 }
 
-#bcefvdtqzo .gt_row_group_first th {
+#dogdtskxbf .gt_row_group_first th {
   border-top-width: 2px;
 }
 
-#bcefvdtqzo .gt_summary_row {
+#dogdtskxbf .gt_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -811,16 +959,16 @@ cemetery_name)`</code></pre>
   padding-right: 5px;
 }
 
-#bcefvdtqzo .gt_first_summary_row {
+#dogdtskxbf .gt_first_summary_row {
   border-top-style: solid;
   border-top-color: #D3D3D3;
 }
 
-#bcefvdtqzo .gt_first_summary_row.thick {
+#dogdtskxbf .gt_first_summary_row.thick {
   border-top-width: 2px;
 }
 
-#bcefvdtqzo .gt_last_summary_row {
+#dogdtskxbf .gt_last_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -830,7 +978,7 @@ cemetery_name)`</code></pre>
   border-bottom-color: #D3D3D3;
 }
 
-#bcefvdtqzo .gt_grand_summary_row {
+#dogdtskxbf .gt_grand_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -840,7 +988,7 @@ cemetery_name)`</code></pre>
   padding-right: 5px;
 }
 
-#bcefvdtqzo .gt_first_grand_summary_row {
+#dogdtskxbf .gt_first_grand_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -850,7 +998,7 @@ cemetery_name)`</code></pre>
   border-top-color: #D3D3D3;
 }
 
-#bcefvdtqzo .gt_last_grand_summary_row_top {
+#dogdtskxbf .gt_last_grand_summary_row_top {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -860,11 +1008,11 @@ cemetery_name)`</code></pre>
   border-bottom-color: #D3D3D3;
 }
 
-#bcefvdtqzo .gt_striped {
+#dogdtskxbf .gt_striped {
   background-color: rgba(128, 128, 128, 0.05);
 }
 
-#bcefvdtqzo .gt_table_body {
+#dogdtskxbf .gt_table_body {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -873,7 +1021,7 @@ cemetery_name)`</code></pre>
   border-bottom-color: #D3D3D3;
 }
 
-#bcefvdtqzo .gt_footnotes {
+#dogdtskxbf .gt_footnotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -887,7 +1035,7 @@ cemetery_name)`</code></pre>
   border-right-color: #D3D3D3;
 }
 
-#bcefvdtqzo .gt_footnote {
+#dogdtskxbf .gt_footnote {
   margin: 0px;
   font-size: 90%;
   padding-top: 4px;
@@ -896,7 +1044,7 @@ cemetery_name)`</code></pre>
   padding-right: 5px;
 }
 
-#bcefvdtqzo .gt_sourcenotes {
+#dogdtskxbf .gt_sourcenotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -910,7 +1058,7 @@ cemetery_name)`</code></pre>
   border-right-color: #D3D3D3;
 }
 
-#bcefvdtqzo .gt_sourcenote {
+#dogdtskxbf .gt_sourcenote {
   font-size: 90%;
   padding-top: 4px;
   padding-bottom: 4px;
@@ -918,63 +1066,63 @@ cemetery_name)`</code></pre>
   padding-right: 5px;
 }
 
-#bcefvdtqzo .gt_left {
+#dogdtskxbf .gt_left {
   text-align: left;
 }
 
-#bcefvdtqzo .gt_center {
+#dogdtskxbf .gt_center {
   text-align: center;
 }
 
-#bcefvdtqzo .gt_right {
+#dogdtskxbf .gt_right {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
-#bcefvdtqzo .gt_font_normal {
+#dogdtskxbf .gt_font_normal {
   font-weight: normal;
 }
 
-#bcefvdtqzo .gt_font_bold {
+#dogdtskxbf .gt_font_bold {
   font-weight: bold;
 }
 
-#bcefvdtqzo .gt_font_italic {
+#dogdtskxbf .gt_font_italic {
   font-style: italic;
 }
 
-#bcefvdtqzo .gt_super {
+#dogdtskxbf .gt_super {
   font-size: 65%;
 }
 
-#bcefvdtqzo .gt_footnote_marks {
+#dogdtskxbf .gt_footnote_marks {
   font-size: 75%;
   vertical-align: 0.4em;
   position: initial;
 }
 
-#bcefvdtqzo .gt_asterisk {
+#dogdtskxbf .gt_asterisk {
   font-size: 100%;
   vertical-align: 0;
 }
 
-#bcefvdtqzo .gt_indent_1 {
+#dogdtskxbf .gt_indent_1 {
   text-indent: 5px;
 }
 
-#bcefvdtqzo .gt_indent_2 {
+#dogdtskxbf .gt_indent_2 {
   text-indent: 10px;
 }
 
-#bcefvdtqzo .gt_indent_3 {
+#dogdtskxbf .gt_indent_3 {
   text-indent: 15px;
 }
 
-#bcefvdtqzo .gt_indent_4 {
+#dogdtskxbf .gt_indent_4 {
   text-indent: 20px;
 }
 
-#bcefvdtqzo .gt_indent_5 {
+#dogdtskxbf .gt_indent_5 {
   text-indent: 25px;
 }
 </style>
@@ -1002,17 +1150,17 @@ cemetery_name)`</code></pre>
 </div>
 <p>Let’s see who didn’t match because there were no DOB or DOD.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb45"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a>na_filter1 <span class="ot">&lt;-</span></span>
-<span id="cb45-2"><a href="#cb45-2" aria-hidden="true" tabindex="-1"></a>  matched_records <span class="sc">%&gt;%</span></span>
-<span id="cb45-3"><a href="#cb45-3" aria-hidden="true" tabindex="-1"></a>  <span class="co"># select(name_unclean,</span></span>
-<span id="cb45-4"><a href="#cb45-4" aria-hidden="true" tabindex="-1"></a>  <span class="co">#        Surname,</span></span>
-<span id="cb45-5"><a href="#cb45-5" aria-hidden="true" tabindex="-1"></a>  <span class="co">#        First.Name,</span></span>
-<span id="cb45-6"><a href="#cb45-6" aria-hidden="true" tabindex="-1"></a>  <span class="co">#        Middle.Name,</span></span>
-<span id="cb45-7"><a href="#cb45-7" aria-hidden="true" tabindex="-1"></a>  <span class="co">#        DOB_date,</span></span>
-<span id="cb45-8"><a href="#cb45-8" aria-hidden="true" tabindex="-1"></a>  <span class="co">#        DOD_date) %&gt;%</span></span>
-<span id="cb45-9"><a href="#cb45-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="fu">is.na</span>(DOD_date) <span class="sc">==</span> <span class="cn">TRUE</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb45-10"><a href="#cb45-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="fu">is.na</span>(DOB_date) <span class="sc">==</span> <span class="cn">TRUE</span>) </span>
-<span id="cb45-11"><a href="#cb45-11" aria-hidden="true" tabindex="-1"></a>na_filter1 <span class="sc">%&gt;%</span> <span class="fu">select</span>(name_unclean)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb48"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb48-1"><a href="#cb48-1" aria-hidden="true" tabindex="-1"></a>na_filter1 <span class="ot">&lt;-</span></span>
+<span id="cb48-2"><a href="#cb48-2" aria-hidden="true" tabindex="-1"></a>  matched_records <span class="sc">%&gt;%</span></span>
+<span id="cb48-3"><a href="#cb48-3" aria-hidden="true" tabindex="-1"></a>  <span class="co"># select(name_unclean,</span></span>
+<span id="cb48-4"><a href="#cb48-4" aria-hidden="true" tabindex="-1"></a>  <span class="co">#        Surname,</span></span>
+<span id="cb48-5"><a href="#cb48-5" aria-hidden="true" tabindex="-1"></a>  <span class="co">#        First.Name,</span></span>
+<span id="cb48-6"><a href="#cb48-6" aria-hidden="true" tabindex="-1"></a>  <span class="co">#        Middle.Name,</span></span>
+<span id="cb48-7"><a href="#cb48-7" aria-hidden="true" tabindex="-1"></a>  <span class="co">#        DOB_date,</span></span>
+<span id="cb48-8"><a href="#cb48-8" aria-hidden="true" tabindex="-1"></a>  <span class="co">#        DOD_date) %&gt;%</span></span>
+<span id="cb48-9"><a href="#cb48-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="fu">is.na</span>(DOD_date) <span class="sc">==</span> <span class="cn">TRUE</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb48-10"><a href="#cb48-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="fu">is.na</span>(DOB_date) <span class="sc">==</span> <span class="cn">TRUE</span>) </span>
+<span id="cb48-11"><a href="#cb48-11" aria-hidden="true" tabindex="-1"></a>na_filter1 <span class="sc">%&gt;%</span> <span class="fu">select</span>(name_unclean)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 6 × 1
   name_unclean              
@@ -1027,16 +1175,16 @@ cemetery_name)`</code></pre>
 </div>
 <p>Now DOB</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb47"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb47-1"><a href="#cb47-1" aria-hidden="true" tabindex="-1"></a>na_filter2 <span class="ot">&lt;-</span></span>
-<span id="cb47-2"><a href="#cb47-2" aria-hidden="true" tabindex="-1"></a>  matched_records <span class="sc">%&gt;%</span></span>
-<span id="cb47-3"><a href="#cb47-3" aria-hidden="true" tabindex="-1"></a>  <span class="co"># select(name_unclean,</span></span>
-<span id="cb47-4"><a href="#cb47-4" aria-hidden="true" tabindex="-1"></a>  <span class="co">#        Surname,</span></span>
-<span id="cb47-5"><a href="#cb47-5" aria-hidden="true" tabindex="-1"></a>  <span class="co">#        First.Name,</span></span>
-<span id="cb47-6"><a href="#cb47-6" aria-hidden="true" tabindex="-1"></a>  <span class="co">#        Middle.Name,</span></span>
-<span id="cb47-7"><a href="#cb47-7" aria-hidden="true" tabindex="-1"></a>  <span class="co">#        DOB_date,</span></span>
-<span id="cb47-8"><a href="#cb47-8" aria-hidden="true" tabindex="-1"></a>  <span class="co">#        DOD_date) %&gt;%</span></span>
-<span id="cb47-9"><a href="#cb47-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="fu">is.na</span>(DOD_date) <span class="sc">==</span> <span class="cn">TRUE</span>) </span>
-<span id="cb47-10"><a href="#cb47-10" aria-hidden="true" tabindex="-1"></a>na_filter2 </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb50"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb50-1"><a href="#cb50-1" aria-hidden="true" tabindex="-1"></a>na_filter2 <span class="ot">&lt;-</span></span>
+<span id="cb50-2"><a href="#cb50-2" aria-hidden="true" tabindex="-1"></a>  matched_records <span class="sc">%&gt;%</span></span>
+<span id="cb50-3"><a href="#cb50-3" aria-hidden="true" tabindex="-1"></a>  <span class="co"># select(name_unclean,</span></span>
+<span id="cb50-4"><a href="#cb50-4" aria-hidden="true" tabindex="-1"></a>  <span class="co">#        Surname,</span></span>
+<span id="cb50-5"><a href="#cb50-5" aria-hidden="true" tabindex="-1"></a>  <span class="co">#        First.Name,</span></span>
+<span id="cb50-6"><a href="#cb50-6" aria-hidden="true" tabindex="-1"></a>  <span class="co">#        Middle.Name,</span></span>
+<span id="cb50-7"><a href="#cb50-7" aria-hidden="true" tabindex="-1"></a>  <span class="co">#        DOB_date,</span></span>
+<span id="cb50-8"><a href="#cb50-8" aria-hidden="true" tabindex="-1"></a>  <span class="co">#        DOD_date) %&gt;%</span></span>
+<span id="cb50-9"><a href="#cb50-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="fu">is.na</span>(DOD_date) <span class="sc">==</span> <span class="cn">TRUE</span>) </span>
+<span id="cb50-10"><a href="#cb50-10" aria-hidden="true" tabindex="-1"></a>na_filter2 </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 7 × 46
   name_unclean          first_name V1    V2    V3    suffix url   SAR_ID match_1
@@ -1059,7 +1207,7 @@ cemetery_name)`</code></pre>
 </div>
 <p>And join them</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb49"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb49-1"><a href="#cb49-1" aria-hidden="true" tabindex="-1"></a>na_matches <span class="ot">&lt;-</span> na_filter1 <span class="sc">%&gt;%</span> <span class="fu">full_join</span>(na_filter2)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb52"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb52-1"><a href="#cb52-1" aria-hidden="true" tabindex="-1"></a>na_matches <span class="ot">&lt;-</span> na_filter1 <span class="sc">%&gt;%</span> <span class="fu">full_join</span>(na_filter2)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stderr">
 <pre><code>Joining with `by = join_by(name_unclean, first_name, V1, V2, V3, suffix, url,
 SAR_ID, match_1, photos_Matched_Round1, Surname, First.Name, Middle.Name,
@@ -1070,26 +1218,26 @@ full_name_MI, full_name_MI_no_space, photos_Matched_Round2,
 photos_Matched_Round3, photos_Matched_Round4, photo_list, complete_name,
 cemetery_name)`</code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb51"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb51-1"><a href="#cb51-1" aria-hidden="true" tabindex="-1"></a>na_matches <span class="sc">%&gt;%</span> <span class="fu">select</span>(name_unclean) <span class="sc">%&gt;%</span> <span class="fu">gt</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb54"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb54-1"><a href="#cb54-1" aria-hidden="true" tabindex="-1"></a>na_matches <span class="sc">%&gt;%</span> <span class="fu">select</span>(name_unclean) <span class="sc">%&gt;%</span> <span class="fu">gt</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 
-<div id="urdkaktixb" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
-<style>#urdkaktixb table {
+<div id="sqbnopjsai" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>#sqbnopjsai table {
   font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-#urdkaktixb thead, #urdkaktixb tbody, #urdkaktixb tfoot, #urdkaktixb tr, #urdkaktixb td, #urdkaktixb th {
+#sqbnopjsai thead, #sqbnopjsai tbody, #sqbnopjsai tfoot, #sqbnopjsai tr, #sqbnopjsai td, #sqbnopjsai th {
   border-style: none;
 }
 
-#urdkaktixb p {
+#sqbnopjsai p {
   margin: 0;
   padding: 0;
 }
 
-#urdkaktixb .gt_table {
+#sqbnopjsai .gt_table {
   display: table;
   border-collapse: collapse;
   line-height: normal;
@@ -1115,12 +1263,12 @@ cemetery_name)`</code></pre>
   border-left-color: #D3D3D3;
 }
 
-#urdkaktixb .gt_caption {
+#sqbnopjsai .gt_caption {
   padding-top: 4px;
   padding-bottom: 4px;
 }
 
-#urdkaktixb .gt_title {
+#sqbnopjsai .gt_title {
   color: #333333;
   font-size: 125%;
   font-weight: initial;
@@ -1132,7 +1280,7 @@ cemetery_name)`</code></pre>
   border-bottom-width: 0;
 }
 
-#urdkaktixb .gt_subtitle {
+#sqbnopjsai .gt_subtitle {
   color: #333333;
   font-size: 85%;
   font-weight: initial;
@@ -1144,7 +1292,7 @@ cemetery_name)`</code></pre>
   border-top-width: 0;
 }
 
-#urdkaktixb .gt_heading {
+#sqbnopjsai .gt_heading {
   background-color: #FFFFFF;
   text-align: center;
   border-bottom-color: #FFFFFF;
@@ -1156,13 +1304,13 @@ cemetery_name)`</code></pre>
   border-right-color: #D3D3D3;
 }
 
-#urdkaktixb .gt_bottom_border {
+#sqbnopjsai .gt_bottom_border {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
 }
 
-#urdkaktixb .gt_col_headings {
+#sqbnopjsai .gt_col_headings {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -1177,7 +1325,7 @@ cemetery_name)`</code></pre>
   border-right-color: #D3D3D3;
 }
 
-#urdkaktixb .gt_col_heading {
+#sqbnopjsai .gt_col_heading {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1197,7 +1345,7 @@ cemetery_name)`</code></pre>
   overflow-x: hidden;
 }
 
-#urdkaktixb .gt_column_spanner_outer {
+#sqbnopjsai .gt_column_spanner_outer {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1209,15 +1357,15 @@ cemetery_name)`</code></pre>
   padding-right: 4px;
 }
 
-#urdkaktixb .gt_column_spanner_outer:first-child {
+#sqbnopjsai .gt_column_spanner_outer:first-child {
   padding-left: 0;
 }
 
-#urdkaktixb .gt_column_spanner_outer:last-child {
+#sqbnopjsai .gt_column_spanner_outer:last-child {
   padding-right: 0;
 }
 
-#urdkaktixb .gt_column_spanner {
+#sqbnopjsai .gt_column_spanner {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
@@ -1229,11 +1377,11 @@ cemetery_name)`</code></pre>
   width: 100%;
 }
 
-#urdkaktixb .gt_spanner_row {
+#sqbnopjsai .gt_spanner_row {
   border-bottom-style: hidden;
 }
 
-#urdkaktixb .gt_group_heading {
+#sqbnopjsai .gt_group_heading {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1259,7 +1407,7 @@ cemetery_name)`</code></pre>
   text-align: left;
 }
 
-#urdkaktixb .gt_empty_group_heading {
+#sqbnopjsai .gt_empty_group_heading {
   padding: 0.5px;
   color: #333333;
   background-color: #FFFFFF;
@@ -1274,15 +1422,15 @@ cemetery_name)`</code></pre>
   vertical-align: middle;
 }
 
-#urdkaktixb .gt_from_md > :first-child {
+#sqbnopjsai .gt_from_md > :first-child {
   margin-top: 0;
 }
 
-#urdkaktixb .gt_from_md > :last-child {
+#sqbnopjsai .gt_from_md > :last-child {
   margin-bottom: 0;
 }
 
-#urdkaktixb .gt_row {
+#sqbnopjsai .gt_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1301,7 +1449,7 @@ cemetery_name)`</code></pre>
   overflow-x: hidden;
 }
 
-#urdkaktixb .gt_stub {
+#sqbnopjsai .gt_stub {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1314,7 +1462,7 @@ cemetery_name)`</code></pre>
   padding-right: 5px;
 }
 
-#urdkaktixb .gt_stub_row_group {
+#sqbnopjsai .gt_stub_row_group {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1328,15 +1476,15 @@ cemetery_name)`</code></pre>
   vertical-align: top;
 }
 
-#urdkaktixb .gt_row_group_first td {
+#sqbnopjsai .gt_row_group_first td {
   border-top-width: 2px;
 }
 
-#urdkaktixb .gt_row_group_first th {
+#sqbnopjsai .gt_row_group_first th {
   border-top-width: 2px;
 }
 
-#urdkaktixb .gt_summary_row {
+#sqbnopjsai .gt_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -1346,16 +1494,16 @@ cemetery_name)`</code></pre>
   padding-right: 5px;
 }
 
-#urdkaktixb .gt_first_summary_row {
+#sqbnopjsai .gt_first_summary_row {
   border-top-style: solid;
   border-top-color: #D3D3D3;
 }
 
-#urdkaktixb .gt_first_summary_row.thick {
+#sqbnopjsai .gt_first_summary_row.thick {
   border-top-width: 2px;
 }
 
-#urdkaktixb .gt_last_summary_row {
+#sqbnopjsai .gt_last_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1365,7 +1513,7 @@ cemetery_name)`</code></pre>
   border-bottom-color: #D3D3D3;
 }
 
-#urdkaktixb .gt_grand_summary_row {
+#sqbnopjsai .gt_grand_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -1375,7 +1523,7 @@ cemetery_name)`</code></pre>
   padding-right: 5px;
 }
 
-#urdkaktixb .gt_first_grand_summary_row {
+#sqbnopjsai .gt_first_grand_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1385,7 +1533,7 @@ cemetery_name)`</code></pre>
   border-top-color: #D3D3D3;
 }
 
-#urdkaktixb .gt_last_grand_summary_row_top {
+#sqbnopjsai .gt_last_grand_summary_row_top {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1395,11 +1543,11 @@ cemetery_name)`</code></pre>
   border-bottom-color: #D3D3D3;
 }
 
-#urdkaktixb .gt_striped {
+#sqbnopjsai .gt_striped {
   background-color: rgba(128, 128, 128, 0.05);
 }
 
-#urdkaktixb .gt_table_body {
+#sqbnopjsai .gt_table_body {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -1408,7 +1556,7 @@ cemetery_name)`</code></pre>
   border-bottom-color: #D3D3D3;
 }
 
-#urdkaktixb .gt_footnotes {
+#sqbnopjsai .gt_footnotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -1422,7 +1570,7 @@ cemetery_name)`</code></pre>
   border-right-color: #D3D3D3;
 }
 
-#urdkaktixb .gt_footnote {
+#sqbnopjsai .gt_footnote {
   margin: 0px;
   font-size: 90%;
   padding-top: 4px;
@@ -1431,7 +1579,7 @@ cemetery_name)`</code></pre>
   padding-right: 5px;
 }
 
-#urdkaktixb .gt_sourcenotes {
+#sqbnopjsai .gt_sourcenotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -1445,7 +1593,7 @@ cemetery_name)`</code></pre>
   border-right-color: #D3D3D3;
 }
 
-#urdkaktixb .gt_sourcenote {
+#sqbnopjsai .gt_sourcenote {
   font-size: 90%;
   padding-top: 4px;
   padding-bottom: 4px;
@@ -1453,63 +1601,63 @@ cemetery_name)`</code></pre>
   padding-right: 5px;
 }
 
-#urdkaktixb .gt_left {
+#sqbnopjsai .gt_left {
   text-align: left;
 }
 
-#urdkaktixb .gt_center {
+#sqbnopjsai .gt_center {
   text-align: center;
 }
 
-#urdkaktixb .gt_right {
+#sqbnopjsai .gt_right {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
-#urdkaktixb .gt_font_normal {
+#sqbnopjsai .gt_font_normal {
   font-weight: normal;
 }
 
-#urdkaktixb .gt_font_bold {
+#sqbnopjsai .gt_font_bold {
   font-weight: bold;
 }
 
-#urdkaktixb .gt_font_italic {
+#sqbnopjsai .gt_font_italic {
   font-style: italic;
 }
 
-#urdkaktixb .gt_super {
+#sqbnopjsai .gt_super {
   font-size: 65%;
 }
 
-#urdkaktixb .gt_footnote_marks {
+#sqbnopjsai .gt_footnote_marks {
   font-size: 75%;
   vertical-align: 0.4em;
   position: initial;
 }
 
-#urdkaktixb .gt_asterisk {
+#sqbnopjsai .gt_asterisk {
   font-size: 100%;
   vertical-align: 0;
 }
 
-#urdkaktixb .gt_indent_1 {
+#sqbnopjsai .gt_indent_1 {
   text-indent: 5px;
 }
 
-#urdkaktixb .gt_indent_2 {
+#sqbnopjsai .gt_indent_2 {
   text-indent: 10px;
 }
 
-#urdkaktixb .gt_indent_3 {
+#sqbnopjsai .gt_indent_3 {
   text-indent: 15px;
 }
 
-#urdkaktixb .gt_indent_4 {
+#sqbnopjsai .gt_indent_4 {
   text-indent: 20px;
 }
 
-#urdkaktixb .gt_indent_5 {
+#sqbnopjsai .gt_indent_5 {
   text-indent: 25px;
 }
 </style>
@@ -1591,15 +1739,15 @@ cemetery_name)`</code></pre>
 <p>Does this run? No, of course not! First, this is a terrible example anyway because none of the strings can be split into two parts based on that regex. (‘A A A’ or ‘a B a’ or something like that would be a much better choice.) You certainly won’t get the output that Bard predicts. Remember, the separator gets discarded. For row one, the separator is “&nbsp; A” and there is no part one and no part two. Same with row 2. C should be the prefix and the letter should be NA. There is no separator in this case. Lots of warnings are going to be generated by this…</p>
 <p>I’m not sure where the extra r in <code>sep = r"\s+[A-Z]"</code> came from. You can fix that and get it to run.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb52"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb52-1"><a href="#cb52-1" aria-hidden="true" tabindex="-1"></a>data <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
-<span id="cb52-2"><a href="#cb52-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb52-3"><a href="#cb52-3" aria-hidden="true" tabindex="-1"></a><span class="at">text =</span> <span class="fu">c</span>(<span class="st">"  A"</span>, <span class="st">"   B"</span>, <span class="st">"C"</span>),</span>
-<span id="cb52-4"><a href="#cb52-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb52-5"><a href="#cb52-5" aria-hidden="true" tabindex="-1"></a><span class="at">stringsAsFactors =</span> <span class="cn">FALSE</span></span>
-<span id="cb52-6"><a href="#cb52-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb52-7"><a href="#cb52-7" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb52-8"><a href="#cb52-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb52-9"><a href="#cb52-9" aria-hidden="true" tabindex="-1"></a>data <span class="sc">%&gt;%</span> <span class="fu">separate</span>(text, <span class="at">into =</span> <span class="fu">c</span>(<span class="st">"prefix"</span>, <span class="st">"letter"</span>), <span class="at">sep =</span> <span class="st">"</span><span class="sc">\\</span><span class="st">s+[A-Z]"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb55"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb55-1"><a href="#cb55-1" aria-hidden="true" tabindex="-1"></a>data <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
+<span id="cb55-2"><a href="#cb55-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb55-3"><a href="#cb55-3" aria-hidden="true" tabindex="-1"></a><span class="at">text =</span> <span class="fu">c</span>(<span class="st">"  A"</span>, <span class="st">"   B"</span>, <span class="st">"C"</span>),</span>
+<span id="cb55-4"><a href="#cb55-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb55-5"><a href="#cb55-5" aria-hidden="true" tabindex="-1"></a><span class="at">stringsAsFactors =</span> <span class="cn">FALSE</span></span>
+<span id="cb55-6"><a href="#cb55-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb55-7"><a href="#cb55-7" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb55-8"><a href="#cb55-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb55-9"><a href="#cb55-9" aria-hidden="true" tabindex="-1"></a>data <span class="sc">%&gt;%</span> <span class="fu">separate</span>(text, <span class="at">into =</span> <span class="fu">c</span>(<span class="st">"prefix"</span>, <span class="st">"letter"</span>), <span class="at">sep =</span> <span class="st">"</span><span class="sc">\\</span><span class="st">s+[A-Z]"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stderr">
 <pre><code>Warning: Expected 2 pieces. Missing pieces filled with `NA` in 1 rows [3].</code></pre>
 </div>
@@ -1615,16 +1763,7 @@ cemetery_name)`</code></pre>
 <p>Again, this also doesn’t run, even with the r removed because <code>\\\\\s</code> is not <code>\\s</code>. Adding extra random slashes does not improve your code.</p>
 </section>
 
-<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents"><h2 class="anchored quarto-appendix-heading">Citation</h2><div><div class="quarto-appendix-secondary-label">BibTeX citation:</div><pre class="sourceCode code-with-copy quarto-appendix-bibtex"><code class="sourceCode bibtex">@online{e. sinks2023,
-  author = {E. Sinks, Louise},
-  title = {Web-Scraping},
-  date = {2023-08-16},
-  url = {https://lsinks.github.io/posts/2023-06-29-tidytuesday-US-populated-places-leaflet/arlington-neighborhoods-leaflet},
-  langid = {en}
-}
-</code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre><div class="quarto-appendix-secondary-label">For attribution, please cite this work as:</div><div id="ref-e. sinks2023" class="csl-entry quarto-appendix-citeas" role="listitem">
-E. Sinks, Louise. 2023. <span>“Web-Scraping.”</span> August 16, 2023. <a href="https://lsinks.github.io/posts/2023-06-29-tidytuesday-US-populated-places-leaflet/arlington-neighborhoods-leaflet">https://lsinks.github.io/posts/2023-06-29-tidytuesday-US-populated-places-leaflet/arlington-neighborhoods-leaflet</a>.
-</div></div></section></div></main>
+
 <!-- /main column -->
 <script id="quarto-html-after-body" type="application/javascript">
 window.document.addEventListener("DOMContentLoaded", function (event) {
@@ -1859,8 +1998,19 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
   }
 });
 </script>
-</div> <!-- /content -->
+ <!-- /content -->
+<script>videojs(video_shortcode_videojs_video1);</script>
+<script>videojs(video_shortcode_videojs_video2);</script>
 
 
 
-</body></html>
+</td></tr></tbody></table></section></section><div id="quarto-appendix" class="default"><section class="quarto-appendix-contents"><h2 class="anchored quarto-appendix-heading">Citation</h2><div><div class="quarto-appendix-secondary-label">BibTeX citation:</div><pre class="sourceCode code-with-copy quarto-appendix-bibtex"><code class="sourceCode bibtex">@online{e. sinks2023,
+  author = {E. Sinks, Louise},
+  title = {Web-Scraping},
+  date = {2023-08-16},
+  url = {https://lsinks.github.io/posts/2023-06-29-tidytuesday-US-populated-places-leaflet/arlington-neighborhoods-leaflet},
+  langid = {en}
+}
+</code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre><div class="quarto-appendix-secondary-label">For attribution, please cite this work as:</div><div id="ref-e. sinks2023" class="csl-entry quarto-appendix-citeas" role="listitem">
+E. Sinks, Louise. 2023. <span>“Web-Scraping.”</span> August 16, 2023. <a href="https://lsinks.github.io/posts/2023-06-29-tidytuesday-US-populated-places-leaflet/arlington-neighborhoods-leaflet">https://lsinks.github.io/posts/2023-06-29-tidytuesday-US-populated-places-leaflet/arlington-neighborhoods-leaflet</a>.
+</div></div></section></div></main></div></body></html>

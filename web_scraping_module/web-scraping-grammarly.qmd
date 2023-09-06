@@ -11,10 +11,10 @@ categories: [R, TidyTuesday, R-code, Data-Viz, sf, leaflet] # self-defined categ
 citation:
   url: https://lsinks.github.io/posts/2023-06-29-tidytuesday-US-populated-places-leaflet/arlington-neighborhoods-leaflet
 image: "thumbnail.png"
-draft: false # setting this to `true` will prevent your post from appearing on your listing page until you're ready!
+draft: true # setting this to `true` will prevent your post from appearing on your listing page until you're ready!
 ---
 
-# **Project Overview**
+## **Tombstone Project Overview**
 
 I'm working on a project for my father that will culminate in a website for his genealogy research. [There are a couple of different parts](https://lsinks.github.io/currentprojects.html) that I'm working on independently. In a [previous part of the project](https://lsinks.github.io/posts/2023-08-04-data-cleaning-tombstone/tombstones_data_cleaning.html), I matched an Excel sheet with GPS coordinates and some biographic data with photos of various tombstones. I then used that data to make a l[eaflet map of various family grave sites](https://lsinks.github.io/posts/2023-08-14-mapping-tombstone/tombstone_mapping_leaflet.html).
 
@@ -22,7 +22,7 @@ I wanted to add more information beyond the information on the tombstone. My fat
 
 This blog post deals with scraping the data from the website, wrangling it into a format where it could be matched against my father's spreadsheet, and then looking for matches. (Every part of this series has ended up being more data wrangling and cleaning than I could have envisioned with just a touch of whatever neat thing I actually wanted to do.) I'll also talk a bit about including some code from Google Bard.
 
-# Loading Libraries and Data
+## Loading Libraries and Data
 
 ```{r}
 #| label: loading-libraries
@@ -34,7 +34,7 @@ library(openxlsx)
 library(xml2)
 ```
 
-**This is my father's spreadsheet after some clean-up.**
+This is my father's spreadsheet after some clean-up. I go into the process in detail [here](https://lsinks.github.io/posts/2023-08-04-data-cleaning-tombstone/tombstones_data_cleaning.html).
 
 ```{r}
 #| label: loading-spreadsheet
@@ -42,62 +42,206 @@ library(xml2)
 data_file <- readRDS(here("data_cleaning", "tombstones_matched_final.RDS"))
 ```
 
-# Conceptual Overview of Web Scraping
+## Conceptual Overview of Web Scraping
 
-You want to find the HTML elements corresponding to the data you wish to obtain. There are a few ways to do this. One is to right-click on the webpage in your browser and choose "inspect" to find out what elements you want to use (select the elements tab). Many items may have the same elements, so you probably need to construct sets of elements to get to the right things.
+Web scraping is extracting data from a website. If you know what web scraping is, you probably envision high-volume automated processes that extracts large quantities of data. This type of web scraping has some ethical and legal concerns which I'll discuss in the next section. However, many of the tools and processes you need to understand to web scrape effectively can be practiced in a low-volume, non-automated way. This is the skill set I'm going to focus on in this tutorial.
 
-Another way is to use the [SelectorGadget](https://rvest.tidyverse.org/articles/selectorgadget.html). The SelectorGadget is iterative. You need to keep clicking on
+1.  Acquire the webpage
+2.  Identify the HTML elements you wish to extract
+3.  Clean and wrangle the data into a format you can work with
+4.  Automate by looping through webpages to acquire additional information
 
-# Ethics and Legality of Web Scraping
+## Ethics and Legality of Web Scraping
 
-# Webscraping with rvest
+Web scraping is frequently against the terms of service of many websites. High-volume, high-speed web scraping is also frequently a problem as it can overload the website you are scraping.
 
-I decided to use the [rvest package](https://CRAN.R-project.org/package=rvest) for web scraping. I was introduced to it through [TidyTuesday](https://github.com/rfordatascience/tidytuesday). rvest is a tidyverse package and is installed with the installation of tidyverse. However, it is not [a core tidyverse package](https://www.tidyverse.org/packages/) and does need to be loaded separately with a call to `library()`.
+## Web Scraping with rvest
 
-For politeness's sake, I am working on a downloaded copy of the webpage. The function `read_html()` can also take a URL to read directly from a website.
+I decided to use the [rvest package](https://CRAN.R-project.org/package=rvest) for web scraping. I was introduced to it through [TidyTuesday](https://github.com/rfordatascience/tidytuesday), specifically the [London Marathon dataset](https://github.com/rfordatascience/tidytuesday/blob/master/data/2023/2023-04-25/readme.md), which was drawn from the [London Marathon package](https://github.com/nrennie/LondonMarathon). The author of the package, Nicola Rennie, has a tutorial on how she used [web scraping to create the package](https://nrennie.rbind.io/blog/web-scraping-rvest-london-marathon/).
 
-There is an overview of [webscraping using rvest](https://rvest.tidyverse.org/articles/rvest.html) on the package website.
+rvest is a tidyverse package and is installed with the installation of tidyverse. However, it is not [a core tidyverse package](https://www.tidyverse.org/packages/) and does need to be loaded separately with a call to `library()`.
 
-In my case, the information was formatted as a table, so I pulled out the children of the table element. There is an html_table() function, but it only extracts the text elements from the table, not the links. **And produces a list.** If you are only interested in the text, then this is a great option. To get the links that I wanted, I found an [example on Stack Overflow](https://stackoverflow.com/questions/63093926/retrieve-link-from-html-table-with-rvest).
+For politeness's sake, I am working on a downloaded copy of the webpage. The function `read_html()` can also take a URL to read directly from a website. You don't want to repeatedly be pulling the same data from a website as you are getting your code to work. So you can either work with a downloaded copy or use read_html once and then perform all your manipulations on a copy so you don't have to pull the data again if you mess up your cleaning/wrangling.
+
+### Reading in the Web Page
 
 ```{r}
 #| label: loading-webpage
 sar <- read_html( "Display Member - 121743 - John Douglas Sinks Ph.D..html")
-
-#xml_structure(sar)
-
-
 ```
 
-blah
+What I have now in sar is an xml document object. This seems like a simple list, but is it actually a very complicated object consisting of multiple nested lists.
+
+### Deciding which HTML elements to Extract
+
+The next part is the part that I haven't found a great tutorial on that I can refer you to. Nor do I have a great idea how to teach this- other than trial and error. This has been the main block to publishing this section of the project.
+
+There is a simple example on the [webscraping using rvest](https://rvest.tidyverse.org/articles/rvest.html). This vignette illustrates basic HMTL and CSS elements and shows you how to extract them. The rvest webpage recommends using the [SelectorGadget](https://rvest.tidyverse.org/articles/selectorgadget.html) to identify the elements you want to extract. I didn't use that, but the linked page does have a good explanation.
+
+You can view the source data for your webpage (usually by right clicking in the browser and clicking view source) and just look for the elements you want. This is what I did.
+
+This is what the webpage looks like. It doesn't look particularly complicated. There are 74 rows in the table.
+
+{{< video webpage.mp4 >}}
+
+This is what the source looks like.
+
+{{< video source.mp4 >}}
+
+There are 2260 lines of code involved in making that webpage. I looked for the first name in the table PHELPS in the source code. It shows up at line 451. This is the entire line:
+
+> \<td\>\<a href="<https://sarpatriots.sar.org/patriot/display/335209>"\>\<span style="display:inline;color: #003366"\> \<span style="color:#003366" class="glyphicon glyphicon-user"\>\</span\> John PHELPS \<small\> (P-335209)\</small\>\</span\>\</a\> \</td\>
+
+I see that it is wrapped in td tags. This means this item is being coded as a table cell element. That's good news- if all the data is actually encoded as a table then it is much easier to extract. I can look up how a table should be formatted in html. I found a great resource at the W3Schools: here is [their page on tables](https://www.w3schools.com/tags/tag_td.asp).
+
+A table should be tagged as a table with
+
+<table>
+
+. Each row should be tagged with
+
+<tr>
+
+, and each cell with
+
+<td>
+
+.
+
+> \<table\>\
+>   \<tr\>\
+>     \<td\>Cell A\</td\>\
+>     \<td\>Cell B\</td\>\
+>   \</tr\>\
+> \</table\>
+
+Knowing this, I can now search the source code for table. Why do I need to do this? If there are multiple tables on the page, I want to make sure I extract the correct one. Luckily for me, there is only one table.
+
+HTML is hierachical, and the relationship between the elements is described in the language of families- parent elements, children elements, etc. I want to take the children elements of the table.
+
+I need to understand how the row is structured, so I can select the right element. A row contains 5 cells. The first row is a header row.
+
+![](table_structure.png)
+
+The th tag is a child element of tr and represents table header elements. It should be used instead of td for the header elements. Again, looking at the source code and searching for that tag I can verify that is true. The header row could just be coded as regular table cells, in which case I would need to discard that information during the data cleaning. Again, I'm lucky, and the header is properly encoded with th tags.
+
+My goal is to extract the patriot name and the link associated with it. There are actually 3 columns with links:
+
+1.  **Patriot Name**, which goes to another page with biographical information
+
+2.  **View Application Detail**, which goes to a page with an abbreviated genealogy.
+
+3.  **Click to Purchase**, which goes to a page allowing you to order the full application if you are a member
+
+For my purpose, the link under Patriot Name has the most interesting information and is the one I want. But I'm going to end up with all the links, so I could use any of them.
+
+Since I know I want a hyperlink, I need to understand how that type of element is encoded. Again, the [W3Schools has a great explanation for hyperlinks](https://www.w3schools.com/tags/tag_a.asp).
+
+A hyperlink uses the a tag. The a tag has two parts: the hyperlink (comes after href = ) and the text. The plain text part follows the URL and may also include styling. If we go back to the cell I initially extracted for PHELPS, the href = URL is clear. Then there are some codes for styling, and then the text John PHELPS, more styling, and then a number. The name and the number (P-335209) are both in the text of this element.
+
+> \<td\>\<a href="<https://sarpatriots.sar.org/patriot/display/335209>"\>\<span style="display:inline;color: #003366"\> \<span style="color:#003366" class="glyphicon glyphicon-user"\>\</span\> John PHELPS \<small\> (P-335209)\</small\>\</span\>\</a\> \</td\>
+
+If you only cared about the text in a table, you could easily extract is with `html_table()`. I want the text and the links, so I need to use some lower level functions to extract them.
+
+### Extracting the Links with html_nodes
+
+To get the links that I wanted, I found an [example on Stack Overflow](https://stackoverflow.com/questions/63093926/retrieve-link-from-html-table-with-rvest). (As a side note, I just learned that you could [annotate code in Quarto](https://quarto.org/docs/authoring/code-annotation.html). If you like them much better than free form explanations of the code, please let me know in a comment.)
+
+I've been talking about HTML elements, but you can also extract elements using a notation called XPATH. That is what the Stack Overflow solution uses. I believe you can build much more complicated selectors using XPATH, but for something basic is probably overkill. Here is an [overview/cheat sheet](https://www.scraperapi.com/blog/xpath-cheat-sheet/). Datacamp also has a [course on web scraping in R](https://app.datacamp.com/learn/courses/web-scraping-in-r) where they go through selecting with HTML/ CSS and XPATH, but I honestly found it very confusing. I took the course twice (and did the coding for this project in between) and still couldn't solve many of the problems.
+
+Anyway, here we go:
 
 ```{r}
-link_nodes <- sar %>% html_nodes(xpath = "//table//a")  
-link_text  <- link_nodes %>% html_text()
-text_df = as.data.frame(link_text)
+link_nodes <- sar %>% html_nodes(xpath = "//table//a")  # <1>
+#link_nodes <- sar %>% html_nodes("table a")  # <2>
+
+link_text  <- link_nodes %>% html_text()  # <3>
+text_df = as.data.frame(link_text)        # <4>
 
 index <- 1
 for (index in seq(1:nrow(text_df))) {
   text_df$url[index] <- link_nodes[index] %>%  html_attr("href")
-}
+} # <5>
 ```
 
-alternate method
+1.  Select the elements we want out of the HTML using html_nodes. The xpath code specifies that we want a tags that are children of the table. Store it in link_nodes.
+2.  An alternate method is to use the more standard HTML/CSS selectors, but again, we want the a elements that are children of the table. Commented out here, but it produces identical results as 1.
+3.  The link_node contains both the URL and the text. Here we extract the text. There are [two methods in the rvest package](https://rvest.tidyverse.org/reference/html_text.html): html_text() is faster, but might include formatting information relating to whitespace. html_text2() is slower, but produces cleaner output.
+4.  Now we store the text in a dataframe.
+5.  Now we loop through the text dataframe and add on the matching URL that we extract from link_nodes using html_attr("href").
+
+So now we have a dataframe with the text and the url stored separately.
 
 ```{r}
-link_nodes2 <- sar %>% html_nodes("table a")  
-link_text2  <- link_nodes2 %>% html_text()
+head(text_df)
 ```
 
-There are actually three sets of links- one with the name, one with the application, and one to purchase the detailed application. I only want the one that goes to the application. So, I take every third link, starting with the first.
+Here we see that there is a bunch of whitespace information in some of the entries (new line and tab markers). We've also lost some of the structure that the table had. Each hyperlink is extracted into its own row in the text_df, but 3 of these text_df rows corresponds to one row in our webpage table. As I mentioned, I want the link associated with the Patriot name, so I can just take every third row of this text_df table and discard the rest. If I wanted a different link associated with the name, I could do that too.
+
+So I'm creating an index to subset my rows. (This doesn't need to be a separated variable, I'm just doing that for clarity.
 
 ```{r}
-raw_data <- text_df[seq(1, nrow(text_df), 3),]
+subset_index <- seq(1, nrow(text_df), 3)
+head(subset_index)
+```
+
+Now I am subsetting the dataframe using subset_index for the rows and taking all columns.
+
+```{r}
+raw_data <- text_df[subset_index,]
 head(raw_data)
 
 ```
 
-# Reformat the Data
+### Extracting the Links with html_elements
+
+The [html_nodes() function used above has been superseded](https://rvest.tidyverse.org/reference/rename.html) by [html_elements()](https://rvest.tidyverse.org/reference/html_element.html). They should function exactly the same, since the notes say that the function is merely renamed. It is generally best to use the most current version of the functions, so here is the above code updated.
+
+```{r}
+link_nodes2 <- sar %>% html_elements("table a")  
+
+link_text2  <- link_nodes2 %>% html_text()  
+text_df2 = as.data.frame(link_text2)        
+
+index <- 1
+for (index in seq(1:nrow(text_df2))) {
+  text_df2$url[index] <- link_nodes2[index] %>%  html_attr("href")
+} # <5>
+
+raw_data2 <- text_df2[subset_index,]
+head(raw_data2)
+
+```
+
+You can see it produces the same results.
+
+## Dataframes aren't Tibbles!
+
+R keeps the indexing of the raw_data, so the row numbers are by 3s. However, indexing is as usual, by position. So rev_war\$name_unclean\[3\] returns the name associated with the row number 7. This is annoying and makes it difficult to pull out test cases. So, this should be fixed. This issue will pop up when you use data frames but not when you use tibbles. The tidyverse doesn't approve of row names or numbers, so they aren't used. If you look at a tibble in RStudio viewer, you will get row numbers and the tibble will have them correctly numbered. Tibbles and data frames are usually entirely interchangeable, but sometimes you do run into the differences.
+
+So, two ways to fix this:
+
+1.  Convert to a tibble.
+
+```{r}
+rev_war_tibble <- as.tibble(raw_data)
+
+head(rev_war_tibble)
+```
+
+2.  Reassign the indexing of the data frame.
+
+```{r}
+head(raw_data)
+
+rownames(raw_data) = seq(length = nrow(raw_data))
+
+head(raw_data)
+```
+
+I'm going to continue with the reindexed data frame.
+
+## Cleaning and Reformating the Data
 
 Now to wrangle the text data into a usable form. The link_text contains the name and an ID number, like John PHELPS (P-335209). This can be split into two components using `(` as a separator. Remember that special characters like `(` need to be escaped (more on that later). So the actual separator is `" \\("` I took the space also. Then I removed the other parenthesis with `str_replace()`. I used transmute to do the final mutation and select the columns I wanted moving forward.
 
@@ -113,32 +257,6 @@ rev_war <- rev_war %>%
   transmute(name_unclean, url, SAR_ID = str_replace(id_unclean, "\\)", ""))
 
 ```
-
-# Dataframes aren't Tibbles!
-
-R keeps the indexing of the raw_data, so the row numbers are by 3s. However, indexing is as usual, by position. So rev_war\$name_unclean\[3\] returns the name associated with the row number 7. This is annoying and makes it difficult to pull out test cases. So, this should be fixed. This issue will pop up when you use data frames but not when you use tibbles. The tidyverse doesn't approve of row names or numbers, so they aren't used. If you look at a tibble in RStudio viewer, you will get row numbers and the tibble will have them correctly numbered. Tibbles and data frames are usually entirely interchangeable, but sometimes you do run into the differences.
-
-So, two ways to fix this:
-
-1.  Convert to a tibble.
-
-```{r}
-rev_war_tibble <- as.tibble(rev_war)
-
-head(rev_war_tibble)
-```
-
-2.  Reassign the indexing of the data frame.
-
-```{r}
-head(rev_war)
-
-rownames(rev_war) = seq(length = nrow(rev_war))
-
-head(rev_war)
-```
-
-I'm going to continue with the data frame.
 
 # Cleaning Text Data
 
